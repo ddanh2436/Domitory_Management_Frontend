@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GoogleLogin } from '@react-oauth/google';
+import { getLoggedInUser } from "../../utils/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,7 +41,18 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("token", data.access_token);
-      router.push("/");
+      
+      // Điều hướng dựa trên Role sau khi đăng nhập thủ công
+      const user = getLoggedInUser();
+      if (user) {
+        if (user.role === "ADMIN") {
+          router.push("/admin");
+        } else if (user.role === "STUDENT") {
+          router.push("/student");
+        } else {
+          router.push("/");
+        }
+      }
 
     } catch (error: any) {
       setErrorMsg(error.message);
@@ -64,7 +76,19 @@ export default function LoginPage() {
       if (!response.ok) throw new Error(data.message || "Lỗi đăng nhập Google từ server.");
 
       localStorage.setItem("token", data.access_token);
-      router.push("/");
+      
+      // Điều hướng dựa trên Role sau khi đăng nhập Google
+      const user = getLoggedInUser();
+      if (user) {
+        if (user.role === "ADMIN") {
+          router.push("/admin");
+        } else if (user.role === "STUDENT") {
+          router.push("/student");
+        } else {
+          router.push("/");
+        }
+      }
+
     } catch (error: any) {
       setErrorMsg(error.message);
     } finally {
