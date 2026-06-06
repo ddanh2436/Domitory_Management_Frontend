@@ -7,7 +7,7 @@ import { getLoggedInUser } from "../utils/auth";
 
 interface RoleGuardProps {
   children: React.ReactNode;
-  allowedRoles: ('ADMIN' | 'STUDENT' | 'MAINTENANCE')[];
+  allowedRoles: ('ADMIN' | 'STUDENT')[];
 }
 
 export default function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
@@ -17,14 +17,12 @@ export default function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
   useEffect(() => {
     const user = getLoggedInUser();
 
-    // 1. Nếu chưa đăng nhập -> đá về trang login
     if (!user) {
       router.push("/login");
       return;
     }
 
-    // 2. Nếu đã đăng nhập nhưng sai Role -> đá về đúng trang của Role đó
-    if (!allowedRoles.includes(user.role)) {
+    if (!allowedRoles.includes(user.role as 'ADMIN' | 'STUDENT')) {
       if (user.role === "ADMIN") {
         router.push("/admin");
       } else if (user.role === "STUDENT") {
@@ -35,7 +33,6 @@ export default function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
       return;
     }
 
-    // 3. Đúng quyền -> Cho phép hiển thị trang
     setIsAuthorized(true);
   }, [router, allowedRoles]);
 

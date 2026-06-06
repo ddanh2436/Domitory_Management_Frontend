@@ -152,7 +152,6 @@ export default function RegisterPage() {
             >
               <option value="STUDENT">Sinh viên (Student)</option>
               <option value="ADMIN">Ban quản lý (Admin)</option>
-              <option value="MAINTENANCE">Bảo trì (Maintenance)</option>
             </select>
           </div>
 
