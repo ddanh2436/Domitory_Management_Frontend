@@ -2,10 +2,9 @@ export interface JwtPayload {
   sub: string;
   email: string;
   role: 'ADMIN' | 'STUDENT' | 'MAINTENANCE';
-  exp: number;
+  exp: number; 
 }
 
-// Hàm giải mã JWT token ngay tại client-side
 export function getLoggedInUser(): JwtPayload | null {
   if (typeof window === "undefined") return null;
   
@@ -22,7 +21,16 @@ export function getLoggedInUser(): JwtPayload | null {
         .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
         .join("")
     );
-    return JSON.parse(jsonPayload);
+    
+    const decoded: JwtPayload = JSON.parse(jsonPayload);
+    
+    if (decoded.exp * 1000 < Date.now()) {
+      console.warn("Session đã hết hạn! Tự động đăng xuất.");
+      localStorage.removeItem("token"); // Xóa token đã hết hạn khỏi bộ nhớ
+      return null;
+    }
+    
+    return decoded;
   } catch (error) {
     localStorage.removeItem("token");
     return null;
