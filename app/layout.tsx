@@ -18,9 +18,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className={inter.className}>
-        {/* Bọc toàn bộ ứng dụng bằng Provider ở đây */}
-        <GoogleOAuthProvider clientId="554498848939-6lfe3dqvl8ca1uaudvk9hqs0rm5irt26.apps.googleusercontent.com">
+      {/* Thêm suppressHydrationWarning vào đây để bỏ qua lỗi do Extension */}
+      <body className={inter.className} suppressHydrationWarning>
+        <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com">
           {children}
         </GoogleOAuthProvider>
       </body>
