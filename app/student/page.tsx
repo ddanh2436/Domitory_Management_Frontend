@@ -570,7 +570,7 @@ export default function StudentDashboard() {
             <NavItem icon={Icons.home}    label="Tổng quan"        active href="/student" />
             <NavItem icon={Icons.search}  label="Tìm & Đặt phòng"  href="/student/rooms" />
             <NavItem icon={Icons.doc}     label="Hợp đồng"         locked />
-            <NavItem icon={Icons.invoice} label="Hóa đơn"          locked />
+            <NavItem icon={Icons.invoice} label="Hóa đơn" href="/student/invoices" />
             <NavItem icon={Icons.wrench}  label="Yêu cầu sửa chữa" locked />
           </nav>
 
@@ -747,7 +747,7 @@ export default function StudentDashboard() {
                     <FeatureCard
                       icon={Icons.invoice} title="Hóa đơn điện nước" color="violet"
                       desc="Theo dõi chi phí phòng, điện nước và lịch sử thanh toán hàng tháng."
-                      locked
+                      href="/student/invoices"
                     />
                     <FeatureCard
                       icon={Icons.wrench} title="Yêu cầu sửa chữa" color="rose"
