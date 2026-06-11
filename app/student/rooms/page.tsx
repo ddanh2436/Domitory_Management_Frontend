@@ -49,12 +49,15 @@ export default function StudentRoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  
+  // State xử lý Booking
+  const [message, setMessage] = useState({ roomId: "", text: "", type: "" });
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchRooms = async () => {
       try {
         const token = localStorage.getItem("token");
-        // Gọi API lấy toàn bộ phòng từ Backend
         const response = await fetch("http://localhost:3001/api/rooms", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -70,6 +73,38 @@ export default function StudentRoomsPage() {
     };
     fetchRooms();
   }, []);
+
+  // Hàm xử lý gọi API Đặt phòng
+  const handleBookRoom = async (roomId: string, roomName: string) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn gửi yêu cầu đăng ký phòng ${roomName}?`)) return;
+    
+    setProcessingId(roomId);
+    setMessage({ roomId: "", text: "", type: "" });
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:3001/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ roomId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage({ roomId, text: "Đăng ký thành công! Vui lòng chờ Ban quản lý duyệt.", type: "success" });
+      } else {
+        setMessage({ roomId, text: data.message || "Có lỗi xảy ra", type: "error" });
+      }
+    } catch (error) {
+      setMessage({ roomId, text: "Lỗi kết nối đến máy chủ.", type: "error" });
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   // Lọc phòng theo tên hoặc tòa nhà
   const filteredRooms = rooms.filter(
@@ -243,13 +278,29 @@ export default function StudentRoomsPage() {
                   )}
                 </div>
 
+                {/* Hiển thị thông báo ngay trên nút bấm cho từng phòng cụ thể */}
+                {message.roomId === room._id && message.text && (
+                  <div style={{ 
+                    padding: '10px', 
+                    marginBottom: '16px', 
+                    borderRadius: '8px', 
+                    fontSize: '13px', 
+                    backgroundColor: message.type === 'success' ? '#dcfce7' : '#fee2e2', 
+                    color: message.type === 'success' ? '#166534' : '#991b1b', 
+                    textAlign: 'center' 
+                  }}>
+                    {message.text}
+                  </div>
+                )}
+
                 {/* Nút hành động */}
                 {room.status === 'AVAILABLE' ? (
                   <button 
-                    className="btn-book btn-book--active"
-                    onClick={() => alert(`Tính năng đăng ký phòng ${room.name} sẽ được phát triển ở bước tiếp theo!`)}
+                    className={`btn-book ${processingId === room._id ? 'btn-book--disabled' : 'btn-book--active'}`}
+                    onClick={() => handleBookRoom(room._id, room.name)}
+                    disabled={processingId === room._id}
                   >
-                    Đăng ký phòng này
+                    {processingId === room._id ? 'Đang xử lý...' : 'Đăng ký phòng này'}
                   </button>
                 ) : (
                   <button className="btn-book btn-book--disabled" disabled>

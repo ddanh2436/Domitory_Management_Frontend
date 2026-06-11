@@ -20,7 +20,7 @@ export default function RootLayout({
     <html lang="vi">
       {/* Thêm suppressHydrationWarning vào đây để bỏ qua lỗi do Extension */}
       <body className={inter.className} suppressHydrationWarning>
-        <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com">
+        <GoogleOAuthProvider clientId="554498848939-6lfe3dqvl8ca1uaudvk9hqs0rm5irt26.apps.googleusercontent.com">
           {children}
         </GoogleOAuthProvider>
       </body>
