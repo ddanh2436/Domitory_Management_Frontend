@@ -156,7 +156,10 @@ export default function AdminRoomsPage() {
       const res = await fetch("http://localhost:3001/api/rooms", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) setRooms(await res.json());
+      if (res.ok) {
+        const json = await res.json();
+        setRooms(json.data || []);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -169,6 +172,16 @@ export default function AdminRoomsPage() {
   // ── submit new room ──
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Client-side validation for instant feedback on duplicate room names
+    const isDuplicate = rooms.some(
+      (r) => r.name.trim().toLowerCase() === formData.name.trim().toLowerCase()
+    );
+    if (isDuplicate) {
+      setToast({ type: "error", text: 'Giá trị "name" này đã tồn tại trong cơ sở dữ liệu' });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const token = localStorage.getItem("token");

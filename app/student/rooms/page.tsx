@@ -62,8 +62,8 @@ export default function StudentRoomsPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.ok) {
-          const data = await response.json();
-          setRooms(data);
+          const result = await response.json();
+          setRooms(result.data);
         }
       } catch (error) {
         console.error("Lỗi lấy danh sách phòng:", error);
@@ -106,7 +106,6 @@ export default function StudentRoomsPage() {
     }
   };
 
-  // Lọc phòng theo tên hoặc tòa nhà
   const filteredRooms = rooms.filter(
     (r) =>
       r.name.toLowerCase().includes(search.toLowerCase()) ||
