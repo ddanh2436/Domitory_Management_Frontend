@@ -10,7 +10,18 @@ interface Student {
   fullName: string;
   mssv?: string;
   email: string;
+  phone?: string;
+  cccd?: string;
+  room?: { name: string; building: string };
   status?: string;
+}
+
+interface AdminProfile {
+  _id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  cccd?: string;
 }
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────
@@ -121,19 +132,38 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [alertMsg, setAlertMsg] = useState({ text: "", type: "" });
 
+  // Các State xử lý cập nhật thông tin cá nhân Admin
+  const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ fullName: "", phone: "", cccd: "" });
+
   // Hàm tải toàn bộ dữ liệu đồng thời từ MongoDB Atlas
   const loadDashboardData = async () => {
     try {
       const token = localStorage.getItem("token");
       
-      // 1. Tải danh sách sinh viên
+      // 1. Tải hồ sơ Admin hiện tại
+      const resProfile = await fetch("http://localhost:3001/api/users/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (resProfile.ok) {
+        const profileData = await resProfile.json();
+        setAdminProfile(profileData);
+        setFormData({
+          fullName: profileData.fullName || "",
+          phone: profileData.phone || "",
+          cccd: profileData.cccd || "",
+        });
+      }
+
+      // 2. Tải danh sách sinh viên
       const resStudents = await fetch("http://localhost:3001/api/users/students", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const studentsData = resStudents.ok ? await resStudents.json() : [];
       setStudents(studentsData);
 
-      // 2. Tải danh sách đơn đăng ký đặt phòng
+      // 3. Tải danh sách đơn đăng ký đặt phòng
       const resBookings = await fetch("http://localhost:3001/api/bookings", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -150,6 +180,33 @@ export default function AdminDashboard() {
   useEffect(() => {
     loadDashboardData();
   }, []);
+
+  // Xử lý cập nhật thông tin cá nhân của Admin qua API
+  const handleUpdateAdminProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:3001/api/users/profile", {
+        method: "PATCH",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setAlertMsg({ text: "Cập nhật hồ sơ cá nhân Quản trị viên thành công!", type: "success" });
+        setIsModalOpen(false);
+        loadDashboardData();
+      } else {
+        const err = await response.json();
+        setAlertMsg({ text: err.message || "Lỗi cập nhật hệ thống.", type: "error" });
+      }
+    } catch (error) {
+      setAlertMsg({ text: "Không thể kết nối đến máy chủ Backend.", type: "error" });
+    }
+  };
 
   // Xử lý Duyệt / Từ chối đơn trực tiếp tại Dashboard chính
   const handleBookingAction = async (bookingId: string, action: 'approve' | 'reject', roomName: string) => {
@@ -239,7 +296,8 @@ export default function AdminDashboard() {
         .topbar__bell { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); position: relative; transition: border-color 0.15s, background 0.15s; }
         .topbar__bell:hover { border-color: var(--gold); background: var(--gold-dim); color: var(--gold); }
         .topbar__bell-dot { position: absolute; top: 7px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); border: 1.5px solid var(--white); }
-        .topbar__avatar { width: 36px; height: 36px; border-radius: 9px; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600; color: var(--gold); cursor: pointer; border: 1.5px solid var(--gold-border); }
+        .topbar__avatar { width: 36px; height: 36px; border-radius: 9px; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600; color: var(--gold); cursor: pointer; border: 1.5px solid var(--gold-border); transition: transform 0.1s; }
+        .topbar__avatar:hover { transform: scale(1.05); border-color: var(--gold); }
         .page-body { padding: 28px 32px 48px; flex: 1; }
         .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
         .stat-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 22px 24px; transition: transform 0.15s, box-shadow 0.15s; }
@@ -275,6 +333,25 @@ export default function AdminDashboard() {
         .cell-status span::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #22c55e; }
         .skeleton { display: inline-block; border-radius: 4px; background: linear-gradient(90deg, #F0EDE8 25%, #E8E4DE 50%, #F0EDE8 75%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; }
         @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+        /* Styles cho Profile Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(13, 27, 42, 0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; }
+        .modal-card { background: var(--white); border-radius: 16px; border: 1px solid var(--gold-border); width: 440px; max-width: 90%; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
+        .modal-header { padding: 20px 24px; background: var(--navy); color: var(--white); display: flex; align-items: center; justify-content: space-between; }
+        .modal-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--gold); }
+        .modal-close { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 20px; display: flex; align-items: center; }
+        .modal-close:hover { color: var(--white); }
+        .modal-body { padding: 24px; }
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 12px; font-weight: 500; color: var(--navy); margin-bottom: 6px; letter-spacing: 0.02em; }
+        .form-input-text { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--navy); background: #F9F8F6; outline: none; transition: border-color 0.15s, background 0.15s; }
+        .form-input-text:focus { border-color: var(--gold); background: var(--white); }
+        .form-input-readonly { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--muted); background: #F1EFEA; cursor: not-allowed; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+        .btn-cancel { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--navy); font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+        .btn-cancel:hover { background: #FAFAF9; }
+        .btn-submit { padding: 9px 18px; border-radius: 8px; border: none; background: var(--navy); color: var(--gold); font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--gold-border); transition: background 0.15s; }
+        .btn-submit:hover { background: #162a3f; }
       `}</style>
 
       <div className="admin-shell">
@@ -290,7 +367,7 @@ export default function AdminDashboard() {
           <nav className="sidebar__nav">
             <NavItem href="/admin"       icon={Icons.chart}   label="Tổng quan" active />
             <NavItem href="/admin/rooms" icon={Icons.home}    label="Quản lý phòng" />
-            <NavItem href="/admin"       icon={Icons.users}   label="Sinh viên" badge={students.length} />
+            <NavItem href="/admin/students" icon={Icons.users} label="Sinh viên" badge={students.length} />
             <NavItem href="/admin/bookings" icon={Icons.doc}  label="Duyệt đơn phòng" badge={pendingBookings.length} />
             <NavItem href="/admin/invoices" icon={Icons.invoice} label="Hóa đơn" />
             <NavItem href="#"            icon={Icons.wrench}  label="Bảo trì" />
@@ -320,7 +397,10 @@ export default function AdminDashboard() {
                 {Icons.bell}
                 {pendingBookings.length > 0 && <span className="topbar__bell-dot" />}
               </button>
-              <div className="topbar__avatar" title="Admin">A</div>
+              {/* CLICK VÀO AVATAR NÀY ĐỂ BẬT CỬA SỔ CẬP NHẬT HỒ SƠ ADMIN */}
+              <div className="topbar__avatar" title="Bấm để sửa hồ sơ Admin" onClick={() => setIsModalOpen(true)}>
+                {adminProfile?.fullName ? adminProfile.fullName.charAt(0).toUpperCase() : "A"}
+              </div>
             </div>
           </header>
 
@@ -429,68 +509,61 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Panel: Toàn bộ danh sách sinh viên */}
-            <div className="panel">
-              <div className="panel__header">
-                <div className="panel__header-left">
-                  <div className="panel__title">Danh sách sinh viên hệ thống</div>
-                  <div className="panel__subtitle">Toàn bộ sinh viên đã đăng ký tài khoản Dormify</div>
-                </div>
-                <div className="panel__header-right">
-                  <div className="search-wrap">
-                    <span className="search-wrap__icon">{Icons.search}</span>
-                    <input
-                      type="text"
-                      className="search-input"
-                      placeholder="Tìm tên, MSSV, email..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div style={{ overflowX: "auto" }}>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>STT</th>
-                      <th>Họ và Tên</th>
-                      <th>MSSV</th>
-                      <th>Email</th>
-                      <th>Trạng thái</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading ? (
-                      Array.from({ length: 3 }).map((_, i) => (
-                        <tr key={i}>
-                          <td><span className="skeleton" style={{ width: 20, height: 14 }} /></td>
-                          <td><span className="skeleton" style={{ width: 140, height: 14 }} /></td>
-                          <td><span className="skeleton" style={{ width: 80, height: 14 }} /></td>
-                          <td><span className="skeleton" style={{ width: 180, height: 14 }} /></td>
-                          <td><span className="skeleton" style={{ width: 60, height: 18, borderRadius: 100 }} /></td>
-                        </tr>
-                      ))
-                    ) : filteredStudents.length > 0 ? (
-                      filteredStudents.map((student, index) => (
-                        <tr key={student._id}>
-                          <td className="cell-index">{index + 1}</td>
-                          <td className="cell-name">{student.fullName}</td>
-                          <td className="cell-mssv">{student.mssv || "—"}</td>
-                          <td className="cell-email">{student.email}</td>
-                          <td className="cell-status"><span>Hoạt động</span></td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr><td colSpan={5} className="text-center py-6 text-slate-400">Không tìm thấy sinh viên phù hợp.</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            
+            
           </main>
         </div>
       </div>
+
+      {/* ─── MODAL CẬP NHẬT HỒ SƠ ADMIN ───────────────────────────────── */}
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title">Hồ sơ Quản trị viên</div>
+              <button className="modal-close" onClick={() => setIsModalOpen(false)}>×</button>
+            </div>
+            <form onSubmit={handleUpdateAdminProfile} className="modal-body">
+              <div className="form-group">
+                <label className="form-label">Tài khoản Email (Định danh)</label>
+                <input type="text" className="form-input-readonly" value={adminProfile?.email || ""} readOnly />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Họ và Tên</label>
+                <input 
+                  type="text" 
+                  className="form-input-text" 
+                  required
+                  value={formData.fullName} 
+                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} 
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Số điện thoại</label>
+                <input 
+                  type="text" 
+                  className="form-input-text" 
+                  value={formData.phone} 
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })} 
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Số CCCD / Mã cá nhân</label>
+                <input 
+                  type="text" 
+                  className="form-input-text" 
+                  value={formData.cccd} 
+                  onChange={(e) => setFormData({ ...formData, cccd: e.target.value })} 
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Hủy bỏ</button>
+                <button type="submit" className="btn-submit">Lưu thay đổi</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </RoleGuard>
   );
 }

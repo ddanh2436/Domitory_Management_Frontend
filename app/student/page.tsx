@@ -10,6 +10,7 @@ interface Profile {
   mssv?: string;
   email: string;
   role: string;
+  avatar?: string; // Đã thêm trường avatar
   room?: {
     name: string;
     building: string;
@@ -46,7 +47,7 @@ function Avatar({ name, size = 44 }: { name: string; size?: number }) {
   );
 }
 
-// ─── Nav Item (Đã nâng cấp dùng Link Next.js) ────────────────────────────────
+// ─── Nav Item ────────────────────────────────────────────────────────────────
 function NavItem({ icon, label, active = false, href = "#", locked = false }: {
   icon: React.ReactNode; label: string; active?: boolean; href?: string; locked?: boolean;
 }) {
@@ -117,6 +118,7 @@ const Icons = {
   doc: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
   invoice: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
   wrench: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><circle cx="12" cy="12" r="3" strokeWidth={1.8} /></svg>,
+  user: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
   logout: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>,
   bell: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>,
   lock: <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>,
@@ -214,6 +216,7 @@ export default function StudentDashboard() {
           display: flex; align-items: center; gap: 12px;
         }
         .st-avatar {
+          width: 36px; height: 36px;
           border-radius: 10px;
           background: linear-gradient(135deg, var(--gold) 0%, #E2B96A 100%);
           display: flex; align-items: center; justify-content: center;
@@ -300,7 +303,11 @@ export default function StudentDashboard() {
           background: var(--navy); border: 1.5px solid var(--gold-b);
           display: flex; align-items: center; justify-content: center;
           font-family: 'Fraunces', serif; font-size: 12px; font-weight: 600;
-          color: var(--gold); cursor: pointer;
+          color: var(--gold); cursor: pointer; text-decoration: none; overflow: hidden;
+          transition: transform 0.15s, border-color 0.15s;
+        }
+        .st-tb-avatar-sm:hover {
+          transform: scale(1.05); border-color: var(--gold);
         }
 
         /* ── PAGE BODY ── */
@@ -552,6 +559,10 @@ export default function StudentDashboard() {
           <div className="st-sb-profile">
             {loading ? (
               <Skeleton w={36} h={36} r={10} />
+            ) : profile?.avatar ? (
+              <div className="st-avatar" style={{ padding: 0, overflow: 'hidden' }}>
+                <img src={profile.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
             ) : (
               <Avatar name={profile?.fullName ?? "SV"} size={36} />
             )}
@@ -569,12 +580,14 @@ export default function StudentDashboard() {
           <nav className="st-nav">
             <NavItem icon={Icons.home}    label="Tổng quan"        active href="/student" />
             <NavItem icon={Icons.search}  label="Tìm & Đặt phòng"  href="/student/rooms" />
-            <NavItem icon={Icons.doc}     label="Hợp đồng"         locked />
+            <NavItem icon={Icons.doc} label="Hợp đồng điện tử" href="/student/contracts" />
             <NavItem icon={Icons.invoice} label="Hóa đơn" href="/student/invoices" />
+            
+            {/* ── ĐÃ THÊM MỤC HỒ SƠ CÁ NHÂN VÀO ĐÂY ── */}
+            <NavItem icon={Icons.user}    label="Hồ sơ cá nhân"    href="/student/profile" />
             <NavItem icon={Icons.wrench}  label="Yêu cầu sửa chữa" locked />
           </nav>
 
-          {/* Cập nhật thêm nút Về trang chủ */}
           <div className="st-sb-footer">
             <Link href="/" className="st-btn-action st-btn-action--home">
               <span className="st-nav-icon">{Icons.globe}</span>
@@ -601,12 +614,18 @@ export default function StudentDashboard() {
                 {Icons.bell}
                 <span className="st-bell-dot" />
               </button>
+              
+              {/* ── ĐÃ SỬA: BIẾN AVATAR THÀNH LINK VÀ HIỂN THỊ ẢNH AVATAR ── */}
               {loading ? (
                 <Skeleton w={34} h={34} r={9} />
+              ) : profile?.avatar ? (
+                <Link href="/student/profile" className="st-tb-avatar-sm" style={{ padding: 0 }} title="Hồ sơ cá nhân">
+                  <img src={profile.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </Link>
               ) : (
-                <div className="st-tb-avatar-sm" title={profile?.fullName}>
+                <Link href="/student/profile" className="st-tb-avatar-sm" title="Hồ sơ cá nhân">
                   {(profile?.fullName ?? "SV").trim().split(" ").pop()?.[0]?.toUpperCase() ?? "S"}
-                </div>
+                </Link>
               )}
             </div>
           </header>
@@ -742,7 +761,7 @@ export default function StudentDashboard() {
                     <FeatureCard
                       icon={Icons.doc} title="Hợp đồng điện tử" color="teal"
                       desc="Xem hợp đồng thuê phòng, thời hạn lưu trú và thực hiện gia hạn."
-                      locked
+                      href="/student/contracts"
                     />
                     <FeatureCard
                       icon={Icons.invoice} title="Hóa đơn điện nước" color="violet"
