@@ -688,6 +688,7 @@ export default function AdminRoomsPage() {
             <NavItem icon={Icons.users}   label="Sinh viên"     href="/admin/students" />
             <NavItem icon={Icons.doc}     label="Hợp đồng"      href="/admin/contracts" />
             <NavItem icon={Icons.invoice} label="Hóa đơn"       href="/admin/invoices" />
+            <NavItem href="/admin/profile" icon={Icons.users} label="Hồ sơ cá nhân" />
             <NavItem icon={Icons.wrench}  label="Bảo trì"       href="/admin/maintenance" badge={3} />
           </nav>
           <div className="rm-sidebar-footer">

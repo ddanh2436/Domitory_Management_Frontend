@@ -250,6 +250,7 @@ export default function AdminStudentsPage() {
             <NavItem href="/admin/students" icon={Icons.users}   label="Sinh viên" badge={students.length} active />
             <NavItem href="/admin/bookings" icon={Icons.doc}     label="Duyệt đơn phòng" badge={pendingCount} />
             <NavItem href="/admin/invoices" icon={Icons.invoice} label="Hóa đơn" />
+            <NavItem href="/admin/profile" icon={Icons.users} label="Hồ sơ cá nhân" />
             <NavItem href="#"               icon={Icons.wrench}  label="Bảo trì" />
           </nav>
           <div className="sidebar__footer">
