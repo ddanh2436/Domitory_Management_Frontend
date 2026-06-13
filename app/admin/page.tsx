@@ -370,6 +370,7 @@ export default function AdminDashboard() {
             <NavItem href="/admin/students" icon={Icons.users} label="Sinh viên" badge={students.length} />
             <NavItem href="/admin/bookings" icon={Icons.doc}  label="Duyệt đơn phòng" badge={pendingBookings.length} />
             <NavItem href="/admin/invoices" icon={Icons.invoice} label="Hóa đơn" />
+            <NavItem href="/admin/profile" icon={Icons.users} label="Hồ sơ cá nhân" />
             <NavItem href="#"            icon={Icons.wrench}  label="Bảo trì" />
           </nav>
 
