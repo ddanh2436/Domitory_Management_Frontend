@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import RoleGuard from "../../components/RoleGuard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -23,9 +24,10 @@ interface AdminProfile {
   email: string;
   phone?: string;
   cccd?: string;
+  avatar?: string;
 }
 
-// ─── Logo & Icons (Giữ nguyên như trang Admin) ────────────────────────────────
+// ─── Logo & Icons ─────────────────────────────────────────────────────────────
 function DormifyLogoMark({ size = 36 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 42 42" fill="none">
@@ -65,38 +67,39 @@ function NavItem({ icon, label, active = false, badge, href = "#" }: { icon: Rea
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function AdminStudentsPage() {
+  const router = useRouter();
+  
   const [students, setStudents] = useState<Student[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ fullName: "", phone: "", cccd: "" });
   const [alertMsg, setAlertMsg] = useState({ text: "", type: "" });
+  
+  // STATE CHO MODAL SINH VIÊN
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [editForm, setEditForm] = useState({
+    fullName: "",
+    phone: "",
+    cccd: "",
+    avatar: "" // <--- TRƯỜNG MỚI ĐỂ SỬA AVATAR
+  });
+  const [adminMessage, setAdminMessage] = useState("");
 
   const loadData = async () => {
     try {
       const token = localStorage.getItem("token");
       
-      // Load Profile
       const resProfile = await fetch("http://localhost:3001/api/users/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (resProfile.ok) {
-        const profileData = await resProfile.json();
-        setAdminProfile(profileData);
-        setFormData({ fullName: profileData.fullName || "", phone: profileData.phone || "", cccd: profileData.cccd || "" });
-      }
+      if (resProfile.ok) setAdminProfile(await resProfile.json());
 
-      // Load Students
       const resStudents = await fetch("http://localhost:3001/api/users/students", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (resStudents.ok) {
-        setStudents(await resStudents.json());
-      }
+      if (resStudents.ok) setStudents(await resStudents.json());
 
-      // Load Bookings for Badge count
       const resBookings = await fetch("http://localhost:3001/api/bookings", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -113,26 +116,118 @@ export default function AdminStudentsPage() {
 
   useEffect(() => { loadData(); }, []);
 
-  const handleUpdateAdminProfile = async (e: React.FormEvent) => {
+  // Hàm mở Modal khi click vào dòng sinh viên
+  const handleRowClick = (student: Student) => {
+    setSelectedStudent(student);
+    setEditForm({
+      fullName: student.fullName || "",
+      phone: student.phone || "",
+      cccd: student.cccd || "",
+      avatar: student.avatar || "", // Nạp avatar hiện có của sinh viên vào form
+    });
+    setAdminMessage(""); 
+  };
+
+  // HÀM XỬ LÝ UPLOAD ẢNH TỪ MÁY
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Giới hạn kích thước file (Tùy chọn, ở đây cho max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Vui lòng chọn ảnh nhỏ hơn 2MB!");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      // Ép kiểu kết quả về string và đưa vào state editForm
+      setEditForm({ ...editForm, avatar: reader.result as string });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Hàm Cập nhật thông tin & Gửi thông báo
+  const handleUpdateAndNotify = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedStudent) return;
+
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3001/api/users/profile", {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+      const updateRes = await fetch(`${API_URL}/api/users/${selectedStudent._id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(formData),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(editForm),
       });
 
-      if (response.ok) {
-        setAlertMsg({ text: "Cập nhật hồ sơ cá nhân thành công!", type: "success" });
-        setIsModalOpen(false);
-        loadData();
-      } else {
-        const err = await response.json();
-        setAlertMsg({ text: err.message || "Lỗi cập nhật hệ thống.", type: "error" });
+      if (!updateRes.ok) {
+        const err = await updateRes.json().catch(() => ({}));
+        setAlertMsg({ text: `Lỗi Backend: ${err.message || "Không thể cập nhật"}`, type: "error" });
+        return;
       }
+
+      if (adminMessage.trim() !== "") {
+        await fetch(`${API_URL}/api/notifications`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            userId: selectedStudent._id,
+            title: "Thông báo từ Ban Quản Lý (Về hồ sơ cá nhân)",
+            message: adminMessage,
+            isRead: false
+          }),
+        });
+      }
+
+      setAlertMsg({ text: "Đã cập nhật thông tin thành công!", type: "success" });
+      setSelectedStudent(null);
+      loadData(); 
+
     } catch (error) {
-      setAlertMsg({ text: "Không thể kết nối đến máy chủ Backend.", type: "error" });
+      console.error(error);
+      setAlertMsg({ text: "Có lỗi xảy ra, vui lòng thử lại!", type: "error" });
+    }
+  };
+
+  // HÀM XỬ LÝ XÓA SINH VIÊN
+  const handleDeleteStudent = async () => {
+    if (!selectedStudent) return;
+    
+    // Hiện bảng cảnh báo chống bấm nhầm
+    const isConfirm = window.confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN sinh viên ${selectedStudent.fullName} khỏi hệ thống không? Hành động này không thể hoàn tác!`);
+    
+    if (!isConfirm) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+      const res = await fetch(`${API_URL}/api/users/${selectedStudent._id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Không thể xóa sinh viên");
+      }
+
+      setAlertMsg({ text: "Đã xóa sinh viên khỏi hệ thống!", type: "success" });
+      setSelectedStudent(null); // Đóng modal
+      loadData(); // Tải lại danh sách
+
+    } catch (error) {
+      console.error(error);
+      setAlertMsg({ text: "Lỗi kết nối hoặc Backend chưa mở API xóa!", type: "error" });
     }
   };
 
@@ -150,7 +245,6 @@ export default function AdminStudentsPage() {
   return (
     <RoleGuard allowedRoles={["ADMIN"]}>
       <style>{`
-        /* Giữ nguyên toàn bộ block Style từ trang page.tsx cũ */
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root { --navy: #0D1B2A; --gold: #C9A84C; --gold-dim: rgba(201,168,76,0.18); --gold-border: rgba(201,168,76,0.25); --white: #ffffff; --muted: #8A9BAD; --border: rgba(13,27,42,0.09); --row-hover: rgba(201,168,76,0.04); --sidebar-w: 240px; }
@@ -189,7 +283,7 @@ export default function AdminStudentsPage() {
         .topbar__bell { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); position: relative; transition: border-color 0.15s, background 0.15s; }
         .topbar__bell:hover { border-color: var(--gold); background: var(--gold-dim); color: var(--gold); }
         .topbar__bell-dot { position: absolute; top: 7px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); border: 1.5px solid var(--white); }
-        .topbar__avatar { width: 36px; height: 36px; border-radius: 9px; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600; color: var(--gold); cursor: pointer; border: 1.5px solid var(--gold-border); transition: transform 0.1s; }
+        .topbar__avatar { width: 36px; height: 36px; border-radius: 9px; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600; color: var(--gold); cursor: pointer; border: 1.5px solid var(--gold-border); transition: transform 0.1s; overflow: hidden; }
         .topbar__avatar:hover { transform: scale(1.05); border-color: var(--gold); }
         .page-body { padding: 28px 32px 48px; flex: 1; }
         .panel { background: var(--white); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 28px; }
@@ -216,7 +310,7 @@ export default function AdminStudentsPage() {
         .skeleton { display: inline-block; border-radius: 4px; background: linear-gradient(90deg, #F0EDE8 25%, #E8E4DE 50%, #F0EDE8 75%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; }
         @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 
-        /* Styles cho Profile Modal */
+        /* Styles cho Student Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(13, 27, 42, 0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; }
         .modal-card { background: var(--white); border-radius: 16px; border: 1px solid var(--gold-border); width: 440px; max-width: 90%; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
         .modal-header { padding: 20px 24px; background: var(--navy); color: var(--white); display: flex; align-items: center; justify-content: space-between; }
@@ -228,16 +322,16 @@ export default function AdminStudentsPage() {
         .form-label { display: block; font-size: 12px; font-weight: 500; color: var(--navy); margin-bottom: 6px; letter-spacing: 0.02em; }
         .form-input-text { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--navy); background: #F9F8F6; outline: none; transition: border-color 0.15s, background 0.15s; }
         .form-input-text:focus { border-color: var(--gold); background: var(--white); }
-        .form-input-readonly { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--muted); background: #F1EFEA; cursor: not-allowed; }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+        .modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
         .btn-cancel { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--navy); font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
         .btn-cancel:hover { background: #FAFAF9; }
         .btn-submit { padding: 9px 18px; border-radius: 8px; border: none; background: var(--navy); color: var(--gold); font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--gold-border); transition: background 0.15s; }
         .btn-submit:hover { background: #162a3f; }
+        .btn-delete { padding: 9px 14px; border-radius: 8px; border: none; background: #fee2e2; color: #dc2626; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+        .btn-delete:hover { background: #fca5a5; }
       `}</style>
 
       <div className="admin-shell">
-        {/* ─── Sidebar ─────────────────────────────────────────────────── */}
         <aside className="sidebar">
           <Link href="/" className="sidebar__brand">
             <DormifyLogoMark size={36} />
@@ -250,7 +344,7 @@ export default function AdminStudentsPage() {
             <NavItem href="/admin/students" icon={Icons.users}   label="Sinh viên" badge={students.length} active />
             <NavItem href="/admin/bookings" icon={Icons.doc}     label="Duyệt đơn phòng" badge={pendingCount} />
             <NavItem href="/admin/invoices" icon={Icons.invoice} label="Hóa đơn" />
-            <NavItem href="/admin/profile" icon={Icons.users} label="Hồ sơ cá nhân" />
+            <NavItem href="/admin/profile"  icon={Icons.users}   label="Hồ sơ cá nhân" />
             <NavItem href="#"               icon={Icons.wrench}  label="Bảo trì" />
           </nav>
           <div className="sidebar__footer">
@@ -265,7 +359,6 @@ export default function AdminStudentsPage() {
           </div>
         </aside>
 
-        {/* ─── Main Content ────────────────────────────────────────────── */}
         <div className="admin-main">
           <header className="topbar">
             <div className="topbar__left">
@@ -277,8 +370,12 @@ export default function AdminStudentsPage() {
                 {Icons.bell}
                 {pendingCount > 0 && <span className="topbar__bell-dot" />}
               </button>
-              <div className="topbar__avatar" title="Bấm để sửa hồ sơ Admin" onClick={() => setIsModalOpen(true)}>
-                {adminProfile?.fullName ? adminProfile.fullName.charAt(0).toUpperCase() : "A"}
+              <div className="topbar__avatar" title="Bấm để xem/sửa hồ sơ" onClick={() => router.push('/admin/profile')}>
+                {adminProfile?.avatar ? (
+                  <img src={adminProfile.avatar} alt="Admin Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  adminProfile?.fullName ? adminProfile.fullName.charAt(0).toUpperCase() : "A"
+                )}
               </div>
             </div>
           </header>
@@ -290,12 +387,11 @@ export default function AdminStudentsPage() {
               </div>
             )}
 
-            {/* Bảng Danh sách sinh viên */}
             <div className="panel">
               <div className="panel__header">
                 <div className="panel__header-left">
                   <div className="panel__title">Danh sách sinh viên hệ thống</div>
-                  <div className="panel__subtitle">Toàn bộ sinh viên đã đăng ký tài khoản Dormify</div>
+                  <div className="panel__subtitle">Bấm vào sinh viên để sửa thông tin hoặc xóa tài khoản!</div>
                 </div>
                 <div className="panel__header-right">
                   <div className="search-wrap">
@@ -336,24 +432,25 @@ export default function AdminStudentsPage() {
                       ))
                     ) : filteredStudents.length > 0 ? (
                       filteredStudents.map((student, index) => (
-                        <tr key={student._id}>
+                        <tr 
+                          key={student._id} 
+                          onClick={() => handleRowClick(student)} 
+                          style={{ cursor: "pointer" }}
+                          className="hover:bg-slate-50"
+                        >
                           <td className="cell-index">{index + 1}</td>
                           <td className="px-4 py-3">
                             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                                 {student.avatar ? (
-                                <img 
-                                    src={student.avatar} 
-                                    alt="Avt" 
-                                    style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", border: "1px solid var(--border)" }} 
-                                />
+                                <img src={student.avatar} alt="Avt" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", border: "1px solid var(--border)" }} />
                                 ) : (
                                 <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "var(--navy)", color: "var(--gold)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: "bold", fontFamily: "'Fraunces', serif" }}>
-                                    {student.fullName.charAt(0).toUpperCase()}
+                                    {student.fullName ? student.fullName.charAt(0).toUpperCase() : "S"}
                                 </div>
                                 )}
-                                <span className="cell-name">{student.fullName}</span>
+                                <span className="cell-name">{student.fullName || "Chưa cập nhật tên"}</span>
                             </div>
-                            </td>
+                          </td>
                           <td>
                             <div className="cell-mssv">{student.mssv || "—"}</div>
                             <div style={{ fontSize: "11px", color: "var(--muted)", marginTop: "2px" }}>CCCD: {student.cccd || "—"}</div>
@@ -381,34 +478,106 @@ export default function AdminStudentsPage() {
         </div>
       </div>
 
-      {/* ─── MODAL CẬP NHẬT HỒ SƠ ADMIN ───────────────────────────────── */}
-      {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+      {/* ─── MODAL CẬP NHẬT HOẶC XÓA SINH VIÊN ───────────────────────────────── */}
+      {selectedStudent && (
+        <div className="modal-overlay" onClick={() => setSelectedStudent(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <div className="modal-title">Hồ sơ Quản trị viên</div>
-              <button className="modal-close" onClick={() => setIsModalOpen(false)}>×</button>
+              <div className="modal-title">Hồ sơ Sinh viên</div>
+              <button className="modal-close" onClick={() => setSelectedStudent(null)}>×</button>
             </div>
-            <form onSubmit={handleUpdateAdminProfile} className="modal-body">
+            <form onSubmit={handleUpdateAndNotify} className="modal-body">
+              
+              {/* Ảnh đại diện (Giao diện Upload từ máy) */}
+              <div className="form-group" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "20px" }}>
+                {/* Khung hiển thị Avatar */}
+                {editForm.avatar ? (
+                  <img 
+                    src={editForm.avatar} 
+                    alt="Preview" 
+                    style={{ width: "60px", height: "60px", borderRadius: "50%", objectFit: "cover" as const, border: "2px solid var(--gold)" }} 
+                  />
+                ) : (
+                  <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: "#F1EFEA", display: "flex", alignItems: "center" as const, justifyContent: "center" as const, fontSize: "14px", color: "var(--muted)", fontWeight: "bold" }}>
+                    Avt
+                  </div>
+                )}
+                
+                {/* Nút thao tác */}
+                <div style={{ display: "flex", gap: "10px" }}>
+                  {/* Input ẩn để hứng file */}
+                  <input 
+                    type="file" 
+                    id="avatarUpload" 
+                    accept="image/*" 
+                    style={{ display: "none" }} 
+                    onChange={handleImageUpload} 
+                  />
+                  
+                  {/* Nút bấm giả làm Input File */}
+                  <button 
+                    type="button" 
+                    style={{ padding: "8px 12px", background: "var(--navy)", color: "var(--gold)", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}
+                    onClick={() => document.getElementById("avatarUpload")?.click()}
+                  >
+                    📷 Chọn Ảnh
+                  </button>
+
+                  {/* Nút xóa ảnh (Chỉ hiện khi có ảnh) */}
+                  {editForm.avatar && (
+                    <button 
+                      type="button" 
+                      style={{ padding: "8px 12px", background: "transparent", color: "#dc2626", border: "1px solid #fca5a5", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}
+                      onClick={() => setEditForm({ ...editForm, avatar: "" })}
+                    >
+                      Xóa Ảnh
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <div className="form-group">
-                <label className="form-label">Tài khoản Email (Định danh)</label>
-                <input type="text" className="form-input-readonly" value={adminProfile?.email || ""} readOnly />
+                <label className="form-label">Tài khoản Email</label>
+                <input type="text" className="form-input-text" style={{ backgroundColor: "#F1EFEA", cursor: "not-allowed", color: "var(--muted)" }} value={selectedStudent.email} readOnly />
               </div>
               <div className="form-group">
                 <label className="form-label">Họ và Tên</label>
-                <input type="text" className="form-input-text" required value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} />
+                <input type="text" className="form-input-text" required value={editForm.fullName} onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })} />
               </div>
               <div className="form-group">
                 <label className="form-label">Số điện thoại</label>
-                <input type="text" className="form-input-text" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                <input type="text" className="form-input-text" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
               </div>
               <div className="form-group">
-                <label className="form-label">Số CCCD / Mã cá nhân</label>
-                <input type="text" className="form-input-text" value={formData.cccd} onChange={(e) => setFormData({ ...formData, cccd: e.target.value })} />
+                <label className="form-label">Số CCCD</label>
+                <input type="text" className="form-input-text" value={editForm.cccd} onChange={(e) => setEditForm({ ...editForm, cccd: e.target.value })} />
               </div>
+
+              <hr style={{ margin: "20px 0", borderTop: "1px solid var(--border)" }} />
+              
+              <div className="form-group">
+                <label className="form-label" style={{ color: "#d9534f", fontWeight: "bold" }}>
+                  Lời nhắn từ Ban Quản Lý (Tạo thông báo)
+                </label>
+                <textarea
+                  className="form-input-text"
+                  rows={2}
+                  placeholder="VD: Cập nhật lại số điện thoại cho đúng nhé..."
+                  value={adminMessage}
+                  onChange={e => setAdminMessage(e.target.value)}
+                  style={{ resize: "none", height: "60px" }}
+                />
+              </div>
+
+              {/* NÚT BẤM (Xóa bên trái, Lưu bên phải) */}
               <div className="modal-actions">
-                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Hủy bỏ</button>
-                <button type="submit" className="btn-submit">Lưu thay đổi</button>
+                <button type="button" className="btn-delete" onClick={handleDeleteStudent}>
+                  🗑️ Xóa sinh viên
+                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button type="button" className="btn-cancel" onClick={() => setSelectedStudent(null)}>Hủy bỏ</button>
+                  <button type="submit" className="btn-submit">Lưu & Gửi</button>
+                </div>
               </div>
             </form>
           </div>
