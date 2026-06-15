@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RoleGuard from "../components/RoleGuard";
-
+import NotificationBell from "../components/NotificationBell";
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Profile {
   fullName: string;
@@ -991,15 +991,7 @@ export default function StudentDashboard() {
               <div className="st-tb-sub">Dormify · Sinh viên</div>
             </div>
             <div className="st-tb-right">
-              <button
-                className="st-tb-bell"
-                type="button"
-                aria-label="Thông báo"
-              >
-                {Icons.bell}
-                <span className="st-bell-dot" />
-              </button>
-
+             <NotificationBell />
               {/* ── ĐÃ SỬA: BIẾN AVATAR THÀNH LINK VÀ HIỂN THỊ ẢNH AVATAR ── */}
               {loading ? (
                 <Skeleton w={34} h={34} r={9} />

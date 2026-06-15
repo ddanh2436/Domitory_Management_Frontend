@@ -210,7 +210,7 @@ export default function AdminProfilePage() {
             <NavItem href="/admin/bookings" icon={Icons.doc}  label="Duyệt đơn phòng" />
             <NavItem href="/admin/invoices" icon={Icons.invoice} label="Hóa đơn" />
             <NavItem href="/admin/profile" icon={Icons.user} label="Hồ sơ cá nhân" active />
-            <NavItem href="#"            icon={Icons.wrench}  label="Bảo trì" />
+            <NavItem href="/admin/maintenance"            icon={Icons.wrench}  label="Bảo trì" />
           </nav>
 
           <div className="sidebar__footer">

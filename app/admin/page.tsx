@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RoleGuard from "../components/RoleGuard";
+import NotificationBell from "../components/NotificationBell";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Student {
@@ -646,16 +647,7 @@ export default function AdminDashboard() {
               <div className="topbar__breadcrumb">Dormify · Đám mây Atlas</div>
             </div>
             <div className="topbar__right">
-              <button
-                className="topbar__bell"
-                type="button"
-                aria-label="Thông báo"
-              >
-                {Icons.bell}
-                {pendingBookings.length > 0 && (
-                  <span className="topbar__bell-dot" />
-                )}
-              </button>
+             <NotificationBell />
               {/* CLICK VÀO AVATAR NÀY ĐỂ BẬT CỬA SỔ CẬP NHẬT HỒ SƠ ADMIN */}
               <div
                 className="topbar__avatar"
