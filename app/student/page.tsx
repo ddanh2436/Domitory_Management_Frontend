@@ -25,18 +25,58 @@ function DormifyLogoMark({ size = 36 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 42 42" fill="none">
       <rect width="42" height="42" rx="10" fill="#1A2E42" />
       <rect x="10" y="8" width="4" height="26" rx="1" fill="#C9A84C" />
-      <path d="M14 8 Q28 8 28 21 Q28 34 14 34" stroke="#C9A84C" strokeWidth="3.5" fill="none" strokeLinecap="round" />
-      <rect x="18" y="12" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <rect x="18" y="19" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <rect x="18" y="26" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <line x1="10" y1="6" x2="26" y2="6" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M14 8 Q28 8 28 21 Q28 34 14 34"
+        stroke="#C9A84C"
+        strokeWidth="3.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <rect
+        x="18"
+        y="12"
+        width="4"
+        height="4"
+        rx="1"
+        fill="rgba(201,168,76,0.45)"
+      />
+      <rect
+        x="18"
+        y="19"
+        width="4"
+        height="4"
+        rx="1"
+        fill="rgba(201,168,76,0.45)"
+      />
+      <rect
+        x="18"
+        y="26"
+        width="4"
+        height="4"
+        rx="1"
+        fill="rgba(201,168,76,0.45)"
+      />
+      <line
+        x1="10"
+        y1="6"
+        x2="26"
+        y2="6"
+        stroke="#C9A84C"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
 
 // ─── Initials Avatar ─────────────────────────────────────────────────────────
 function Avatar({ name, size = 44 }: { name: string; size?: number }) {
-  const initials = name.trim().split(" ").slice(-2).map(w => w[0].toUpperCase()).join("");
+  const initials = name
+    .trim()
+    .split(" ")
+    .slice(-2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
   return (
     <div
       className="st-avatar"
@@ -48,8 +88,18 @@ function Avatar({ name, size = 44 }: { name: string; size?: number }) {
 }
 
 // ─── Nav Item ────────────────────────────────────────────────────────────────
-function NavItem({ icon, label, active = false, href = "#", locked = false }: {
-  icon: React.ReactNode; label: string; active?: boolean; href?: string; locked?: boolean;
+function NavItem({
+  icon,
+  label,
+  active = false,
+  href = "#",
+  locked = false,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+  href?: string;
+  locked?: boolean;
 }) {
   const content = (
     <>
@@ -64,19 +114,35 @@ function NavItem({ icon, label, active = false, href = "#", locked = false }: {
   }
 
   return (
-    <Link href={href} className={`st-nav-item ${active ? "st-nav-item--active" : ""}`}>
+    <Link
+      href={href}
+      className={`st-nav-item ${active ? "st-nav-item--active" : ""}`}
+    >
       {content}
     </Link>
   );
 }
 
 // ─── Feature Card ─────────────────────────────────────────────────────────────
-function FeatureCard({ icon, title, desc, href, locked = false, color = "gold" }: {
-  icon: React.ReactNode; title: string; desc: string;
-  href?: string; locked?: boolean; color?: "gold" | "teal" | "rose" | "violet";
+function FeatureCard({
+  icon,
+  title,
+  desc,
+  href,
+  locked = false,
+  color = "gold",
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  href?: string;
+  locked?: boolean;
+  color?: "gold" | "teal" | "rose" | "violet";
 }) {
   const content = (
-    <div className={`st-feat-card st-feat-card--${color} ${locked ? "st-feat-card--locked" : ""}`}>
+    <div
+      className={`st-feat-card st-feat-card--${color} ${locked ? "st-feat-card--locked" : ""}`}
+    >
       <div className="st-feat-icon">{icon}</div>
       <div className="st-feat-body">
         <div className="st-feat-title">{title}</div>
@@ -86,12 +152,26 @@ function FeatureCard({ icon, title, desc, href, locked = false, color = "gold" }
       {locked && <span className="st-feat-soon">Sắp ra mắt</span>}
     </div>
   );
-  return locked ? <div>{content}</div> : <Link href={href ?? "#"} style={{ textDecoration: 'none' }}>{content}</Link>;
+  return locked ? (
+    <div>{content}</div>
+  ) : (
+    <Link href={href ?? "#"} style={{ textDecoration: "none" }}>
+      {content}
+    </Link>
+  );
 }
 
 // ─── Activity Row ─────────────────────────────────────────────────────────────
-function ActivityItem({ icon, title, time, color }: {
-  icon: React.ReactNode; title: string; time: string; color: string;
+function ActivityItem({
+  icon,
+  title,
+  time,
+  color,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  time: string;
+  color: string;
 }) {
   return (
     <div className="st-activity-item">
@@ -105,30 +185,281 @@ function ActivityItem({ icon, title, time, color }: {
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
-function Skeleton({ w, h, r = 4 }: { w: number | string; h: number; r?: number }) {
+function Skeleton({
+  w,
+  h,
+  r = 4,
+}: {
+  w: number | string;
+  h: number;
+  r?: number;
+}) {
   return (
-    <span className="st-sk" style={{ width: w, height: h, borderRadius: r, display: "inline-block" }} />
+    <span
+      className="st-sk"
+      style={{ width: w, height: h, borderRadius: r, display: "inline-block" }}
+    />
   );
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const Icons = {
-  home: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
-  search: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
-  doc: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
-  invoice: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
-  wrench: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><circle cx="12" cy="12" r="3" strokeWidth={1.8} /></svg>,
-  user: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
-  logout: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>,
-  bell: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>,
-  lock: <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>,
-  arrowRight: <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>,
-  building: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>,
-  calendar: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
-  check: <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>,
-  info: <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-  coin: <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08-.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-  globe: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={1.8}/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" strokeWidth={1.8}/></svg>,
+  home: (
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+      />
+    </svg>
+  ),
+  search: (
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+      />
+    </svg>
+  ),
+  doc: (
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
+    </svg>
+  ),
+  invoice: (
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+      />
+    </svg>
+  ),
+  wrench: (
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+      />
+      <circle cx="12" cy="12" r="3" strokeWidth={1.8} />
+    </svg>
+  ),
+  user: (
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+      />
+    </svg>
+  ),
+  logout: (
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+      />
+    </svg>
+  ),
+  bell: (
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+      />
+    </svg>
+  ),
+  lock: (
+    <svg
+      width="12"
+      height="12"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+      />
+    </svg>
+  ),
+  arrowRight: (
+    <svg
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 5l7 7-7 7"
+      />
+    </svg>
+  ),
+  building: (
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+      />
+    </svg>
+  ),
+  calendar: (
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+      />
+    </svg>
+  ),
+  check: (
+    <svg
+      width="13"
+      height="13"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2.5}
+        d="M5 13l4 4L19 7"
+      />
+    </svg>
+  ),
+  info: (
+    <svg
+      width="13"
+      height="13"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    </svg>
+  ),
+  coin: (
+    <svg
+      width="13"
+      height="13"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08-.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    </svg>
+  ),
+  globe: (
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <circle cx="12" cy="12" r="10" strokeWidth={1.8} />
+      <path
+        d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"
+        strokeWidth={1.8}
+      />
+    </svg>
+  ),
 };
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -547,12 +878,17 @@ export default function StudentDashboard() {
       `}</style>
 
       <div className="st-shell">
-
         {/* ─── Sidebar ───────────────────────────────────────────────── */}
         <aside className="st-sidebar">
-          <Link href="/" className="st-brand" style={{ textDecoration: 'none' }}>
+          <Link
+            href="/"
+            className="st-brand"
+            style={{ textDecoration: "none" }}
+          >
             <DormifyLogoMark size={36} />
-            <span className="st-wordmark">Dorm<span>ify</span></span>
+            <span className="st-wordmark">
+              Dorm<span>ify</span>
+            </span>
           </Link>
 
           {/* Profile in sidebar */}
@@ -560,32 +896,74 @@ export default function StudentDashboard() {
             {loading ? (
               <Skeleton w={36} h={36} r={10} />
             ) : profile?.avatar ? (
-              <div className="st-avatar" style={{ padding: 0, overflow: 'hidden' }}>
-                <img src={profile.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div
+                className="st-avatar"
+                style={{ padding: 0, overflow: "hidden" }}
+              >
+                <img
+                  src={profile.avatar}
+                  alt="Avatar"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
               </div>
             ) : (
               <Avatar name={profile?.fullName ?? "SV"} size={36} />
             )}
             <div style={{ minWidth: 0 }}>
               <div className="st-sb-profile-name">
-                {loading ? <Skeleton w={100} h={13} /> : (profile?.fullName ?? "Sinh viên")}
+                {loading ? (
+                  <Skeleton w={100} h={13} />
+                ) : (
+                  (profile?.fullName ?? "Sinh viên")
+                )}
               </div>
               <div className="st-sb-profile-role">
-                {loading ? <Skeleton w={60} h={10} /> : (profile?.mssv ? `MSSV: ${profile.mssv}` : "Sinh viên")}
+                {loading ? (
+                  <Skeleton w={60} h={10} />
+                ) : profile?.mssv ? (
+                  `MSSV: ${profile.mssv}`
+                ) : (
+                  "Sinh viên"
+                )}
               </div>
             </div>
           </div>
 
           <div className="st-sb-section-label">Dịch vụ</div>
           <nav className="st-nav">
-            <NavItem icon={Icons.home}    label="Tổng quan"        active href="/student" />
-            <NavItem icon={Icons.search}  label="Tìm & Đặt phòng"  href="/student/rooms" />
-            <NavItem icon={Icons.doc} label="Hợp đồng điện tử" href="/student/contracts" />
-            <NavItem icon={Icons.invoice} label="Hóa đơn" href="/student/invoices" />
-            
+            <NavItem
+              icon={Icons.home}
+              label="Tổng quan"
+              active
+              href="/student"
+            />
+            <NavItem
+              icon={Icons.search}
+              label="Tìm & Đặt phòng"
+              href="/student/rooms"
+            />
+            <NavItem
+              icon={Icons.doc}
+              label="Hợp đồng điện tử"
+              href="/student/contracts"
+            />
+            <NavItem
+              icon={Icons.invoice}
+              label="Hóa đơn"
+              href="/student/invoices"
+            />
+
             {/* ── ĐÃ THÊM MỤC HỒ SƠ CÁ NHÂN VÀO ĐÂY ── */}
-            <NavItem icon={Icons.user}    label="Hồ sơ cá nhân"    href="/student/profile" />
-            <NavItem icon={Icons.wrench}  label="Yêu cầu sửa chữa" locked />
+            <NavItem
+              icon={Icons.user}
+              label="Hồ sơ cá nhân"
+              href="/student/profile"
+            />
+            <NavItem
+              icon={Icons.wrench}
+              label="Yêu cầu sửa chữa"
+              href="/student/maintenance"
+            />
           </nav>
 
           <div className="st-sb-footer">
@@ -593,7 +971,11 @@ export default function StudentDashboard() {
               <span className="st-nav-icon">{Icons.globe}</span>
               <span>Về trang chủ</span>
             </Link>
-            <button className="st-btn-action st-btn-action--logout" onClick={handleLogout} type="button">
+            <button
+              className="st-btn-action st-btn-action--logout"
+              onClick={handleLogout}
+              type="button"
+            >
               <span className="st-nav-icon">{Icons.logout}</span>
               <span>Đăng xuất</span>
             </button>
@@ -602,7 +984,6 @@ export default function StudentDashboard() {
 
         {/* ─── Main ──────────────────────────────────────────────────── */}
         <div className="st-main">
-
           {/* Topbar */}
           <header className="st-topbar">
             <div className="st-tb-left">
@@ -610,21 +991,46 @@ export default function StudentDashboard() {
               <div className="st-tb-sub">Dormify · Sinh viên</div>
             </div>
             <div className="st-tb-right">
-              <button className="st-tb-bell" type="button" aria-label="Thông báo">
+              <button
+                className="st-tb-bell"
+                type="button"
+                aria-label="Thông báo"
+              >
                 {Icons.bell}
                 <span className="st-bell-dot" />
               </button>
-              
+
               {/* ── ĐÃ SỬA: BIẾN AVATAR THÀNH LINK VÀ HIỂN THỊ ẢNH AVATAR ── */}
               {loading ? (
                 <Skeleton w={34} h={34} r={9} />
               ) : profile?.avatar ? (
-                <Link href="/student/profile" className="st-tb-avatar-sm" style={{ padding: 0 }} title="Hồ sơ cá nhân">
-                  <img src={profile.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <Link
+                  href="/student/profile"
+                  className="st-tb-avatar-sm"
+                  style={{ padding: 0 }}
+                  title="Hồ sơ cá nhân"
+                >
+                  <img
+                    src={profile.avatar}
+                    alt="Avatar"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
                 </Link>
               ) : (
-                <Link href="/student/profile" className="st-tb-avatar-sm" title="Hồ sơ cá nhân">
-                  {(profile?.fullName ?? "SV").trim().split(" ").pop()?.[0]?.toUpperCase() ?? "S"}
+                <Link
+                  href="/student/profile"
+                  className="st-tb-avatar-sm"
+                  title="Hồ sơ cá nhân"
+                >
+                  {(profile?.fullName ?? "SV")
+                    .trim()
+                    .split(" ")
+                    .pop()?.[0]
+                    ?.toUpperCase() ?? "S"}
                 </Link>
               )}
             </div>
@@ -632,7 +1038,6 @@ export default function StudentDashboard() {
 
           {/* Body */}
           <main className="st-body">
-
             {/* Welcome Banner */}
             <div className="st-welcome">
               <div className="st-welcome-bg" />
@@ -640,13 +1045,17 @@ export default function StudentDashboard() {
               <div className="st-welcome-left">
                 <span className="st-welcome-eyebrow">Chào mừng trở lại</span>
                 <div className="st-welcome-name">
-                  {loading
-                    ? <Skeleton w={220} h={30} r={6} />
-                    : <>Xin chào, <em>{firstName}</em>!</>
-                  }
+                  {loading ? (
+                    <Skeleton w={220} h={30} r={6} />
+                  ) : (
+                    <>
+                      Xin chào, <em>{firstName}</em>!
+                    </>
+                  )}
                 </div>
                 <div className="st-welcome-sub">
-                  Đây là không gian cá nhân của bạn tại Dormify — theo dõi phòng ở, hóa đơn và các dịch vụ lưu trú ngay tại đây.
+                  Đây là không gian cá nhân của bạn tại Dormify — theo dõi phòng
+                  ở, hóa đơn và các dịch vụ lưu trú ngay tại đây.
                 </div>
               </div>
               <div className="st-welcome-right">
@@ -655,13 +1064,18 @@ export default function StudentDashboard() {
                   {loading ? (
                     <>
                       <Skeleton w={80} h={26} r={4} />
-                      <div style={{ marginTop: 10 }}><Skeleton w={140} h={12} r={3} /></div>
+                      <div style={{ marginTop: 10 }}>
+                        <Skeleton w={140} h={12} r={3} />
+                      </div>
                     </>
                   ) : profile?.room ? (
                     <>
-                      <div className="st-room-card-name">{profile.room.name}</div>
+                      <div className="st-room-card-name">
+                        {profile.room.name}
+                      </div>
                       <div className="st-room-card-detail">
-                        {Icons.building} Tòa {profile.room.building} — Tầng {profile.room.floor}
+                        {Icons.building} Tòa {profile.room.building} — Tầng{" "}
+                        {profile.room.floor}
                       </div>
                       {profile.room.contractEnd && (
                         <div className="st-room-card-detail">
@@ -670,7 +1084,9 @@ export default function StudentDashboard() {
                       )}
                     </>
                   ) : (
-                    <div className="st-room-no-room">Chưa có phòng — hãy tìm và đặt phòng của bạn.</div>
+                    <div className="st-room-no-room">
+                      Chưa có phòng — hãy tìm và đặt phòng của bạn.
+                    </div>
                   )}
                 </div>
               </div>
@@ -678,23 +1094,32 @@ export default function StudentDashboard() {
 
             {/* Body Grid */}
             <div className="st-grid">
-
               {/* ─ Left: Profile ─ */}
               <div>
                 <div className="st-panel">
                   <div className="st-panel-head">
                     <div>
                       <div className="st-panel-title">Thông tin cá nhân</div>
-                      <div className="st-panel-sub">Hồ sơ tài khoản của bạn</div>
+                      <div className="st-panel-sub">
+                        Hồ sơ tài khoản của bạn
+                      </div>
                     </div>
                   </div>
                   <div className="st-panel-body">
                     {loading ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 18,
+                        }}
+                      >
                         {[120, 90, 160, 80].map((w, i) => (
                           <div key={i}>
                             <Skeleton w={60} h={10} r={3} />
-                            <div style={{ marginTop: 5 }}><Skeleton w={w} h={14} r={3} /></div>
+                            <div style={{ marginTop: 5 }}>
+                              <Skeleton w={w} h={14} r={3} />
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -702,28 +1127,45 @@ export default function StudentDashboard() {
                       <div className="st-profile-rows">
                         <div className="st-profile-row">
                           <div className="st-prow-label">Họ và tên</div>
-                          <div className="st-prow-value">{profile.fullName}</div>
+                          <div className="st-prow-value">
+                            {profile.fullName}
+                          </div>
                         </div>
                         <div className="st-profile-divider" />
                         <div className="st-profile-row">
                           <div className="st-prow-label">Mã số sinh viên</div>
-                          <div className="st-prow-value--mono">{profile.mssv || "—"}</div>
+                          <div className="st-prow-value--mono">
+                            {profile.mssv || "—"}
+                          </div>
                         </div>
                         <div className="st-profile-divider" />
                         <div className="st-profile-row">
                           <div className="st-prow-label">Email liên hệ</div>
-                          <div className="st-prow-value--email">{profile.email}</div>
+                          <div className="st-prow-value--email">
+                            {profile.email}
+                          </div>
                         </div>
                         <div className="st-profile-divider" />
                         <div className="st-profile-row">
-                          <div className="st-prow-label">Trạng thái tài khoản</div>
+                          <div className="st-prow-label">
+                            Trạng thái tài khoản
+                          </div>
                           <div style={{ marginTop: 4 }}>
-                            <span className="st-status-badge">Đang hoạt động</span>
+                            <span className="st-status-badge">
+                              Đang hoạt động
+                            </span>
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <div style={{ textAlign: "center", padding: "24px 0", fontSize: 13, color: "var(--muted)" }}>
+                      <div
+                        style={{
+                          textAlign: "center",
+                          padding: "24px 0",
+                          fontSize: 13,
+                          color: "var(--muted)",
+                        }}
+                      >
                         Không thể tải hồ sơ.
                       </div>
                     )}
@@ -733,45 +1175,64 @@ export default function StudentDashboard() {
 
               {/* ─ Right ─ */}
               <div className="st-right">
-
                 {/* Feature Cards */}
                 <div className="st-panel">
                   <div className="st-panel-head">
                     <div>
                       <div className="st-panel-title">Dịch vụ lưu trú</div>
-                      <div className="st-panel-sub">Các tính năng dành cho bạn</div>
+                      <div className="st-panel-sub">
+                        Các tính năng dành cho bạn
+                      </div>
                     </div>
                   </div>
 
                   {!profile?.room && !loading && (
                     <div className="st-notice">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <svg
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
-                      Bạn chưa có phòng. Hãy tìm và gửi yêu cầu đặt phòng để bắt đầu lưu trú.
+                      Bạn chưa có phòng. Hãy tìm và gửi yêu cầu đặt phòng để bắt
+                      đầu lưu trú.
                     </div>
                   )}
 
                   <div className="st-feats-grid">
                     <FeatureCard
-                      icon={Icons.search} title="Tìm & Đặt phòng" color="gold"
+                      icon={Icons.search}
+                      title="Tìm & Đặt phòng"
+                      color="gold"
                       desc="Xem phòng trống, kiểm tra tiện nghi và gửi yêu cầu lưu trú trực tuyến."
                       href="/student/rooms"
                     />
                     <FeatureCard
-                      icon={Icons.doc} title="Hợp đồng điện tử" color="teal"
+                      icon={Icons.doc}
+                      title="Hợp đồng điện tử"
+                      color="teal"
                       desc="Xem hợp đồng thuê phòng, thời hạn lưu trú và thực hiện gia hạn."
                       href="/student/contracts"
                     />
                     <FeatureCard
-                      icon={Icons.invoice} title="Hóa đơn điện nước" color="violet"
+                      icon={Icons.invoice}
+                      title="Hóa đơn điện nước"
+                      color="violet"
                       desc="Theo dõi chi phí phòng, điện nước và lịch sử thanh toán hàng tháng."
                       href="/student/invoices"
                     />
                     <FeatureCard
-                      icon={Icons.wrench} title="Yêu cầu sửa chữa" color="rose"
+                      icon={Icons.wrench}
+                      title="Yêu cầu sửa chữa"
+                      color="rose"
                       desc="Phản ánh hỏng hóc thiết bị, điện, nước để ban quản lý xử lý kịp thời."
-                      locked
+                      href="/student/maintenance"
                     />
                   </div>
                 </div>
@@ -781,32 +1242,36 @@ export default function StudentDashboard() {
                   <div className="st-panel-head">
                     <div>
                       <div className="st-panel-title">Hoạt động gần đây</div>
-                      <div className="st-panel-sub">Lịch sử tương tác của bạn</div>
+                      <div className="st-panel-sub">
+                        Lịch sử tương tác của bạn
+                      </div>
                     </div>
                   </div>
                   <div className="st-activity-list">
                     <ActivityItem
-                      icon={Icons.check} color="green"
+                      icon={Icons.check}
+                      color="green"
                       title="Tài khoản đã được kích hoạt thành công"
                       time="Hôm nay"
                     />
                     <ActivityItem
-                      icon={Icons.info} color="blue"
+                      icon={Icons.info}
+                      color="blue"
                       title="Hồ sơ sinh viên đã được xác minh"
                       time="Hôm nay"
                     />
-                    
+
                     {/* Chỉ báo "Chưa có phòng" nếu sinh viên thực sự chưa có phòng */}
                     {!profile?.room && !loading && (
                       <ActivityItem
-                        icon={Icons.building} color="muted"
+                        icon={Icons.building}
+                        color="muted"
                         title="Chưa có phòng — tìm và đặt phòng để bắt đầu"
                         time="—"
                       />
                     )}
                   </div>
                 </div>
-
               </div>
             </div>
           </main>

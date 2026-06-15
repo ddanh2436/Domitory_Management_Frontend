@@ -30,11 +30,46 @@ function DormifyLogoMark({ size = 36 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 42 42" fill="none">
       <rect width="42" height="42" rx="10" fill="#1A2E42" />
       <rect x="10" y="8" width="4" height="26" rx="1" fill="#C9A84C" />
-      <path d="M14 8 Q28 8 28 21 Q28 34 14 34" stroke="#C9A84C" strokeWidth="3.5" fill="none" strokeLinecap="round" />
-      <rect x="18" y="12" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <rect x="18" y="19" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <rect x="18" y="26" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <line x1="10" y1="6" x2="26" y2="6" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M14 8 Q28 8 28 21 Q28 34 14 34"
+        stroke="#C9A84C"
+        strokeWidth="3.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <rect
+        x="18"
+        y="12"
+        width="4"
+        height="4"
+        rx="1"
+        fill="rgba(201,168,76,0.45)"
+      />
+      <rect
+        x="18"
+        y="19"
+        width="4"
+        height="4"
+        rx="1"
+        fill="rgba(201,168,76,0.45)"
+      />
+      <rect
+        x="18"
+        y="26"
+        width="4"
+        height="4"
+        rx="1"
+        fill="rgba(201,168,76,0.45)"
+      />
+      <line
+        x1="10"
+        y1="6"
+        x2="26"
+        y2="6"
+        stroke="#C9A84C"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -42,78 +77,206 @@ function DormifyLogoMark({ size = 36 }: { size?: number }) {
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const Icons = {
   users: (
-    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+    <svg
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"
+      />
     </svg>
   ),
   home: (
-    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    <svg
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+      />
     </svg>
   ),
   doc: (
-    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    <svg
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
     </svg>
   ),
   invoice: (
-    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+    <svg
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+      />
     </svg>
   ),
   wrench: (
-    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><circle cx="12" cy="12" r="3" strokeWidth={1.8} />
+    <svg
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+      />
+      <circle cx="12" cy="12" r="3" strokeWidth={1.8} />
     </svg>
   ),
   chart: (
-    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    <svg
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+      />
     </svg>
   ),
   logout: (
-    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    <svg
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+      />
     </svg>
   ),
   search: (
-    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+      />
     </svg>
   ),
   bell: (
-    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+    <svg
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+      />
     </svg>
   ),
   globe: (
-    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="10" strokeWidth={1.8}/>
-      <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" strokeWidth={1.8}/>
+    <svg
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <circle cx="12" cy="12" r="10" strokeWidth={1.8} />
+      <path
+        d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"
+        strokeWidth={1.8}
+      />
     </svg>
   ),
 };
 
 // ─── Sidebar Nav Item ─────────────────────────────────────────────────────────
 function NavItem({
-  icon, label, active = false, badge, href = "#",
+  icon,
+  label,
+  active = false,
+  badge,
+  href = "#",
 }: {
-  icon: React.ReactNode; label: string; active?: boolean; badge?: number; href?: string;
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+  badge?: number;
+  href?: string;
 }) {
   return (
-    <Link href={href} className={`nav-item ${active ? "nav-item--active" : ""}`}>
+    <Link
+      href={href}
+      className={`nav-item ${active ? "nav-item--active" : ""}`}
+    >
       <span className="nav-item__icon">{icon}</span>
       <span className="nav-item__label">{label}</span>
-      {badge != null && badge > 0 && <span className="nav-item__badge">{badge}</span>}
+      {badge != null && badge > 0 && (
+        <span className="nav-item__badge">{badge}</span>
+      )}
     </Link>
   );
 }
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 function StatCard({
-  label, value, sub, accent = false,
+  label,
+  value,
+  sub,
+  accent = false,
 }: {
-  label: string; value: string | number; sub: string; accent?: boolean;
+  label: string;
+  value: string | number;
+  sub: string;
+  accent?: boolean;
 }) {
   return (
     <div className={`stat-card ${accent ? "stat-card--accent" : ""}`}>
@@ -135,17 +298,25 @@ export default function AdminDashboard() {
   // Các State xử lý cập nhật thông tin cá nhân Admin
   const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ fullName: "", phone: "", cccd: "" });
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    cccd: "",
+  });
+  const [pendingMaintenance, setPendingMaintenance] = useState(0);
 
   // Hàm tải toàn bộ dữ liệu đồng thời từ MongoDB Atlas
   const loadDashboardData = async () => {
     try {
       const token = localStorage.getItem("token");
-      
+
       // 1. Tải hồ sơ Admin hiện tại
-      const resProfile = await fetch("http://localhost:3001/api/users/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const resProfile = await fetch(
+        "http://localhost:3001/api/users/profile",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       if (resProfile.ok) {
         const profileData = await resProfile.json();
         setAdminProfile(profileData);
@@ -157,9 +328,12 @@ export default function AdminDashboard() {
       }
 
       // 2. Tải danh sách sinh viên
-      const resStudents = await fetch("http://localhost:3001/api/users/students", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const resStudents = await fetch(
+        "http://localhost:3001/api/users/students",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       const studentsData = resStudents.ok ? await resStudents.json() : [];
       setStudents(studentsData);
 
@@ -170,6 +344,19 @@ export default function AdminDashboard() {
       const bookingsData = resBookings.ok ? await resBookings.json() : [];
       setBookings(bookingsData);
 
+      const resMaintenance = await fetch(
+        "http://localhost:3001/api/maintenance",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (resMaintenance.ok) {
+        const data = await resMaintenance.json();
+        // Lọc và đếm số lượng đơn đang chờ
+        setPendingMaintenance(
+          data.filter((req: any) => req.status === "PENDING").length,
+        );
+      }
     } catch (error) {
       console.error("Lỗi đồng bộ dữ liệu từ đám mây:", error);
     } finally {
@@ -188,47 +375,77 @@ export default function AdminDashboard() {
       const token = localStorage.getItem("token");
       const response = await fetch("http://localhost:3001/api/users/profile", {
         method: "PATCH",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}` 
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        setAlertMsg({ text: "Cập nhật hồ sơ cá nhân Quản trị viên thành công!", type: "success" });
+        setAlertMsg({
+          text: "Cập nhật hồ sơ cá nhân Quản trị viên thành công!",
+          type: "success",
+        });
         setIsModalOpen(false);
         loadDashboardData();
       } else {
         const err = await response.json();
-        setAlertMsg({ text: err.message || "Lỗi cập nhật hệ thống.", type: "error" });
+        setAlertMsg({
+          text: err.message || "Lỗi cập nhật hệ thống.",
+          type: "error",
+        });
       }
     } catch (error) {
-      setAlertMsg({ text: "Không thể kết nối đến máy chủ Backend.", type: "error" });
+      setAlertMsg({
+        text: "Không thể kết nối đến máy chủ Backend.",
+        type: "error",
+      });
     }
   };
 
   // Xử lý Duyệt / Từ chối đơn trực tiếp tại Dashboard chính
-  const handleBookingAction = async (bookingId: string, action: 'approve' | 'reject', roomName: string) => {
-    const actionText = action === 'approve' ? 'DUYỆT CHẤP NHẬN' : 'TỪ CHỐI';
-    if (!window.confirm(`Bạn có chắc chắn muốn ${actionText} đơn đăng ký vào phòng ${roomName}?`)) return;
+  const handleBookingAction = async (
+    bookingId: string,
+    action: "approve" | "reject",
+    roomName: string,
+  ) => {
+    const actionText = action === "approve" ? "DUYỆT CHẤP NHẬN" : "TỪ CHỐI";
+    if (
+      !window.confirm(
+        `Bạn có chắc chắn muốn ${actionText} đơn đăng ký vào phòng ${roomName}?`,
+      )
+    )
+      return;
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:3001/api/bookings/${bookingId}/${action}`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `http://localhost:3001/api/bookings/${bookingId}/${action}`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       const data = await response.json();
       if (response.ok) {
-        setAlertMsg({ text: `Xử lý đơn thành công: Đã ${action === 'approve' ? 'Phê duyệt và trừ 1 giường trống tại phòng' : 'Từ chối đơn vào phòng'} ${roomName}.`, type: "success" });
+        setAlertMsg({
+          text: `Xử lý đơn thành công: Đã ${action === "approve" ? "Phê duyệt và trừ 1 giường trống tại phòng" : "Từ chối đơn vào phòng"} ${roomName}.`,
+          type: "success",
+        });
         loadDashboardData(); // Reload toàn bộ chỉ số thực tế từ DB
       } else {
-        setAlertMsg({ text: data.message || "Lỗi xử lý hệ thống.", type: "error" });
+        setAlertMsg({
+          text: data.message || "Lỗi xử lý hệ thống.",
+          type: "error",
+        });
       }
     } catch (error) {
-      setAlertMsg({ text: "Không thể kết nối đến máy chủ Backend.", type: "error" });
+      setAlertMsg({
+        text: "Không thể kết nối đến máy chủ Backend.",
+        type: "error",
+      });
     }
   };
 
@@ -237,7 +454,7 @@ export default function AdminDashboard() {
     (s) =>
       s.fullName?.toLowerCase().includes(search.toLowerCase()) ||
       s.email?.toLowerCase().includes(search.toLowerCase()) ||
-      (s.mssv ?? "").toLowerCase().includes(search.toLowerCase())
+      (s.mssv ?? "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleLogout = () => {
@@ -355,31 +572,66 @@ export default function AdminDashboard() {
       `}</style>
 
       <div className="admin-shell">
-
         {/* ─── Sidebar ─────────────────────────────────────────────────── */}
         <aside className="sidebar">
           <Link href="/" className="sidebar__brand">
             <DormifyLogoMark size={36} />
-            <span className="sidebar__wordmark">Dorm<span>ify</span></span>
+            <span className="sidebar__wordmark">
+              Dorm<span>ify</span>
+            </span>
           </Link>
 
           <div className="sidebar__role-chip">Quản trị viên</div>
           <nav className="sidebar__nav">
-            <NavItem href="/admin"       icon={Icons.chart}   label="Tổng quan" active />
-            <NavItem href="/admin/rooms" icon={Icons.home}    label="Quản lý phòng" />
-            <NavItem href="/admin/students" icon={Icons.users} label="Sinh viên" badge={students.length} />
-            <NavItem href="/admin/bookings" icon={Icons.doc}  label="Duyệt đơn phòng" badge={pendingBookings.length} />
-            <NavItem href="/admin/invoices" icon={Icons.invoice} label="Hóa đơn" />
-            <NavItem href="/admin/profile" icon={Icons.users} label="Hồ sơ cá nhân" />
-            <NavItem href="#"            icon={Icons.wrench}  label="Bảo trì" />
+            <NavItem
+              href="/admin"
+              icon={Icons.chart}
+              label="Tổng quan"
+              active
+            />
+            <NavItem
+              href="/admin/rooms"
+              icon={Icons.home}
+              label="Quản lý phòng"
+            />
+            <NavItem
+              href="/admin/students"
+              icon={Icons.users}
+              label="Sinh viên"
+              badge={students.length}
+            />
+            <NavItem
+              href="/admin/bookings"
+              icon={Icons.doc}
+              label="Duyệt đơn phòng"
+              badge={pendingBookings.length}
+            />
+            <NavItem
+              href="/admin/invoices"
+              icon={Icons.invoice}
+              label="Hóa đơn"
+            />
+            <NavItem
+              href="/admin/profile"
+              icon={Icons.users}
+              label="Hồ sơ cá nhân"
+            />
+            <NavItem href="/admin/maintenance" icon={Icons.wrench} label="Bảo trì" badge={pendingMaintenance} />
           </nav>
 
           <div className="sidebar__footer">
-            <Link href="/" className="btn-sidebar-action btn-sidebar-action--home">
+            <Link
+              href="/"
+              className="btn-sidebar-action btn-sidebar-action--home"
+            >
               <span>{Icons.globe}</span>
               <span>Về trang chủ</span>
             </Link>
-            <button className="btn-sidebar-action btn-sidebar-action--logout" type="button" onClick={handleLogout}>
+            <button
+              className="btn-sidebar-action btn-sidebar-action--logout"
+              type="button"
+              onClick={handleLogout}
+            >
               <span>{Icons.logout}</span>
               <span>Đăng xuất</span>
             </button>
@@ -394,13 +646,25 @@ export default function AdminDashboard() {
               <div className="topbar__breadcrumb">Dormify · Đám mây Atlas</div>
             </div>
             <div className="topbar__right">
-              <button className="topbar__bell" type="button" aria-label="Thông báo">
+              <button
+                className="topbar__bell"
+                type="button"
+                aria-label="Thông báo"
+              >
                 {Icons.bell}
-                {pendingBookings.length > 0 && <span className="topbar__bell-dot" />}
+                {pendingBookings.length > 0 && (
+                  <span className="topbar__bell-dot" />
+                )}
               </button>
               {/* CLICK VÀO AVATAR NÀY ĐỂ BẬT CỬA SỔ CẬP NHẬT HỒ SƠ ADMIN */}
-              <div className="topbar__avatar" title="Bấm để sửa hồ sơ Admin" onClick={() => setIsModalOpen(true)}>
-                {adminProfile?.fullName ? adminProfile.fullName.charAt(0).toUpperCase() : "A"}
+              <div
+                className="topbar__avatar"
+                title="Bấm để sửa hồ sơ Admin"
+                onClick={() => setIsModalOpen(true)}
+              >
+                {adminProfile?.fullName
+                  ? adminProfile.fullName.charAt(0).toUpperCase()
+                  : "A"}
               </div>
             </div>
           </header>
@@ -408,7 +672,9 @@ export default function AdminDashboard() {
           <main className="page-body">
             {/* Hộp thông báo kết quả xử lý */}
             {alertMsg.text && (
-              <div className={`p-4 rounded-xl font-medium mb-6 ${alertMsg.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
+              <div
+                className={`p-4 rounded-xl font-medium mb-6 ${alertMsg.type === "success" ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200"}`}
+              >
                 {alertMsg.text}
               </div>
             )}
@@ -440,13 +706,28 @@ export default function AdminDashboard() {
 
             {/* 📍 DASHBOARD COMPONENT: DANH SÁCH YÊU CẦU CHỜ DUYỆT */}
             <div className="panel">
-              <div className="panel__header" style={{ backgroundColor: "#fffbf2" }}>
+              <div
+                className="panel__header"
+                style={{ backgroundColor: "#fffbf2" }}
+              >
                 <div className="panel__header-left">
-                  <div className="panel__title" style={{ color: "#b45309" }}>⚡ Đơn đăng ký đặt phòng chờ duyệt</div>
-                  <div className="panel__subtitle">Sinh viên gửi yêu cầu lưu trú - Phê duyệt sẽ tự cập nhật giảm số giường trống</div>
+                  <div className="panel__title" style={{ color: "#b45309" }}>
+                    ⚡ Đơn đăng ký đặt phòng chờ duyệt
+                  </div>
+                  <div className="panel__subtitle">
+                    Sinh viên gửi yêu cầu lưu trú - Phê duyệt sẽ tự cập nhật
+                    giảm số giường trống
+                  </div>
                 </div>
                 <div className="panel__header-right">
-                  <span className="count-badge" style={{ backgroundColor: "#fef3c7", color: "#d97706", borderColor: "#fde68a" }}>
+                  <span
+                    className="count-badge"
+                    style={{
+                      backgroundColor: "#fef3c7",
+                      color: "#d97706",
+                      borderColor: "#fde68a",
+                    }}
+                  >
                     {pendingBookings.length} yêu cầu mới
                   </span>
                 </div>
@@ -459,27 +740,55 @@ export default function AdminDashboard() {
                       <th className="px-6 py-3">Phòng Đăng ký</th>
                       <th className="px-6 py-3">Ngày gửi đơn</th>
                       <th className="px-6 py-3">Trạng thái</th>
-                      <th className="px-6 py-3 text-center">Thao tác xử lý nhanh</th>
+                      <th className="px-6 py-3 text-center">
+                        Thao tác xử lý nhanh
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {loading ? (
-                      <tr><td colSpan={5} className="text-center py-6 text-slate-400">Đang tải đơn từ database đám mây...</td></tr>
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="text-center py-6 text-slate-400"
+                        >
+                          Đang tải đơn từ database đám mây...
+                        </td>
+                      </tr>
                     ) : pendingBookings.length === 0 ? (
-                      <tr><td colSpan={5} className="text-center py-10 text-slate-400 font-medium bg-slate-50">🎉 Sạch đơn! Hiện tại không có yêu cầu nào đang chờ phê duyệt.</td></tr>
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="text-center py-10 text-slate-400 font-medium bg-slate-50"
+                        >
+                          🎉 Sạch đơn! Hiện tại không có yêu cầu nào đang chờ
+                          phê duyệt.
+                        </td>
+                      </tr>
                     ) : (
                       pendingBookings.map((b) => (
                         <tr key={b._id} className="hover:bg-slate-50">
                           <td className="px-6 py-4">
-                            <div className="font-bold text-slate-800">{b.user?.fullName}</div>
-                            <div className="text-slate-400 text-xs mt-0.5">MSSV: {b.user?.mssv || "—"}</div>
+                            <div className="font-bold text-slate-800">
+                              {b.user?.fullName}
+                            </div>
+                            <div className="text-slate-400 text-xs mt-0.5">
+                              MSSV: {b.user?.mssv || "—"}
+                            </div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="font-bold text-blue-600">{b.room?.name}</div>
-                            <div className="text-slate-400 text-xs mt-0.5">Tòa {b.room?.building} · Tầng {b.room?.floor}</div>
+                            <div className="font-bold text-blue-600">
+                              {b.room?.name}
+                            </div>
+                            <div className="text-slate-400 text-xs mt-0.5">
+                              Tòa {b.room?.building} · Tầng {b.room?.floor}
+                            </div>
                           </td>
                           <td className="px-6 py-4 text-slate-500 text-sm">
-                            {new Date(b.createdAt).toLocaleDateString("vi-VN", { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(b.createdAt).toLocaleDateString("vi-VN", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </td>
                           <td className="px-6 py-4">
                             <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
@@ -489,13 +798,25 @@ export default function AdminDashboard() {
                           <td className="px-6 py-4 text-center">
                             <div className="inline-flex gap-2">
                               <button
-                                onClick={() => handleBookingAction(b._id, 'approve', b.room?.name)}
+                                onClick={() =>
+                                  handleBookingAction(
+                                    b._id,
+                                    "approve",
+                                    b.room?.name,
+                                  )
+                                }
                                 className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-semibold shadow-sm transition-colors"
                               >
                                 Chấp nhận
                               </button>
                               <button
-                                onClick={() => handleBookingAction(b._id, 'reject', b.room?.name)}
+                                onClick={() =>
+                                  handleBookingAction(
+                                    b._id,
+                                    "reject",
+                                    b.room?.name,
+                                  )
+                                }
                                 className="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-md text-xs font-semibold border border-rose-200 transition-colors"
                               >
                                 Từ chối
@@ -509,9 +830,6 @@ export default function AdminDashboard() {
                 </table>
               </div>
             </div>
-
-            
-            
           </main>
         </div>
       </div>
@@ -522,44 +840,70 @@ export default function AdminDashboard() {
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div className="modal-title">Hồ sơ Quản trị viên</div>
-              <button className="modal-close" onClick={() => setIsModalOpen(false)}>×</button>
+              <button
+                className="modal-close"
+                onClick={() => setIsModalOpen(false)}
+              >
+                ×
+              </button>
             </div>
             <form onSubmit={handleUpdateAdminProfile} className="modal-body">
               <div className="form-group">
-                <label className="form-label">Tài khoản Email (Định danh)</label>
-                <input type="text" className="form-input-readonly" value={adminProfile?.email || ""} readOnly />
+                <label className="form-label">
+                  Tài khoản Email (Định danh)
+                </label>
+                <input
+                  type="text"
+                  className="form-input-readonly"
+                  value={adminProfile?.email || ""}
+                  readOnly
+                />
               </div>
               <div className="form-group">
                 <label className="form-label">Họ và Tên</label>
-                <input 
-                  type="text" 
-                  className="form-input-text" 
+                <input
+                  type="text"
+                  className="form-input-text"
                   required
-                  value={formData.fullName} 
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} 
+                  value={formData.fullName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fullName: e.target.value })
+                  }
                 />
               </div>
               <div className="form-group">
                 <label className="form-label">Số điện thoại</label>
-                <input 
-                  type="text" 
-                  className="form-input-text" 
-                  value={formData.phone} 
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })} 
+                <input
+                  type="text"
+                  className="form-input-text"
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
                 />
               </div>
               <div className="form-group">
                 <label className="form-label">Số CCCD / Mã cá nhân</label>
-                <input 
-                  type="text" 
-                  className="form-input-text" 
-                  value={formData.cccd} 
-                  onChange={(e) => setFormData({ ...formData, cccd: e.target.value })} 
+                <input
+                  type="text"
+                  className="form-input-text"
+                  value={formData.cccd}
+                  onChange={(e) =>
+                    setFormData({ ...formData, cccd: e.target.value })
+                  }
                 />
               </div>
               <div className="modal-actions">
-                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Hủy bỏ</button>
-                <button type="submit" className="btn-submit">Lưu thay đổi</button>
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Hủy bỏ
+                </button>
+                <button type="submit" className="btn-submit">
+                  Lưu thay đổi
+                </button>
               </div>
             </form>
           </div>
