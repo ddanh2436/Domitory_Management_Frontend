@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Thêm dòng này
 import RoleGuard from "../components/RoleGuard";
 import NotificationBell from "../components/NotificationBell";
 
@@ -23,6 +24,7 @@ interface AdminProfile {
   email: string;
   phone?: string;
   cccd?: string;
+  avatar?: string;
 }
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────
@@ -290,6 +292,7 @@ function StatCard({
 
 // ─── Main Dashboard Component ──────────────────────────────────────────────────
 export default function AdminDashboard() {
+  const router = useRouter();
   const [students, setStudents] = useState<Student[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -648,15 +651,24 @@ export default function AdminDashboard() {
             </div>
             <div className="topbar__right">
              <NotificationBell />
-              {/* CLICK VÀO AVATAR NÀY ĐỂ BẬT CỬA SỔ CẬP NHẬT HỒ SƠ ADMIN */}
+              {/* CLICK VÀO AVATAR SẼ CHUYỂN QUA TRANG PROFILE */}
               <div
                 className="topbar__avatar"
-                title="Bấm để sửa hồ sơ Admin"
-                onClick={() => setIsModalOpen(true)}
+                title="Bấm để xem/sửa hồ sơ"
+                onClick={() => router.push('/admin/profile')}
+                style={{ overflow: 'hidden' }} // Đảm bảo ảnh không bị tràn ra ngoài góc bo tròn
               >
-                {adminProfile?.fullName
-                  ? adminProfile.fullName.charAt(0).toUpperCase()
-                  : "A"}
+                {adminProfile?.avatar ? (
+                  <img 
+                    src={adminProfile.avatar} 
+                    alt="Admin Avatar" 
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                  />
+                ) : (
+                  adminProfile?.fullName
+                    ? adminProfile.fullName.charAt(0).toUpperCase()
+                    : "A"
+                )}
               </div>
             </div>
           </header>
