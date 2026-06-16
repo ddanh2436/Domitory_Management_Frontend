@@ -52,7 +52,7 @@ export default function AdminBookingsPage() {
   };
 
   return (
-    <RoleGuard allowedRoles={["ADMIN"]}>
+    <RoleGuard allowedRoles={["ADMIN", "DORMITORY_MANAGER", "FLOOR_MANAGER"]}>
       <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex justify-between items-center">

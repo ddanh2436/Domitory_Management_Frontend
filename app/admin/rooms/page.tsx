@@ -251,7 +251,7 @@ export default function AdminRoomsPage() {
   const countByStatus = (s: Room["status"]) => rooms.filter((r) => r.status === s).length;
 
   return (
-    <RoleGuard allowedRoles={["ADMIN"]}>
+    <RoleGuard allowedRoles={["ADMIN", "DORMITORY_MANAGER"]}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap');
 
@@ -686,6 +686,7 @@ export default function AdminRoomsPage() {
             <NavItem icon={Icons.chart}   label="Tổng quan"     href="/admin" />
             <NavItem icon={Icons.home}    label="Quản lý phòng" href="/admin/rooms" active />
             <NavItem icon={Icons.users}   label="Sinh viên"     href="/admin/students" />
+            <NavItem icon={Icons.users}   label="Phân quyền tài khoản" href="/admin/permissions" />
             <NavItem icon={Icons.doc}     label="Hợp đồng"      href="/admin/contracts" />
             <NavItem icon={Icons.invoice} label="Hóa đơn"       href="/admin/invoices" />
             <NavItem icon={Icons.wrench}  label="Bảo trì"       href="/admin/maintenance" badge={3} />

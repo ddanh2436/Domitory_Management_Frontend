@@ -1,8 +1,20 @@
+export type UserRole =
+  | 'ADMIN'
+  | 'DORMITORY_MANAGER'
+  | 'FLOOR_MANAGER'
+  | 'STUDENT'
+  | 'MAINTENANCE_STAFF';
+
 export interface JwtPayload {
   sub: string;
   email: string;
-  role: 'ADMIN' | 'STUDENT' | 'MAINTENANCE';
+  role: UserRole;
+  accessStatus?: 'ACTIVE' | 'LOCKED';
   exp: number; 
+}
+
+export function getDashboardPath(role: UserRole) {
+  return role === 'STUDENT' ? '/student' : '/admin';
 }
 
 export function getLoggedInUser(): JwtPayload | null {

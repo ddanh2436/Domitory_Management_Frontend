@@ -11,13 +11,12 @@ export default function RegisterPage() {
     mssv: "", // Thêm trường MSSV
     email: "",
     password: "",
-    role: "STUDENT",
   });
   const [confirmPassword, setConfirmPassword] = useState(""); // State riêng cho xác nhận mật khẩu
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -140,19 +139,6 @@ export default function RegisterPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700">Vai trò</label>
-            <select
-              name="role"
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-              value={formData.role}
-              onChange={handleChange}
-            >
-              <option value="STUDENT">Sinh viên (Student)</option>
-              <option value="ADMIN">Ban quản lý (Admin)</option>
-            </select>
           </div>
 
           <div className="pt-2">

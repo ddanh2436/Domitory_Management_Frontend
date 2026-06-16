@@ -148,7 +148,7 @@ export default function AdminStudentsPage() {
   };
 
   return (
-    <RoleGuard allowedRoles={["ADMIN"]}>
+    <RoleGuard allowedRoles={["ADMIN", "DORMITORY_MANAGER", "FLOOR_MANAGER"]}>
       <style>{`
         /* Giữ nguyên toàn bộ block Style từ trang page.tsx cũ */
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap');
@@ -248,6 +248,7 @@ export default function AdminStudentsPage() {
             <NavItem href="/admin"          icon={Icons.chart}   label="Tổng quan" />
             <NavItem href="/admin/rooms"    icon={Icons.home}    label="Quản lý phòng" />
             <NavItem href="/admin/students" icon={Icons.users}   label="Sinh viên" badge={students.length} active />
+            <NavItem href="/admin/permissions" icon={Icons.users} label="Phân quyền tài khoản" />
             <NavItem href="/admin/bookings" icon={Icons.doc}     label="Duyệt đơn phòng" badge={pendingCount} />
             <NavItem href="/admin/invoices" icon={Icons.invoice} label="Hóa đơn" />
             <NavItem href="#"               icon={Icons.wrench}  label="Bảo trì" />
