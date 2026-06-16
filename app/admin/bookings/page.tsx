@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import RoleGuard from "../../components/RoleGuard";
+import NotificationBell from "../../components/NotificationBell";
 
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<any[]>([]);
