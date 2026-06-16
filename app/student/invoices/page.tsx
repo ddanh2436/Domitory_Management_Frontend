@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RoleGuard from "../../components/RoleGuard";
+import NotificationBell from "../../components/NotificationBell"; // Thêm Import Chuông thông báo
 
 interface Invoice {
   _id: string;
@@ -55,8 +56,6 @@ export default function StudentInvoicesPage() {
         });
         const profile = await profileRes.json();
 
-        console.log("=== Profile Sinh Viên ===", profile);
-
         // Nếu sinh viên chưa có phòng (chưa đăng ký hoặc chưa được duyệt)
         if (!profile.room || !profile.room._id) {
           setHasRoom(false);
@@ -71,7 +70,7 @@ export default function StudentInvoicesPage() {
         
         if (invoiceRes.ok) {
           const data = await invoiceRes.json();
-          setInvoices(data); // Backend trả về thẳng mảng, không qua .data
+          setInvoices(data); // Backend trả về thẳng mảng
         }
       } catch (error) {
         console.error("Lỗi lấy hóa đơn:", error);
@@ -87,8 +86,8 @@ export default function StudentInvoicesPage() {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   };
 
-  const handlePayMockup = () => {
-    alert("Tính năng thanh toán online (VNPay/MoMo) đang được phát triển. Vui lòng đến văn phòng Ban Quản Lý KTX để đóng tiền mặt!");
+  const handlePayment = (invoiceId: string) => {
+    window.location.href = `/student/payment/${invoiceId}`;
   };
 
   return (
@@ -112,7 +111,8 @@ export default function StudentInvoicesPage() {
         .app-container { max-width: 800px; margin: 0 auto; padding: 40px 24px; min-height: 100vh; }
 
         /* ── HEADER ── */
-        .header { display: flex; align-items: center; gap: 16px; margin-bottom: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px; }
+        .header-left { display: flex; align-items: center; gap: 16px; }
         .btn-back {
           width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border);
           background: var(--white); display: flex; align-items: center; justify-content: center;
@@ -160,12 +160,19 @@ export default function StudentInvoicesPage() {
 
       <div className="app-container">
         <header className="header">
-          <Link href="/student" className="btn-back" title="Quay lại">
-            {Icons.back}
-          </Link>
+          <div className="header-left">
+            <Link href="/student" className="btn-back" title="Quay lại">
+              {Icons.back}
+            </Link>
+            <div>
+              <h1 className="page-title">Hóa đơn điện nước</h1>
+              <p className="page-subtitle">Quản lý và theo dõi chi phí sinh hoạt hàng tháng</p>
+            </div>
+          </div>
+          
+          {/* CẬP NHẬT: Gắn Chuông thông báo lên góc phải */}
           <div>
-            <h1 className="page-title">Hóa đơn điện nước</h1>
-            <p className="page-subtitle">Quản lý và theo dõi chi phí sinh hoạt hàng tháng</p>
+            <NotificationBell />
           </div>
         </header>
 
@@ -221,7 +228,7 @@ export default function StudentInvoicesPage() {
 
                 {inv.status !== 'PAID' && (
                   <button 
-                    onClick={handlePayMockup}
+                    onClick={() => handlePayment(inv._id)} // CẬP NHẬT: Gọi hàm handlePayment với ID hóa đơn
                     className={`btn-pay ${inv.status === 'OVERDUE' ? 'btn-pay--overdue' : 'btn-pay--active'}`}
                   >
                     {inv.status === 'OVERDUE' ? 'Thanh toán ngay (Đã trễ hạn)' : 'Thanh toán hóa đơn'}
