@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RoleGuard from "../../components/RoleGuard";
+import NotificationBell from "../../components/NotificationBell";
 
 interface Room {
   _id: string;
@@ -214,14 +215,18 @@ export default function StudentRoomsPage() {
             </div>
           </div>
           
-          <div className="search-box">
-            <span style={{ color: "var(--muted)" }}>{Icons.search}</span>
-            <input 
-              type="text" 
-              placeholder="Tìm theo tòa nhà hoặc tên phòng..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+            <div className="search-box">
+              <span style={{ color: "var(--muted)" }}>{Icons.search}</span>
+              <input 
+                type="text" 
+                placeholder="Tìm theo tòa nhà hoặc tên phòng..." 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            {/* Đã thêm chuông thông báo vào ngay cạnh thanh tìm kiếm */}
+            <NotificationBell />
           </div>
         </header>
 

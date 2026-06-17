@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import RoleGuard from "../../components/RoleGuard";
+import NotificationBell from "../../components/NotificationBell";
 
 interface Invoice {
   _id: string;
@@ -164,7 +165,10 @@ export default function AdminInvoicesPage() {
               <h1 className="text-3xl font-bold text-slate-900">Quản lý Hóa đơn</h1>
               <p className="text-slate-500 mt-1">Theo dõi điện nước và tiền phòng hàng tháng</p>
             </div>
+            
+            {/* Thanh công cụ bên phải (Đã chèn NotificationBell) */}
             <div className="flex items-center gap-4">
+              <NotificationBell />
               <a href="/admin" className="text-blue-600 hover:underline font-medium text-sm">← Về Dashboard</a>
               <button 
                 onClick={handleTriggerOverdue}

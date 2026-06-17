@@ -81,18 +81,26 @@ export default function NotificationBell() {
     };
   }, []);
 
-  const handleMarkAsRead = async (notifId: string, link?: string) => {
+  // 1. Hàm xử lý khi lướt chuột qua (Hover)
+  const handleHoverRead = (notifId: string, isRead: boolean) => {
+    if (isRead) return; // Nếu đã đọc rồi thì bỏ qua không làm gì cả
+
+    // Gọi API ngầm để đánh dấu đã đọc
     const token = localStorage.getItem("token");
     fetch(`http://localhost:3001/api/notifications/${notifId}/read`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${token}` }
-    });
+    }).catch(err => console.error("Lỗi đánh dấu đã đọc:", err));
     
+    // Cập nhật giao diện ngay lập tức
     setNotifications(prev => prev.map(n => n._id === notifId ? { ...n, isRead: true } : n));
     setUnreadCount(prev => Math.max(0, prev - 1));
-    setIsOpen(false);
+  };
 
-    if (link) window.location.href = link;
+  // 2. Hàm xử lý khi Click vào thông báo
+  const handleClickNotif = (link?: string) => {
+    setIsOpen(false); // Đóng dropdown
+    if (link) window.location.href = link; // Chuyển trang nếu có link
   };
 
   return (
@@ -108,7 +116,7 @@ export default function NotificationBell() {
           width: "36px", height: "36px", borderRadius: "8px",
           border: "1px solid rgba(13,27,42,0.15)", background: isOpen ? "#F5F3EF" : "transparent",
           display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-          color: isOpen ? "#C9A84C" : "#8A9BAD", padding: "8px"
+          color: isOpen ? "#C9A84C" : "#8A9BAD", padding: "8px", position: "relative"
         }}
       >
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,14 +153,17 @@ export default function NotificationBell() {
               notifications.map(notif => (
                 <div 
                   key={notif._id}
-                  onClick={() => handleMarkAsRead(notif._id, notif.link)}
+                  // Thêm sự kiện onMouseEnter để xử lý hover
+                  onMouseEnter={() => handleHoverRead(notif._id, notif.isRead)}
+                  // Thay đổi onClick chỉ gọi điều hướng và đóng menu
+                  onClick={() => handleClickNotif(notif.link)}
                   style={{
                     padding: "12px 16px", borderBottom: "1px solid #f8fafc", cursor: "pointer",
                     background: !notif.isRead ? "rgba(2,132,199,0.05)" : "transparent",
                     display: "flex", gap: "10px", transition: "background 0.2s"
                   }}
                 >
-                  <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: !notif.isRead ? "#0284c7" : "transparent", marginTop: "6px" }} />
+                  <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: !notif.isRead ? "#0284c7" : "transparent", marginTop: "6px", transition: "background 0.2s" }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: "13px", fontWeight: !notif.isRead ? "700" : "500", color: "#1E293B" }}>{notif.title}</div>
                     <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>{notif.message}</div>

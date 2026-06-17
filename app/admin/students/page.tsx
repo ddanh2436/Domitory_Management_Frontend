@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import RoleGuard from "../../components/RoleGuard";
+import NotificationBell from "../../components/NotificationBell";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Student {
@@ -51,7 +52,6 @@ const Icons = {
   chart: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
   logout: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>,
   search: <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
-  bell: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>,
   globe: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={1.8}/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" strokeWidth={1.8}/></svg>,
 };
 
@@ -82,7 +82,7 @@ export default function AdminStudentsPage() {
     fullName: "",
     phone: "",
     cccd: "",
-    avatar: "" // <--- TRƯỜNG MỚI ĐỂ SỬA AVATAR
+    avatar: "" 
   });
   const [adminMessage, setAdminMessage] = useState("");
 
@@ -123,7 +123,7 @@ export default function AdminStudentsPage() {
       fullName: student.fullName || "",
       phone: student.phone || "",
       cccd: student.cccd || "",
-      avatar: student.avatar || "", // Nạp avatar hiện có của sinh viên vào form
+      avatar: student.avatar || "", 
     });
     setAdminMessage(""); 
   };
@@ -133,7 +133,6 @@ export default function AdminStudentsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Giới hạn kích thước file (Tùy chọn, ở đây cho max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       alert("Vui lòng chọn ảnh nhỏ hơn 2MB!");
       return;
@@ -141,7 +140,6 @@ export default function AdminStudentsPage() {
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      // Ép kiểu kết quả về string và đưa vào state editForm
       setEditForm({ ...editForm, avatar: reader.result as string });
     };
     reader.readAsDataURL(file);
@@ -201,7 +199,6 @@ export default function AdminStudentsPage() {
   const handleDeleteStudent = async () => {
     if (!selectedStudent) return;
     
-    // Hiện bảng cảnh báo chống bấm nhầm
     const isConfirm = window.confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN sinh viên ${selectedStudent.fullName} khỏi hệ thống không? Hành động này không thể hoàn tác!`);
     
     if (!isConfirm) return;
@@ -222,8 +219,8 @@ export default function AdminStudentsPage() {
       }
 
       setAlertMsg({ text: "Đã xóa sinh viên khỏi hệ thống!", type: "success" });
-      setSelectedStudent(null); // Đóng modal
-      loadData(); // Tải lại danh sách
+      setSelectedStudent(null); 
+      loadData(); 
 
     } catch (error) {
       console.error(error);
@@ -280,9 +277,6 @@ export default function AdminStudentsPage() {
         .topbar__title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--navy); line-height: 1.2; letter-spacing: -0.2px; }
         .topbar__breadcrumb { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
         .topbar__right { display: flex; align-items: center; gap: 12px; }
-        .topbar__bell { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); position: relative; transition: border-color 0.15s, background 0.15s; }
-        .topbar__bell:hover { border-color: var(--gold); background: var(--gold-dim); color: var(--gold); }
-        .topbar__bell-dot { position: absolute; top: 7px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); border: 1.5px solid var(--white); }
         .topbar__avatar { width: 36px; height: 36px; border-radius: 9px; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600; color: var(--gold); cursor: pointer; border: 1.5px solid var(--gold-border); transition: transform 0.1s; overflow: hidden; }
         .topbar__avatar:hover { transform: scale(1.05); border-color: var(--gold); }
         .page-body { padding: 28px 32px 48px; flex: 1; }
@@ -346,7 +340,7 @@ export default function AdminStudentsPage() {
             <NavItem href="/admin/bookings" icon={Icons.doc}     label="Duyệt đơn phòng" badge={pendingCount} />
             <NavItem href="/admin/invoices" icon={Icons.invoice} label="Hóa đơn" />
             <NavItem href="/admin/profile"  icon={Icons.users}   label="Hồ sơ cá nhân" />
-            <NavItem href="#"               icon={Icons.wrench}  label="Bảo trì" />
+            <NavItem href="/admin/maintenance" icon={Icons.wrench}  label="Bảo trì" />
           </nav>
           <div className="sidebar__footer">
             <Link href="/" className="btn-sidebar-action btn-sidebar-action--home">
@@ -366,11 +360,10 @@ export default function AdminStudentsPage() {
               <div className="topbar__title">Quản lý Sinh viên</div>
               <div className="topbar__breadcrumb">Dormify · Danh sách & Hồ sơ</div>
             </div>
+            
+            {/* Đây là vị trí bạn đã đặt cái chuông vô cùng chính xác */}
             <div className="topbar__right">
-              <button className="topbar__bell" type="button" aria-label="Thông báo">
-                {Icons.bell}
-                {pendingCount > 0 && <span className="topbar__bell-dot" />}
-              </button>
+              <NotificationBell />
               <div className="topbar__avatar" title="Bấm để xem/sửa hồ sơ" onClick={() => router.push('/admin/profile')}>
                 {adminProfile?.avatar ? (
                   <img src={adminProfile.avatar} alt="Admin Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -489,9 +482,7 @@ export default function AdminStudentsPage() {
             </div>
             <form onSubmit={handleUpdateAndNotify} className="modal-body">
               
-              {/* Ảnh đại diện (Giao diện Upload từ máy) */}
               <div className="form-group" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "20px" }}>
-                {/* Khung hiển thị Avatar */}
                 {editForm.avatar ? (
                   <img 
                     src={editForm.avatar} 
@@ -504,9 +495,7 @@ export default function AdminStudentsPage() {
                   </div>
                 )}
                 
-                {/* Nút thao tác */}
                 <div style={{ display: "flex", gap: "10px" }}>
-                  {/* Input ẩn để hứng file */}
                   <input 
                     type="file" 
                     id="avatarUpload" 
@@ -514,8 +503,6 @@ export default function AdminStudentsPage() {
                     style={{ display: "none" }} 
                     onChange={handleImageUpload} 
                   />
-                  
-                  {/* Nút bấm giả làm Input File */}
                   <button 
                     type="button" 
                     style={{ padding: "8px 12px", background: "var(--navy)", color: "var(--gold)", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}
@@ -523,8 +510,6 @@ export default function AdminStudentsPage() {
                   >
                     📷 Chọn Ảnh
                   </button>
-
-                  {/* Nút xóa ảnh (Chỉ hiện khi có ảnh) */}
                   {editForm.avatar && (
                     <button 
                       type="button" 
@@ -570,7 +555,6 @@ export default function AdminStudentsPage() {
                 />
               </div>
 
-              {/* NÚT BẤM (Xóa bên trái, Lưu bên phải) */}
               <div className="modal-actions">
                 <button type="button" className="btn-delete" onClick={handleDeleteStudent}>
                   🗑️ Xóa sinh viên

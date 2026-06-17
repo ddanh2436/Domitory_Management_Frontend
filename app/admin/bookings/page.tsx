@@ -58,7 +58,12 @@ export default function AdminBookingsPage() {
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Duyệt Đơn Đăng Ký</h1>
-            <a href="/admin" className="text-blue-600 hover:underline font-medium">← Quay lại Dashboard</a>
+            
+            {/* Đã thêm chuông thông báo vào cụm bên phải */}
+            <div className="flex items-center gap-6">
+              <NotificationBell />
+              <a href="/admin" className="text-blue-600 hover:underline font-medium">← Quay lại Dashboard</a>
+            </div>
           </div>
 
           {actionMsg.text && (
