@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RoleGuard from "../../components/RoleGuard";
+import NotificationBell from "../../components/NotificationBell";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface MaintenanceRequest {
@@ -522,10 +523,7 @@ export default function StudentMaintenancePage() {
               <div className="mn-tb-sub">Dormify · Sinh viên · Bảo trì</div>
             </div>
             <div className="mn-tb-right">
-              <button className="mn-tb-bell" type="button" aria-label="Thông báo">
-                {Icons.bell}
-                <span className="mn-bell-dot" />
-              </button>
+              <NotificationBell />
               <div className="mn-tb-av">SV</div>
             </div>
           </header>

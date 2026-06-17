@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RoleGuard from "../../components/RoleGuard";
+import NotificationBell from "../../components/NotificationBell";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface StudentProfile {
@@ -195,6 +196,8 @@ export default function StudentProfilePage() {
         <div className="admin-main">
           <header className="topbar">
             <div className="topbar__title">Hồ sơ cá nhân</div>
+            {/* Đã thêm chuông thông báo vào góc phải của topbar */}
+            <NotificationBell />
           </header>
 
           <main className="page-body">
