@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GoogleLogin } from '@react-oauth/google';
-import { getLoggedInUser } from "../../utils/auth";
+import { getDashboardPath, getLoggedInUser } from "../../utils/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -45,13 +45,7 @@ export default function LoginPage() {
       // Điều hướng dựa trên Role sau khi đăng nhập thủ công
       const user = getLoggedInUser();
       if (user) {
-        if (user.role === "ADMIN") {
-          router.push("/admin");
-        } else if (user.role === "STUDENT") {
-          router.push("/student");
-        } else {
-          router.push("/");
-        }
+        router.push(getDashboardPath(user.role));
       }
 
     } catch (error: any) {
@@ -80,13 +74,7 @@ export default function LoginPage() {
       // Điều hướng dựa trên Role sau khi đăng nhập Google
       const user = getLoggedInUser();
       if (user) {
-        if (user.role === "ADMIN") {
-          router.push("/admin");
-        } else if (user.role === "STUDENT") {
-          router.push("/student");
-        } else {
-          router.push("/");
-        }
+        router.push(getDashboardPath(user.role));
       }
 
     } catch (error: any) {

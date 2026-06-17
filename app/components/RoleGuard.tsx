@@ -3,11 +3,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getLoggedInUser } from "../utils/auth";
+import { getDashboardPath, getLoggedInUser, UserRole } from "../utils/auth";
 
 interface RoleGuardProps {
   children: React.ReactNode;
-  allowedRoles: ('ADMIN' | 'STUDENT')[];
+  allowedRoles: UserRole[];
 }
 
 export default function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
@@ -22,14 +22,8 @@ export default function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
       return;
     }
 
-    if (!allowedRoles.includes(user.role as 'ADMIN' | 'STUDENT')) {
-      if (user.role === "ADMIN") {
-        router.push("/admin");
-      } else if (user.role === "STUDENT") {
-        router.push("/student");
-      } else {
-        router.push("/login");
-      }
+    if (!allowedRoles.includes(user.role)) {
+      router.push(getDashboardPath(user.role));
       return;
     }
 

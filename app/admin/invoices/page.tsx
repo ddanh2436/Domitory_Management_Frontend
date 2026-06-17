@@ -154,7 +154,7 @@ export default function AdminInvoicesPage() {
   };
 
   return (
-    <RoleGuard allowedRoles={["ADMIN"]}>
+    <RoleGuard allowedRoles={["ADMIN", "DORMITORY_MANAGER"]}>
       <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans relative">
         <div className="max-w-7xl mx-auto space-y-6">
           

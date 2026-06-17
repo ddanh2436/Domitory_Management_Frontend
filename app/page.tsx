@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getLoggedInUser, JwtPayload } from "./utils/auth";
+import { getDashboardPath, getLoggedInUser, JwtPayload } from "./utils/auth";
 
 // ─── Logo SVG Component ───────────────────────────────────────────────────────
 function DormifyLogoMark({ size = 42 }: { size?: number }) {
@@ -88,7 +88,7 @@ export default function LandingPage() {
 
   if (!isMounted) return null;
 
-  const dashboardHref = user?.role === "ADMIN" ? "/admin" : "/student";
+  const dashboardHref = user ? getDashboardPath(user.role) : "/student";
 
   return (
     <>
