@@ -19,21 +19,6 @@ interface InvoiceData {
   roomName?: string;
 }
 
-// ─── Logo ─────────────────────────────────────────────────────────────────────
-function DormifyLogoMark({ size = 32 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 42 42" fill="none">
-      <rect width="42" height="42" rx="10" fill="#1A2E42" />
-      <rect x="10" y="8" width="4" height="26" rx="1" fill="#C9A84C" />
-      <path d="M14 8 Q28 8 28 21 Q28 34 14 34" stroke="#C9A84C" strokeWidth="3.5" fill="none" strokeLinecap="round" />
-      <rect x="18" y="12" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <rect x="18" y="19" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <rect x="18" y="26" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <line x1="10" y1="6" x2="26" y2="6" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const I = {
   back:    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>,
@@ -42,7 +27,6 @@ const I = {
   qr:      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 2h2m0 0h2m-2 0v2m0-2v-2m4 4h-2m2-6h-2m2 2v2m-6-2h2" /></svg>,
   wallet:  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M21 12V7H5a2 2 0 010-4h14v4M3 5v14a2 2 0 002 2h16v-5M18 12a2 2 0 000 4h4v-4h-4z" /></svg>,
   bank:    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M3 21h18M4 21V10m16 11V10M4 10l8-6 8 6M4 10h16M9 14v3m3-3v3m3-3v3" /></svg>,
-  check:   <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>,
   checkBig:<svg width="46" height="46" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>,
   bolt:    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
   drop:    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16a4 4 0 100-8 4 4 0 000 8z" /></svg>,
@@ -59,7 +43,7 @@ const METHODS: { id: PaymentMethod; label: string; sub: string; icon: React.Reac
 ];
 
 const EWALLET_OPTIONS = [
-  { id: "momo",     name: "MoMo",      color: "#A50064" },
+  { id: "momo",    name: "MoMo",      color: "#A50064" },
   { id: "zalopay",  name: "ZaloPay",   color: "#0068FF" },
   { id: "viettel",  name: "ViettelPay",color: "#EE0033" },
 ];
@@ -211,22 +195,20 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
 
   if (loadingData) {
     return (
-      <div className="min-h-screen bg-[#F2EFE9] flex items-center justify-center font-sans text-slate-500">
-        <div className="flex flex-col items-center gap-4">
-          <svg className="animate-spin h-8 w-8 text-[#C9A84C]" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Đang kết nối cổng thanh toán...
-        </div>
+      <div className="py-20 flex flex-col items-center justify-center font-sans text-slate-500">
+        <svg className="animate-spin h-8 w-8 text-[#C9A84C] mb-4" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Đang kết nối cổng thanh toán...
       </div>
     );
   }
 
   if (!invoice) {
     return (
-      <div className="min-h-screen bg-[#F2EFE9] flex items-center justify-center font-sans text-slate-800">
-        <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-sm">
+      <div className="py-20 flex items-center justify-center font-sans text-slate-800">
+        <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-200 text-center max-w-sm">
           <div className="text-red-500 mb-4">
             <svg className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -234,8 +216,8 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
           </div>
           <h2 className="text-xl font-bold mb-2">Không tìm thấy hóa đơn</h2>
           <p className="text-slate-500 mb-6">Mã giao dịch không hợp lệ hoặc đã bị hủy.</p>
-          <Link href="/student/invoices" className="inline-block bg-[#0D1B2A] text-white px-6 py-2 rounded-lg font-medium">
-            Quay lại
+          <Link href="/student/invoices" className="inline-block bg-[#0D1B2A] text-[#C9A84C] px-6 py-2 rounded-lg font-medium">
+            Quay lại hóa đơn
           </Link>
         </div>
       </div>
@@ -243,43 +225,24 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <>
+    <div className="w-full max-w-5xl mx-auto font-sans text-slate-800">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         :root {
           --navy:     #0D1B2A;
-          --navy-md:  #1A2E42;
           --gold:     #C9A84C;
           --gold-dim: rgba(201,168,76,0.14);
           --gold-b:   rgba(201,168,76,0.28);
           --white:    #ffffff;
           --muted:    #8A9BAD;
           --border:   rgba(13,27,42,0.1);
-          --bg:       #F2EFE9;
           --success:  #16a34a;
           --danger:   #dc2626;
         }
 
-        .pm-page { min-height:100vh; background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--navy); }
-
-        /* ── TOP BAR ── */
-        .pm-topbar { background:var(--white); border-bottom:1px solid var(--border); padding:14px 24px; display:flex; align-items:center; justify-content:space-between; }
-        .pm-topbar-left { display:flex; align-items:center; gap:14px; }
-        .pm-back-link { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); text-decoration:none; transition:color .15s; }
-        .pm-back-link:hover { color:var(--navy); }
-        .pm-topbar-brand { display:flex; align-items:center; gap:9px; }
-        .pm-topbar-wordmark { font-family:'Fraunces',serif; font-size:16px; font-weight:600; color:var(--navy); }
-        .pm-topbar-wordmark span { color:var(--gold); }
-        .pm-topbar-right { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--muted); }
-        .pm-topbar-right svg { stroke:var(--success); }
-
-        /* ── LAYOUT ── */
-        .pm-layout { max-width:1040px; margin:0 auto; padding:48px 24px 80px; display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:start; }
+        .pm-layout { display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:start; }
 
         /* ── LEFT: ORDER SUMMARY ── */
-        .pm-summary-eyebrow { font-size:11px; font-weight:500; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
+        .pm-summary-eyebrow { font-size:11px; font-weight:500; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; display:block; }
         .pm-summary-title { font-family:'Fraunces',serif; font-size:26px; font-weight:700; color:var(--navy); letter-spacing:-.5px; margin-bottom:6px; }
         .pm-summary-sub { font-size:13.5px; color:var(--muted); margin-bottom:32px; }
 
@@ -307,16 +270,12 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
         .pm-secure-text { font-size:12px; color:#7A5E1A; line-height:1.6; }
 
         /* ── RIGHT: PAYMENT PANEL ── */
-        .pm-panel { background:var(--white); border:1px solid var(--border); border-radius:18px; padding:28px; box-shadow:0 8px 32px rgba(13,27,42,.05); }
+        .pm-panel { background:var(--white); border:1px solid var(--border); border-radius:18px; padding:28px; box-shadow:0 8px 32px rgba(13,27,42,.03); }
         .pm-panel-title { font-family:'Fraunces',serif; font-size:17px; font-weight:600; color:var(--navy); margin-bottom:18px; }
 
         /* method tabs */
         .pm-methods { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px; }
-        .pm-method-btn {
-          display:flex; flex-direction:column; align-items:flex-start; gap:8px;
-          padding:14px 14px; border-radius:12px; border:1.5px solid var(--border);
-          background:var(--white); cursor:pointer; transition:all .15s; text-align:left;
-        }
+        .pm-method-btn { display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding:14px 14px; border-radius:12px; border:1.5px solid var(--border); background:var(--white); cursor:pointer; transition:all .15s; text-align:left; }
         .pm-method-btn:hover { border-color:rgba(13,27,42,.25); }
         .pm-method-btn--active { border-color:var(--gold); background:var(--gold-dim); }
         .pm-method-icon { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; background:rgba(13,27,42,.05); color:var(--navy); }
@@ -329,12 +288,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
         .pm-field { display:flex; flex-direction:column; gap:6px; }
         .pm-field-label { font-size:12px; font-weight:500; color:var(--navy); }
         .pm-input-wrap { position:relative; display:flex; align-items:center; }
-        .pm-input {
-          width:100%; padding:11px 14px; border:1px solid var(--border); border-radius:10px;
-          font-family:'DM Mono',monospace; font-size:14px; color:var(--navy);
-          background:#F9F8F6; outline:none; transition:border-color .15s, background .15s;
-          letter-spacing:0.5px;
-        }
+        .pm-input { width:100%; padding:11px 14px; border:1px solid var(--border); border-radius:10px; font-family:'DM Mono',monospace; font-size:14px; color:var(--navy); background:#F9F8F6; outline:none; transition:border-color .15s, background .15s; letter-spacing:0.5px; }
         .pm-input--text { font-family:'DM Sans',sans-serif; letter-spacing:normal; }
         .pm-input:focus { border-color:var(--gold); background:var(--white); }
         .pm-input::placeholder { color:#B8C4CE; font-weight:400; }
@@ -384,11 +338,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
 
         /* ── SUCCESS STATE ── */
         .pm-success-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:40px 10px; }
-        .pm-success-circle {
-          width:84px; height:84px; border-radius:50%; background:rgba(34,197,94,.1);
-          display:flex; align-items:center; justify-content:center; color:var(--success);
-          margin-bottom:24px; animation:pmPop .4s cubic-bezier(.34,1.56,.64,1) both;
-        }
+        .pm-success-circle { width:84px; height:84px; border-radius:50%; background:rgba(34,197,94,.1); display:flex; align-items:center; justify-content:center; color:var(--success); margin-bottom:24px; animation:pmPop .4s cubic-bezier(.34,1.56,.64,1) both; }
         @keyframes pmPop { from{ transform:scale(.5); opacity:0;} to{ transform:scale(1); opacity:1;} }
         .pm-success-title { font-family:'Fraunces',serif; font-size:24px; font-weight:700; color:var(--navy); margin-bottom:8px; }
         .pm-success-sub { font-size:13.5px; color:var(--muted); margin-bottom:28px; max-width:280px; line-height:1.6; }
@@ -402,7 +352,6 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
         /* ── RESPONSIVE ── */
         @media (max-width:880px) {
           .pm-layout { grid-template-columns:1fr; gap:36px; }
-          .pm-summary-title { font-size:22px; }
         }
         @media (max-width:480px) {
           .pm-methods { grid-template-columns:1fr; }
@@ -411,263 +360,250 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
         }
       `}</style>
 
-      <div className="pm-page">
+      {/* Back button */}
+      <Link href="/student/invoices" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 mb-6 transition-colors">
+        {I.back} Quay lại hóa đơn
+      </Link>
 
-        {/* Top bar */}
-        <div className="pm-topbar">
-          <div className="pm-topbar-left">
-            <Link href="/student/invoices" className="pm-back-link">{I.back} Quay lại hóa đơn</Link>
-            <div className="pm-topbar-brand">
-              <DormifyLogoMark size={28} />
-              <span className="pm-topbar-wordmark">Dorm<span>ify</span> Pay</span>
+      <div className="pm-layout">
+        {/* ── LEFT: Order Summary ── */}
+        <div>
+          <span className="pm-summary-eyebrow">Thanh toán hóa đơn</span>
+          <div className="pm-summary-title">Tháng {invoice.month}/{invoice.year}</div>
+          <div className="pm-summary-sub">Phòng {invoice.roomName} · Hóa đơn điện nước &amp; phí phòng</div>
+
+          <div className="pm-line-items">
+            <div className="pm-line">
+              <span className="pm-line-label">
+                <span className="pm-line-icon pm-line-icon--room">{I.home}</span>
+                Phí thuê phòng
+              </span>
+              <span className="pm-line-val">{formatVND(invoice.roomFee)}</span>
+            </div>
+            <div className="pm-line">
+              <span className="pm-line-label">
+                <span className="pm-line-icon pm-line-icon--bolt">{I.bolt}</span>
+                Tiền điện
+              </span>
+              <span className="pm-line-val">{formatVND(invoice.electricityFee)}</span>
+            </div>
+            <div className="pm-line">
+              <span className="pm-line-label">
+                <span className="pm-line-icon pm-line-icon--water">{I.drop}</span>
+                Tiền nước
+              </span>
+              <span className="pm-line-val">{formatVND(invoice.waterFee)}</span>
             </div>
           </div>
-          <div className="pm-topbar-right">
-            {I.lock} Kết nối được bảo mật
+
+          <div className="pm-total-row">
+            <span className="pm-total-label">Tổng thanh toán</span>
+            <span className="pm-total-val">{formatVND(invoice.totalAmount)}</span>
+          </div>
+
+          <div className="pm-meta-grid">
+            <div className="pm-meta-item">
+              <span className="pm-meta-label">Mã hóa đơn</span>
+              <span className="pm-meta-val pm-meta-val--mono">{invoiceId.slice(0, 10).toUpperCase()}</span>
+            </div>
+            <div className="pm-meta-item">
+              <span className="pm-meta-label">Hạn thanh toán</span>
+              <span className="pm-meta-val">30/{invoice.month < 10 ? `0${invoice.month}` : invoice.month}/{invoice.year}</span>
+            </div>
+          </div>
+
+          <div className="pm-secure-note">
+            {I.shield}
+            <span className="pm-secure-text">
+              Đây là môi trường thử nghiệm (sandbox). Mọi phương thức thanh toán đều được xác nhận thành công ngay lập tức, không phát sinh giao dịch thực.
+            </span>
           </div>
         </div>
 
-        <div className="pm-layout">
-
-          {/* ── LEFT: Order Summary ── */}
-          <div>
-            <span className="pm-summary-eyebrow">Thanh toán hóa đơn</span>
-            <div className="pm-summary-title">Tháng {invoice.month}/{invoice.year}</div>
-            <div className="pm-summary-sub">Phòng {invoice.roomName} · Hóa đơn điện nước &amp; phí phòng</div>
-
-            <div className="pm-line-items">
-              <div className="pm-line">
-                <span className="pm-line-label">
-                  <span className="pm-line-icon pm-line-icon--room">{I.home}</span>
-                  Phí thuê phòng
-                </span>
-                <span className="pm-line-val">{formatVND(invoice.roomFee)}</span>
-              </div>
-              <div className="pm-line">
-                <span className="pm-line-label">
-                  <span className="pm-line-icon pm-line-icon--bolt">{I.bolt}</span>
-                  Tiền điện
-                </span>
-                <span className="pm-line-val">{formatVND(invoice.electricityFee)}</span>
-              </div>
-              <div className="pm-line">
-                <span className="pm-line-label">
-                  <span className="pm-line-icon pm-line-icon--water">{I.drop}</span>
-                  Tiền nước
-                </span>
-                <span className="pm-line-val">{formatVND(invoice.waterFee)}</span>
+        {/* ── RIGHT: Payment Panel ── */}
+        <div className="pm-panel">
+          {isSuccess ? (
+            <div className="pm-success-wrap">
+              <div className="pm-success-circle">{I.checkBig}</div>
+              <div className="pm-success-title">Thanh toán thành công!</div>
+              <div className="pm-success-sub">Hóa đơn điện nước tháng {invoice.month}/{invoice.year} của bạn đã được gạch nợ.</div>
+              <div className="pm-success-amount">{formatVND(invoice.totalAmount)}</div>
+              <div className="pm-success-ref">REF: {invoiceId.slice(0, 12).toUpperCase()}</div>
+              <div className="pm-success-redirect">
+                <div className="pm-success-bar"><div className="pm-success-bar-fill" /></div>
+                Đang chuyển về trang hóa đơn…
               </div>
             </div>
+          ) : (
+            <>
+              <div className="pm-panel-title">Chọn phương thức thanh toán</div>
 
-            <div className="pm-total-row">
-              <span className="pm-total-label">Tổng thanh toán</span>
-              <span className="pm-total-val">{formatVND(invoice.totalAmount)}</span>
-            </div>
-
-            <div className="pm-meta-grid">
-              <div className="pm-meta-item">
-                <span className="pm-meta-label">Mã hóa đơn</span>
-                <span className="pm-meta-val pm-meta-val--mono">{invoiceId.slice(0, 10).toUpperCase()}</span>
+              {/* Method tabs */}
+              <div className="pm-methods">
+                {METHODS.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className={`pm-method-btn ${method === m.id ? "pm-method-btn--active" : ""}`}
+                    onClick={() => setMethod(m.id)}
+                  >
+                    <span className="pm-method-icon">{m.icon}</span>
+                    <span className="pm-method-label">{m.label}</span>
+                    <span className="pm-method-sub">{m.sub}</span>
+                  </button>
+                ))}
               </div>
-              <div className="pm-meta-item">
-                <span className="pm-meta-label">Hạn thanh toán</span>
-                <span className="pm-meta-val">30/{invoice.month < 10 ? `0${invoice.month}` : invoice.month}/{invoice.year}</span>
-              </div>
-            </div>
 
-            <div className="pm-secure-note">
-              {I.shield}
-              <span className="pm-secure-text">
-                Đây là môi trường thử nghiệm (sandbox). Mọi phương thức thanh toán đều được xác nhận thành công ngay lập tức, không phát sinh giao dịch thực.
-              </span>
-            </div>
-          </div>
-
-          {/* ── RIGHT: Payment Panel ── */}
-          <div className="pm-panel">
-            {isSuccess ? (
-              <div className="pm-success-wrap">
-                <div className="pm-success-circle">{I.checkBig}</div>
-                <div className="pm-success-title">Thanh toán thành công!</div>
-                <div className="pm-success-sub">Hóa đơn điện nước tháng {invoice.month}/{invoice.year} của bạn đã được gạch nợ.</div>
-                <div className="pm-success-amount">{formatVND(invoice.totalAmount)}</div>
-                <div className="pm-success-ref">REF: {invoiceId.slice(0, 12).toUpperCase()}</div>
-                <div className="pm-success-redirect">
-                  <div className="pm-success-bar"><div className="pm-success-bar-fill" /></div>
-                  Đang chuyển về trang hóa đơn…
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="pm-panel-title">Chọn phương thức thanh toán</div>
-
-                {/* Method tabs */}
-                <div className="pm-methods">
-                  {METHODS.map((m) => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      className={`pm-method-btn ${method === m.id ? "pm-method-btn--active" : ""}`}
-                      onClick={() => setMethod(m.id)}
-                    >
-                      <span className="pm-method-icon">{m.icon}</span>
-                      <span className="pm-method-label">{m.label}</span>
-                      <span className="pm-method-sub">{m.sub}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* ── CARD FORM ── */}
-                {method === "CARD" && (
-                  <div className="pm-form">
-                    <div className="pm-field">
-                      <label className="pm-field-label">Số thẻ</label>
-                      <div className="pm-input-wrap">
-                        <input
-                          className="pm-input"
-                          placeholder="0000 0000 0000 0000"
-                          value={cardNumber}
-                          onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                          inputMode="numeric"
-                        />
-                        <BrandBadge brand={brand} />
-                      </div>
-                    </div>
-                    <div className="pm-field">
-                      <label className="pm-field-label">Tên chủ thẻ</label>
+              {/* ── CARD FORM ── */}
+              {method === "CARD" && (
+                <div className="pm-form">
+                  <div className="pm-field">
+                    <label className="pm-field-label">Số thẻ</label>
+                    <div className="pm-input-wrap">
                       <input
-                        className="pm-input pm-input--text"
-                        placeholder="NGUYEN VAN A"
-                        value={cardName}
-                        onChange={(e) => setCardName(e.target.value.toUpperCase())}
+                        className="pm-input"
+                        placeholder="0000 0000 0000 0000"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                        inputMode="numeric"
+                      />
+                      <BrandBadge brand={brand} />
+                    </div>
+                  </div>
+                  <div className="pm-field">
+                    <label className="pm-field-label">Tên chủ thẻ</label>
+                    <input
+                      className="pm-input pm-input--text"
+                      placeholder="NGUYEN VAN A"
+                      value={cardName}
+                      onChange={(e) => setCardName(e.target.value.toUpperCase())}
+                    />
+                  </div>
+                  <div className="pm-row2">
+                    <div className="pm-field">
+                      <label className="pm-field-label">Ngày hết hạn</label>
+                      <input
+                        className="pm-input"
+                        placeholder="MM/YY"
+                        value={cardExpiry}
+                        onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
+                        inputMode="numeric"
                       />
                     </div>
-                    <div className="pm-row2">
-                      <div className="pm-field">
-                        <label className="pm-field-label">Ngày hết hạn</label>
-                        <input
-                          className="pm-input"
-                          placeholder="MM/YY"
-                          value={cardExpiry}
-                          onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
-                          inputMode="numeric"
-                        />
-                      </div>
-                      <div className="pm-field">
-                        <label className="pm-field-label">CVV</label>
-                        <input
-                          className="pm-input"
-                          placeholder="123"
-                          value={cardCvv}
-                          onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                          inputMode="numeric"
-                          maxLength={4}
-                        />
-                      </div>
+                    <div className="pm-field">
+                      <label className="pm-field-label">CVV</label>
+                      <input
+                        className="pm-input"
+                        placeholder="123"
+                        value={cardCvv}
+                        onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                        inputMode="numeric"
+                        maxLength={4}
+                      />
                     </div>
                   </div>
-                )}
-
-                {/* ── QR ── */}
-                {method === "QR" && (
-                  <div className="pm-qr-box">
-                    <div className="pm-qr-frame">
-                      <svg viewBox="0 0 100 100" width="100%" height="100%">
-                        <rect width="100" height="100" fill="#fff" />
-                        {Array.from({ length: 12 }).map((_, row) =>
-                          Array.from({ length: 12 }).map((_, col) => {
-                            const seed = (row * 12 + col * 7) % 5;
-                            if (seed === 0) return null;
-                            return (
-                              <rect
-                                key={`${row}-${col}`}
-                                x={col * 8 + 2}
-                                y={row * 8 + 2}
-                                width={6}
-                                height={6}
-                                fill="#0D1B2A"
-                              />
-                            );
-                          })
-                        )}
-                      </svg>
-                    </div>
-                    <div className="pm-qr-amount">{formatVND(invoice.totalAmount)}</div>
-                    <div className="pm-qr-sub">
-                      Mở app ngân hàng bất kỳ, chọn quét QR và quét mã trên để hoàn tất thanh toán.
-                    </div>
-                  </div>
-                )}
-
-                {/* ── E-WALLET ── */}
-                {method === "EWALLET" && (
-                  <div className="pm-ewallet-grid">
-                    {EWALLET_OPTIONS.map((w) => (
-                      <div
-                        key={w.id}
-                        className={`pm-ewallet-opt ${ewallet === w.id ? "pm-ewallet-opt--active" : ""}`}
-                        onClick={() => setEwallet(w.id)}
-                      >
-                        <span className="pm-ewallet-dot" style={{ background: w.color }}>
-                          {w.name[0]}
-                        </span>
-                        <span className="pm-ewallet-name">{w.name}</span>
-                        <span className={`pm-radio-dot ${ewallet === w.id ? "pm-radio-dot--active" : ""}`} />
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* ── BANK TRANSFER ── */}
-                {method === "BANK" && (
-                  <div className="pm-bank-box">
-                    <div className="pm-bank-row">
-                      <span className="pm-bank-label">Ngân hàng</span>
-                      <span className="pm-bank-val">Vietcombank</span>
-                    </div>
-                    <div className="pm-bank-row">
-                      <span className="pm-bank-label">Số tài khoản</span>
-                      <span className="pm-bank-val">1900 8888 6666</span>
-                    </div>
-                    <div className="pm-bank-row">
-                      <span className="pm-bank-label">Chủ tài khoản</span>
-                      <span className="pm-bank-val">DORMIFY HCMUS</span>
-                    </div>
-                    <div className="pm-bank-row">
-                      <span className="pm-bank-label">Nội dung CK</span>
-                      <span className="pm-bank-val">DORMIFY {invoiceId.slice(0, 6).toUpperCase()}</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Pay button */}
-                <button
-                  className="pm-pay-btn"
-                  onClick={handleConfirmPayment}
-                  disabled={isProcessing || !canPay}
-                >
-                  {isProcessing ? (
-                    <>
-                      <svg className="pm-spin" width="17" height="17" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
-                        <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                      </svg>
-                      Đang xử lý giao dịch…
-                    </>
-                  ) : (
-                    <>{I.lock} Thanh toán {formatVND(invoice.totalAmount)}</>
-                  )}
-                </button>
-
-                <div className="pm-trust-row">
-                  <span className="pm-trust-item">{I.shield} Mã hóa SSL 256-bit</span>
-                  <span className="pm-trust-item">{I.lock} PCI DSS</span>
                 </div>
-              </>
-            )}
-          </div>
+              )}
+
+              {/* ── QR ── */}
+              {method === "QR" && (
+                <div className="pm-qr-box">
+                  <div className="pm-qr-frame">
+                    <svg viewBox="0 0 100 100" width="100%" height="100%">
+                      <rect width="100" height="100" fill="#fff" />
+                      {Array.from({ length: 12 }).map((_, row) =>
+                        Array.from({ length: 12 }).map((_, col) => {
+                          const seed = (row * 12 + col * 7) % 5;
+                          if (seed === 0) return null;
+                          return (
+                            <rect
+                              key={`${row}-${col}`}
+                              x={col * 8 + 2}
+                              y={row * 8 + 2}
+                              width={6}
+                              height={6}
+                              fill="#0D1B2A"
+                            />
+                          );
+                        })
+                      )}
+                    </svg>
+                  </div>
+                  <div className="pm-qr-amount">{formatVND(invoice.totalAmount)}</div>
+                  <div className="pm-qr-sub">
+                    Mở app ngân hàng bất kỳ, chọn quét QR và quét mã trên để hoàn tất thanh toán.
+                  </div>
+                </div>
+              )}
+
+              {/* ── E-WALLET ── */}
+              {method === "EWALLET" && (
+                <div className="pm-ewallet-grid">
+                  {EWALLET_OPTIONS.map((w) => (
+                    <div
+                      key={w.id}
+                      className={`pm-ewallet-opt ${ewallet === w.id ? "pm-ewallet-opt--active" : ""}`}
+                      onClick={() => setEwallet(w.id)}
+                    >
+                      <span className="pm-ewallet-dot" style={{ background: w.color }}>
+                        {w.name[0]}
+                      </span>
+                      <span className="pm-ewallet-name">{w.name}</span>
+                      <span className={`pm-radio-dot ${ewallet === w.id ? "pm-radio-dot--active" : ""}`} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* ── BANK TRANSFER ── */}
+              {method === "BANK" && (
+                <div className="pm-bank-box">
+                  <div className="pm-bank-row">
+                    <span className="pm-bank-label">Ngân hàng</span>
+                    <span className="pm-bank-val">Vietcombank</span>
+                  </div>
+                  <div className="pm-bank-row">
+                    <span className="pm-bank-label">Số tài khoản</span>
+                    <span className="pm-bank-val">1900 8888 6666</span>
+                  </div>
+                  <div className="pm-bank-row">
+                    <span className="pm-bank-label">Chủ tài khoản</span>
+                    <span className="pm-bank-val">DORMIFY HCMUS</span>
+                  </div>
+                  <div className="pm-bank-row">
+                    <span className="pm-bank-label">Nội dung CK</span>
+                    <span className="pm-bank-val">DORMIFY {invoiceId.slice(0, 6).toUpperCase()}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Pay button */}
+              <button
+                className="pm-pay-btn"
+                onClick={handleConfirmPayment}
+                disabled={isProcessing || !canPay}
+              >
+                {isProcessing ? (
+                  <>
+                    <svg className="pm-spin" width="17" height="17" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
+                      <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
+                    Đang xử lý giao dịch…
+                  </>
+                ) : (
+                  <>{I.lock} Thanh toán {formatVND(invoice.totalAmount)}</>
+                )}
+              </button>
+
+              <div className="pm-trust-row">
+                <span className="pm-trust-item">{I.shield} Mã hóa SSL 256-bit</span>
+                <span className="pm-trust-item">{I.lock} PCI DSS</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import RoleGuard from "../../components/RoleGuard";
-import NotificationBell from "../../components/NotificationBell";
 
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -53,83 +51,73 @@ export default function AdminBookingsPage() {
   };
 
   return (
-    <RoleGuard allowedRoles={["ADMIN", "DORMITORY_MANAGER", "FLOOR_MANAGER"]}>
-      <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
-        <div className="max-w-6xl mx-auto space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Duyệt Đơn Đăng Ký</h1>
-            
-            {/* Đã thêm chuông thông báo vào cụm bên phải */}
-            <div className="flex items-center gap-6">
-              <NotificationBell />
-              <a href="/admin" className="text-blue-600 hover:underline font-medium">← Quay lại Dashboard</a>
-            </div>
-          </div>
+    <div className="w-full space-y-6 text-slate-800 font-sans">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Duyệt Đơn Đăng Ký</h1>
+      </div>
 
-          {actionMsg.text && (
-            <div className={`p-4 rounded-lg font-medium ${actionMsg.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {actionMsg.text}
-            </div>
-          )}
+      {actionMsg.text && (
+        <div className={`p-4 rounded-lg font-medium ${actionMsg.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {actionMsg.text}
+        </div>
+      )}
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200 text-sm">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-6 py-4 text-left font-semibold text-slate-600">Sinh viên</th>
-                    <th className="px-6 py-4 text-left font-semibold text-slate-600">Phòng đăng ký</th>
-                    <th className="px-6 py-4 text-left font-semibold text-slate-600">Ngày gửi</th>
-                    <th className="px-6 py-4 text-left font-semibold text-slate-600">Trạng thái</th>
-                    <th className="px-6 py-4 text-center font-semibold text-slate-600">Hành động</th>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200 text-sm">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-6 py-4 text-left font-semibold text-slate-600">Sinh viên</th>
+                <th className="px-6 py-4 text-left font-semibold text-slate-600">Phòng đăng ký</th>
+                <th className="px-6 py-4 text-left font-semibold text-slate-600">Ngày gửi</th>
+                <th className="px-6 py-4 text-left font-semibold text-slate-600">Trạng thái</th>
+                <th className="px-6 py-4 text-center font-semibold text-slate-600">Hành động</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
+              {loading ? (
+                <tr><td colSpan={5} className="text-center py-8 text-slate-500">Đang tải dữ liệu...</td></tr>
+              ) : bookings.length === 0 ? (
+                <tr><td colSpan={5} className="text-center py-8 text-slate-500">Chưa có đơn đăng ký nào.</td></tr>
+              ) : (
+                bookings.map((b) => (
+                  <tr key={b._id} className="hover:bg-slate-50">
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-slate-800">{b.user?.fullName}</div>
+                      <div className="text-slate-500 text-xs mt-1">MSSV: {b.user?.mssv || '—'}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-blue-600">{b.room?.name}</div>
+                      <div className="text-slate-500 text-xs mt-1">Tòa {b.room?.building}</div>
+                    </td>
+                    <td className="px-6 py-4 text-slate-600">
+                      {new Date(b.createdAt).toLocaleDateString('vi-VN')}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        b.status === 'PENDING' ? 'bg-orange-100 text-orange-700' :
+                        b.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      }`}>
+                        {b.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center space-x-2">
+                      {b.status === 'PENDING' ? (
+                        <>
+                          <button onClick={() => handleAction(b._id, 'approve')} className="px-3 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700 font-medium transition-colors">Duyệt</button>
+                          <button onClick={() => handleAction(b._id, 'reject')} className="px-3 py-1.5 bg-rose-50 text-rose-700 rounded hover:bg-rose-100 border border-rose-200 font-medium transition-colors">Từ chối</button>
+                        </>
+                      ) : (
+                        <span className="text-slate-400 italic text-xs">Đã xử lý</span>
+                      )}
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {loading ? (
-                    <tr><td colSpan={5} className="text-center py-8 text-slate-500">Đang tải dữ liệu...</td></tr>
-                  ) : bookings.length === 0 ? (
-                    <tr><td colSpan={5} className="text-center py-8 text-slate-500">Chưa có đơn đăng ký nào.</td></tr>
-                  ) : (
-                    bookings.map((b) => (
-                      <tr key={b._id} className="hover:bg-slate-50">
-                        <td className="px-6 py-4">
-                          <div className="font-bold text-slate-800">{b.user?.fullName}</div>
-                          <div className="text-slate-500 text-xs mt-1">MSSV: {b.user?.mssv || '—'}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="font-bold text-blue-600">{b.room?.name}</div>
-                          <div className="text-slate-500 text-xs mt-1">Tòa {b.room?.building}</div>
-                        </td>
-                        <td className="px-6 py-4 text-slate-600">
-                          {new Date(b.createdAt).toLocaleDateString('vi-VN')}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            b.status === 'PENDING' ? 'bg-orange-100 text-orange-700' :
-                            b.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                          }`}>
-                            {b.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center space-x-2">
-                          {b.status === 'PENDING' ? (
-                            <>
-                              <button onClick={() => handleAction(b._id, 'approve')} className="px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 font-medium transition-colors">Duyệt</button>
-                              <button onClick={() => handleAction(b._id, 'reject')} className="px-3 py-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200 font-medium transition-colors">Từ chối</button>
-                            </>
-                          ) : (
-                            <span className="text-slate-400 italic text-xs">Đã xử lý</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-    </RoleGuard>
+    </div>
   );
 }

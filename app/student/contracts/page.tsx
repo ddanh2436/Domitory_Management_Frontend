@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import RoleGuard from "../../components/RoleGuard";
-import NotificationBell from "../../components/NotificationBell";
 
 interface Contract {
   contractNumber: string;
@@ -36,25 +34,31 @@ export default function StudentContractPage() {
     getContract();
   }, []);
 
-  if (loading) return <div style={{ padding: "40px", color: "#8A9BAD", fontFamily: "sans-serif" }}>ĐANG ĐỒNG BỘ HỒ SƠ...</div>;
+  if (loading) {
+    return <div style={{ padding: "40px", color: "#8A9BAD", fontFamily: "sans-serif", textAlign: "center" }}>ĐANG ĐỒNG BỘ HỢP ĐỒNG...</div>;
+  }
 
   return (
-    <RoleGuard allowedRoles={["STUDENT"]}>
+    <>
       <style>{`
         @media print {
           .no-print { display: none !important; }
           .contract-box { border: none !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; }
           body { background: #fff !important; color: #000 !important; }
+          /* Ẩn Sidebar và Topbar của Layout khi in */
+          .st-sidebar, .st-topbar { display: none !important; }
+          .st-main { margin-left: 0 !important; }
+          .st-body { padding: 0 !important; }
         }
       `}</style>
 
-      <div style={{ padding: "40px", maxWidth: "800px", margin: "0 auto", fontFamily: "sans-serif" }}>
-        <Link href="/student" className="no-print" style={{ color: "#C9A84C", textDecoration: "none", fontSize: "14px", fontWeight: 500 }}>
-          ← Trở về Không gian cá nhân
+      <div style={{ maxWidth: "800px", margin: "0 auto", fontFamily: "sans-serif" }}>
+        <Link href="/student" className="no-print" style={{ color: "#C9A84C", textDecoration: "none", fontSize: "14px", fontWeight: 500, display: "inline-block", marginBottom: "20px" }}>
+          ← Trở về Tổng quan
         </Link>
         
         {contract ? (
-          <div className="contract-box" style={{ background: "#fff", padding: "50px", marginTop: "20px", border: "1px solid rgba(13,27,42,0.09)", borderRadius: "12px" }}>
+          <div className="contract-box" style={{ background: "#fff", padding: "50px", border: "1px solid rgba(13,27,42,0.09)", borderRadius: "12px" }}>
             <div style={{ textAlign: "center", marginBottom: "35px" }}>
               <h3 style={{ textTransform: "uppercase", fontSize: "13px", margin: 0, letterSpacing: "0.05em" }}>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3>
               <p style={{ fontSize: "12px", fontWeight: "bold", margin: "5px 0 25px" }}>Độc lập - Tự do - Hạnh phúc</p>
@@ -102,13 +106,13 @@ export default function StudentContractPage() {
             </button>
           </div>
         ) : (
-          <div style={{ background: "#fff", padding: "40px", textAlign: "center", marginTop: "20px", borderRadius: "12px", border: "1px solid rgba(13,27,42,0.09)" }}>
+          <div style={{ background: "#fff", padding: "40px", textAlign: "center", borderRadius: "12px", border: "1px solid rgba(13,27,42,0.09)" }}>
             <p style={{ color: "#8A9BAD", fontSize: "14.5px" }}>
               Hợp đồng điện tử sẽ tự động xuất hiện tại đây ngay khi đơn xin đăng ký chỗ ở của bạn được Quản trị viên phê duyệt thành công.
             </p>
           </div>
         )}
       </div>
-    </RoleGuard>
+    </>
   );
 }
