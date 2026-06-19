@@ -1,0 +1,299 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap");
+
+.auth-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: "Nunito", sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Background cho Dormify */
+.auth-page-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("/auth_bg.jpg"); /* Sử dụng bg của Dormify */
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+  filter: blur(8px) brightness(0.6);
+  transform: scale(1.05);
+}
+
+.auth-container {
+  background-color: #ffffff;
+  border-radius: 20px; /* Chỉnh lại bo góc cho hiện đại hơn */
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+  position: relative;
+  overflow: hidden;
+  width: 900px;
+  max-width: 90%;
+  min-height: 600px;
+}
+
+.form-container {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  transition: all 0.6s ease-in-out;
+  background-color: #ffffff;
+}
+
+.sign-in-container {
+  left: 0;
+  width: 50%;
+  z-index: 2;
+}
+
+.sign-up-container {
+  left: 0;
+  width: 50%;
+  opacity: 0;
+  z-index: 1;
+}
+
+.form-container form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 40px;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.form-container h1 {
+  font-weight: bold;
+  margin: 0;
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 28px;
+}
+
+.input-group {
+  position: relative;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.input-group > svg {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-size: 16px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 45px;
+  background-color: #f3f4f6; /* Xám nhạt */
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #333;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.forgot-password {
+  color: #475569;
+  font-size: 14px;
+  text-decoration: none;
+  margin: 0 0 20px 0;
+  align-self: flex-end;
+  font-weight: 600;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+  color: #2563eb;
+}
+
+/* Nút Xanh Dương cho Dormify */
+.auth-button {
+  border-radius: 8px;
+  background-color: #2563eb; /* Blue 600 */
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 12px 45px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: transform 80ms ease-in, background-color 0.3s;
+  cursor: pointer;
+  width: 100%;
+  border: none;
+}
+
+.auth-button:active {
+  transform: scale(0.98);
+}
+
+.auth-button:hover {
+  background-color: #1d4ed8; /* Blue 700 */
+}
+
+.auth-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ghost-button {
+  border-radius: 8px;
+  border: 2px solid #ffffff;
+  background-color: transparent;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 12px 45px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: background-color 0.3s;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.ghost-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* --- Overlay với màu Gradient Xanh Navy (phù hợp app KTX) --- */
+.overlay-container {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.6s ease-in-out;
+  z-index: 100;
+}
+
+.overlay {
+  background: #1e293b;
+  background: linear-gradient(to right, #0f172a, #1e293b); /* Đổi sang màu Xanh đen Slate */
+  color: #ffffff;
+  position: relative;
+  left: -100%;
+  height: 100%;
+  width: 200%;
+  transform: translateX(0);
+  transition: transform 0.6s ease-in-out;
+}
+
+.overlay-panel {
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 40px;
+  height: 100%;
+  width: 50%;
+  text-align: center;
+  transform: translateX(0);
+  transition: transform 0.6s ease-in-out;
+}
+
+.overlay-panel h1 {
+  font-weight: 800;
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.overlay-panel p {
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 24px;
+  margin: 15px 0 25px;
+}
+
+.overlay-left {
+  transform: translateX(-20%);
+}
+.overlay-right {
+  right: 0;
+  transform: translateX(0);
+}
+
+/* KÍCH HOẠT HIỆU ỨNG TRƯỢT */
+.auth-container.register-active .sign-in-container {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.auth-container.register-active .sign-up-container {
+  transform: translateX(100%);
+  opacity: 1;
+  z-index: 5;
+  animation: show 0.6s;
+}
+.auth-container.register-active .overlay-container {
+  transform: translateX(-100%);
+}
+.auth-container.register-active .overlay {
+  transform: translateX(50%);
+}
+.auth-container.register-active .overlay-left {
+  transform: translateX(0);
+}
+.auth-container.register-active .overlay-right {
+  transform: translateX(20%);
+}
+
+@keyframes show {
+  0%, 49.99% { opacity: 0; z-index: 1; }
+  50%, 100% { opacity: 1; z-index: 5; }
+}
+
+/* CSS Tiện ích */
+.error-message {
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #64748b;
+  font-size: 18px;
+}
+
+.form-separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  margin: 20px 0;
+}
+.form-separator::before,
+.form-separator::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #e5e7eb;
+}
+.form-separator span {
+  padding: 0 10px;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+}

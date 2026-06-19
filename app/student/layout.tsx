@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import RoleGuard from "../components/RoleGuard";
-import NotificationBell from "../components/NotificationBell";
 
 interface Profile {
   fullName: string;
@@ -20,17 +19,18 @@ interface Profile {
   };
 }
 
-function DormifyLogoMark({ size = 36 }: { size?: number }) {
+// ─── Logo: dùng ảnh PNG thật thay vì SVG vẽ tay ─────────────────────────────
+// Lưu ý: cần đặt file ảnh tại /public/Dormify.png trong project.
+function DormifyLogoMark({ size = 48, className = "" }: { size?: number; className?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 42 42" fill="none">
-      <rect width="42" height="42" rx="10" fill="#1A2E42" />
-      <rect x="10" y="8" width="4" height="26" rx="1" fill="#C9A84C" />
-      <path d="M14 8 Q28 8 28 21 Q28 34 14 34" stroke="#C9A84C" strokeWidth="3.5" fill="none" strokeLinecap="round" />
-      <rect x="18" y="12" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <rect x="18" y="19" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <rect x="18" y="26" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <line x1="10" y1="6" x2="26" y2="6" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
+    <img
+      src="/Dormify.png"
+      alt="Dormify Logo"
+      width={size}
+      height={size}
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
@@ -141,9 +141,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         }
         .st-shell { display: flex; min-height: 100vh; background: var(--bg); font-family: 'DM Sans', sans-serif; }
         .st-sidebar { width: var(--sidebar-w); flex-shrink: 0; background: var(--navy); min-height: 100vh; position: fixed; top: 0; left: 0; bottom: 0; border-right: 1px solid var(--gold-b); display: flex; flex-direction: column; z-index: 40; }
-        .st-brand { padding: 22px 18px 18px; display: flex; align-items: center; gap: 11px; border-bottom: 1px solid rgba(255,255,255,0.06); text-decoration: none; transition: opacity 0.2s; }
+        .st-brand { padding: 22px 18px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); text-decoration: none; transition: opacity 0.2s; }
         .st-brand:hover { opacity: 0.8; }
-        .st-wordmark { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; color: #fff; }
+        .logo-align-up { transform: translateY(-2px); }
+        .text-align-down { transform: translateY(1px); display: inline-block; }
+        .st-wordmark { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
         .st-wordmark span { color: var(--gold); }
         .st-sb-profile { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 12px; }
         .st-avatar { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--gold) 0%, #E2B96A) 100%; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; color: var(--navy); flex-shrink: 0; letter-spacing: -0.5px; }
@@ -168,12 +170,6 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         .st-btn-action--logout .st-nav-icon { color: rgba(240,80,80,0.65); }
         .st-btn-action--logout span:last-child { font-size: 13px; color: rgba(240,80,80,0.75); }
         .st-main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
-        .st-topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 30; }
-        .st-tb-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--navy); letter-spacing: -0.2px; }
-        .st-tb-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
-        .st-tb-right { display: flex; align-items: center; gap: 10px; }
-        .st-tb-avatar-sm { width: 34px; height: 34px; border-radius: 9px; background: var(--navy); border: 1.5px solid var(--gold-b); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-size: 12px; font-weight: 600; color: var(--gold); cursor: pointer; text-decoration: none; overflow: hidden; transition: transform 0.15s, border-color 0.15s; }
-        .st-tb-avatar-sm:hover { transform: scale(1.05); border-color: var(--gold); }
         .st-body { padding: 26px 28px 52px; }
         .st-sk { background: linear-gradient(90deg, #EDE9E3 25%, #E4E0D8 50%, #EDE9E3 75%); background-size: 400% 100%; animation: stShimmer 1.4s ease infinite; }
         @keyframes stShimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
@@ -182,8 +178,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
       <div className="st-shell">
         <aside className="st-sidebar">
           <Link href="/" className="st-brand">
-            <DormifyLogoMark size={36} />
-            <span className="st-wordmark">Dorm<span>ify</span></span>
+            <DormifyLogoMark size={48} className="logo-align-up" />
+            <span className="st-wordmark text-align-down">Dorm<span>ify</span></span>
           </Link>
 
           <div className="st-sb-profile">
@@ -229,27 +225,9 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         </aside>
 
         <div className="st-main">
-          <header className="st-topbar">
-            <div className="st-tb-left">
-              <div className="st-tb-title">Không gian cá nhân</div>
-              <div className="st-tb-sub">Dormify · Sinh viên</div>
-            </div>
-            <div className="st-tb-right">
-              <NotificationBell />
-              {loading ? (
-                <span className="st-sk" style={{ width: 34, height: 34, borderRadius: 9, display: "inline-block" }} />
-              ) : (
-                <Link href="/student/profile" className="st-tb-avatar-sm">
-                  {profile?.avatar ? (
-                    <img src={profile.avatar} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  ) : (
-                    (profile?.fullName ?? "SV").trim().split(" ").pop()?.[0]?.toUpperCase() ?? "S"
-                  )}
-                </Link>
-              )}
-            </div>
-          </header>
-
+          {/* Đã bỏ thanh topbar (header) — không gian phía trên sidebar
+             được dùng hết cho nội dung trang. Truy cập hồ sơ cá nhân
+             qua mục "Hồ sơ cá nhân" ở sidebar bên trái. */}
           <main className="st-body">
             {children}
           </main>
