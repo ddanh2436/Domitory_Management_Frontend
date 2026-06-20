@@ -1,18 +1,13 @@
-export type UserRole =
-  | 'ADMIN'
-  | 'DORMITORY_MANAGER'
-  | 'FLOOR_MANAGER'
-  | 'STUDENT'
-  | 'MAINTENANCE_STAFF';
+export type UserRole = 'ADMIN' | 'STUDENT' | 'MAINTENANCE';
 
 export interface JwtPayload {
   sub: string;
   email: string;
   role: UserRole;
-  accessStatus?: 'ACTIVE' | 'LOCKED';
   exp: number; 
 }
 
+// Đây chính là hàm bị thiếu gây ra lỗi đỏ của bạn
 export function getDashboardPath(role: UserRole) {
   return role === 'STUDENT' ? '/student' : '/admin';
 }

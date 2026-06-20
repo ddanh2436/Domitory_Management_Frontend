@@ -4,22 +4,17 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getDashboardPath, getLoggedInUser, JwtPayload } from "./utils/auth";
 
-// ─── Logo SVG Component ───────────────────────────────────────────────────────
-function DormifyLogoMark({ size = 42 }: { size?: number }) {
+// ─── Logo Component Đã Cập Nhật (Sử dụng Ảnh và Căn chỉnh) ────────────────────
+function DormifyLogoMark({ size = 75, className = "" }: { size?: number; className?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="42" height="42" rx="10" fill="#1A2E42" />
-      {/* Vertical stem of D */}
-      <rect x="10" y="8" width="4" height="26" rx="1" fill="#C9A84C" />
-      {/* Arch/curve of D */}
-      <path d="M14 8 Q28 8 28 21 Q28 34 14 34" stroke="#C9A84C" strokeWidth="3.5" fill="none" strokeLinecap="round" />
-      {/* Windows */}
-      <rect x="18" y="12" width="4" height="4" rx="1" fill="rgba(201,168,76,0.4)" />
-      <rect x="18" y="19" width="4" height="4" rx="1" fill="rgba(201,168,76,0.4)" />
-      <rect x="18" y="26" width="4" height="4" rx="1" fill="rgba(201,168,76,0.4)" />
-      {/* Top accent line */}
-      <line x1="10" y1="6" x2="26" y2="6" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
+    <img 
+      src="/Dormify.png" 
+      alt="Dormify Logo" 
+      width={size} 
+      height={size} 
+      className={className}
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
@@ -126,7 +121,7 @@ export default function LandingPage() {
           backdrop-filter: blur(12px);
           border-bottom: 1px solid rgba(201,168,76,0.2);
           padding: 0 5vw;
-          height: 68px;
+          height: 100px;
           display: flex; align-items: center; justify-content: space-between;
           animation: slideDown 0.6s ease both;
         }
@@ -134,17 +129,6 @@ export default function LandingPage() {
           from { transform: translateY(-100%); opacity: 0; }
           to   { transform: translateY(0);     opacity: 1; }
         }
-
-        .dormify-logo {
-          display: flex; align-items: center; gap: 12px;
-          text-decoration: none;
-        }
-        .dormify-wordmark {
-          font-family: 'Fraunces', serif;
-          font-size: 22px; font-weight: 600;
-          color: var(--white); letter-spacing: -0.3px; line-height: 1;
-        }
-        .dormify-wordmark span { color: var(--gold); }
 
         .nav-links { display: flex; align-items: center; gap: 32px; }
         .nav-link {
@@ -156,28 +140,20 @@ export default function LandingPage() {
 
         .btn-nav {
           font-family: 'DM Sans', sans-serif;
-          font-size: 13px; font-weight: 500;
-          padding: 9px 22px; border-radius: 6px;
+          font-size: 14px; font-weight: 600;
+          padding: 12px 26px; border-radius: 8px;
           text-decoration: none; cursor: pointer; transition: all 0.2s;
           letter-spacing: 0.03em; border: none;
         }
-        .btn-outline-gold {
-          border: 1px solid rgba(201,168,76,0.6) !important;
-          color: var(--gold-light); background: transparent;
-        }
-        .btn-outline-gold:hover {
-          background: rgba(201,168,76,0.12);
-          border-color: var(--gold) !important;
-        }
         .btn-gold { background: var(--gold); color: var(--navy); }
-        .btn-gold:hover { background: var(--gold-light); }
+        .btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(201,168,76,0.3); }
 
         /* ── HERO ── */
         .hero {
           min-height: 100vh; background: var(--navy);
           display: flex; flex-direction: column;
           align-items: center; justify-content: center;
-          text-align: center; padding: 120px 5vw 80px;
+          text-align: center; padding: 150px 5vw 80px;
           position: relative; overflow: hidden;
         }
         .hero-bg {
@@ -288,16 +264,6 @@ export default function LandingPage() {
           font-size: 11px; font-weight: 500; letter-spacing: 0.15em;
           text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px;
         }
-        .brand-logo-display {
-          display: flex; align-items: center; justify-content: center;
-          gap: 20px; margin-bottom: 20px;
-        }
-        .brand-wordmark-lg {
-          font-family: 'Fraunces', serif;
-          font-size: 56px; font-weight: 700;
-          color: var(--navy); letter-spacing: -2px; line-height: 1;
-        }
-        .brand-wordmark-lg span { color: var(--gold); }
         .brand-tagline { font-size: 15px; font-weight: 300; color: var(--text-muted); letter-spacing: 0.05em; }
 
         /* ── FEATURES ── */
@@ -418,15 +384,6 @@ export default function LandingPage() {
           display: flex; gap: 14px; justify-content: center;
           position: relative; z-index: 1; flex-wrap: wrap;
         }
-        .btn-cta-secondary {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 15px; font-weight: 400; padding: 14px 32px;
-          border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.8);
-          border-radius: 8px; text-decoration: none; transition: all 0.2s; display: inline-block;
-        }
-        .btn-cta-secondary:hover {
-          background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.35);
-        }
 
         /* ── FOOTER ── */
         footer {
@@ -439,12 +396,6 @@ export default function LandingPage() {
           padding-bottom: 32px; border-bottom: 1px solid rgba(255,255,255,0.06);
           margin-bottom: 24px;
         }
-        .footer-brand { display: flex; align-items: center; gap: 12px; }
-        .footer-wordmark {
-          font-family: 'Fraunces', serif;
-          font-size: 20px; font-weight: 600; color: var(--white);
-        }
-        .footer-wordmark span { color: var(--gold); }
         .footer-copy { font-size: 13px; color: rgba(255,255,255,0.3); }
         .footer-links { display: flex; gap: 24px; }
         .footer-link { font-size: 13px; color: rgba(255,255,255,0.35); text-decoration: none; transition: color 0.2s; }
@@ -464,10 +415,12 @@ export default function LandingPage() {
 
       {/* ─── Navbar ─────────────────────────────────────────────────────────── */}
       <header className="dormify-nav">
-        <Link href="/" className="dormify-logo">
-          <DormifyLogoMark size={42} />
-          <span className="dormify-wordmark">
-            Dorm<span>ify</span>
+        {/* LOGO CHÍNH - Chữ được nâng lên xíu xiu */}
+        <Link href="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity no-underline">
+          <DormifyLogoMark size={75} className="-translate-y-2" />
+          {/* Sửa translate-y-2 thành translate-y-1 */}
+          <span className="font-serif text-4xl font-bold text-white tracking-tight translate-y-1">
+            Dorm<span className="text-[#C9A84C]">ify</span>
           </span>
         </Link>
 
@@ -479,10 +432,9 @@ export default function LandingPage() {
               Vào không gian làm việc
             </Link>
           ) : (
-            <>
-              <Link href="/login"    className="btn-nav btn-outline-gold">Đăng nhập</Link>
-              <Link href="/register" className="btn-nav btn-gold">Đăng ký ngay</Link>
-            </>
+            <Link href="/login" className="btn-nav btn-gold">
+              Đăng nhập / Đăng ký
+            </Link>
           )}
         </div>
       </header>
@@ -513,7 +465,7 @@ export default function LandingPage() {
                   Quay lại Bảng điều khiển
                 </Link>
               ) : (
-                <Link href="/register" className="btn-hero-primary">
+                <Link href="/login" className="btn-hero-primary">
                   Bắt đầu miễn phí
                 </Link>
               )}
@@ -540,10 +492,12 @@ export default function LandingPage() {
         {/* ─── Brand Display ────────────────────────────────────────────────── */}
         <section className="brand-section">
           <div className="brand-section-label">Thương hiệu</div>
-          <div className="brand-logo-display">
-            <DormifyLogoMark size={72} />
-            <div className="brand-wordmark-lg">
-              Dorm<span>ify</span>
+          {/* LOGO THƯƠNG HIỆU - Chữ được nâng lên xíu xiu */}
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <DormifyLogoMark size={90} className="-translate-y-2" />
+            {/* Sửa translate-y-2 thành translate-y-1 */}
+            <div className="font-serif text-6xl font-bold text-[#0D1B2A] tracking-tight translate-y-1">
+              Dorm<span className="text-[#C9A84C]">ify</span>
             </div>
           </div>
           <div className="brand-tagline">Smart Dormitory Management Platform · HCMUS</div>
@@ -626,10 +580,7 @@ export default function LandingPage() {
                 Vào Bảng điều khiển
               </Link>
             ) : (
-              <>
-                <Link href="/register" className="btn-hero-primary">Tạo tài khoản ngay</Link>
-                <Link href="/login"    className="btn-cta-secondary">Đã có tài khoản</Link>
-              </>
+              <Link href="/login" className="btn-hero-primary">Đăng nhập / Đăng ký</Link>
             )}
           </div>
         </section>
@@ -638,10 +589,12 @@ export default function LandingPage() {
       {/* ─── Footer ───────────────────────────────────────────────────────── */}
       <footer>
         <div className="footer-top">
-          <div className="footer-brand">
-            <DormifyLogoMark size={32} />
-            <span className="footer-wordmark">
-              Dorm<span>ify</span>
+          {/* LOGO FOOTER - Chữ được nâng lên (bỏ translate-y-1) */}
+          <div className="flex items-center gap-2">
+            <DormifyLogoMark size={40} className="-translate-y-1" />
+            {/* Đã bỏ class translate-y-1 để chữ bằng ngang với logo */}
+            <span className="font-serif text-2xl font-bold text-white tracking-tight">
+              Dorm<span className="text-[#C9A84C]">ify</span>
             </span>
           </div>
           <div className="footer-links">

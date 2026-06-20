@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import RoleGuard from "../../components/RoleGuard";
+import NotificationBell from "../../components/NotificationBell";
 
 interface Room {
   _id: string;
@@ -41,6 +43,23 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
     </svg>
   ),
+  eye: (
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    </svg>
+  ),
+  close: (
+    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  ),
+  location: (
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.242-4.243a8 8 0 1111.314 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  )
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -112,28 +131,46 @@ export default function StudentRoomsPage() {
   );
 
   return (
-    <div className="w-full max-w-[1100px] mx-auto font-sans">
+    <RoleGuard allowedRoles={["STUDENT"]}>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500;700&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+          --navy:        #0D1B2A;
+          --gold:        #C9A84C;
+          --bg-color:    #F5F3EF;
+          --white:       #ffffff;
+          --muted:       #8A9BAD;
+          --border:      rgba(13,27,42,0.09);
+        }
+
+        body { background: var(--bg-color); font-family: 'DM Sans', sans-serif; color: var(--navy); }
+
+        .app-container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; min-height: 100vh; position: relative; }
+
+        /* ── HEADER ── */
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; flex-wrap: wrap; gap: 20px; }
         .header-left { display: flex; align-items: center; gap: 16px; }
         .btn-back {
-          width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(13,27,42,0.09);
-          background: #ffffff; display: flex; align-items: center; justify-content: center;
-          color: #0D1B2A; cursor: pointer; transition: all 0.2s; text-decoration: none;
+          width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border);
+          background: var(--white); display: flex; align-items: center; justify-content: center;
+          color: var(--navy); cursor: pointer; transition: all 0.2s; text-decoration: none;
         }
-        .btn-back:hover { background: #0D1B2A; color: #ffffff; border-color: #0D1B2A; }
+        .btn-back:hover { background: var(--navy); color: var(--white); border-color: var(--navy); }
         
-        .page-title { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 700; color: #0D1B2A; letter-spacing: -0.5px; }
-        .page-subtitle { font-size: 14px; color: #8A9BAD; margin-top: 4px; }
+        .page-title { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 700; color: var(--navy); letter-spacing: -0.5px; }
+        .page-subtitle { font-size: 14px; color: var(--muted); margin-top: 4px; }
 
         /* ── SEARCH BAR ── */
         .search-box {
-          display: flex; align-items: center; background: #ffffff;
-          border: 1px solid rgba(13,27,42,0.09); border-radius: 12px; padding: 12px 16px;
+          display: flex; align-items: center; background: var(--white);
+          border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px;
           width: 320px; transition: border-color 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
-        .search-box:focus-within { border-color: #C9A84C; }
-        .search-box input { border: none; outline: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 14.5px; margin-left: 10px; width: 100%; color: #0D1B2A; }
+        .search-box:focus-within { border-color: var(--gold); }
+        .search-box input { border: none; outline: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 14.5px; margin-left: 10px; width: 100%; color: var(--navy); }
         .search-box input::placeholder { color: #A0B0C0; }
 
         /* ── ROOM GRID ── */
@@ -141,17 +178,17 @@ export default function StudentRoomsPage() {
 
         /* ── ROOM CARD ── */
         .room-card {
-          background: #ffffff; border: 1px solid rgba(13,27,42,0.09); border-radius: 16px;
+          background: var(--white); border: 1px solid var(--border); border-radius: 16px;
           padding: 24px; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s;
           position: relative; overflow: hidden;
         }
         .room-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(13,27,42,0.06); }
         
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .room-name { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: #0D1B2A; }
+        .room-name { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--navy); }
         
         .status-badge {
-          padding: 4px 12px; border-radius: 100px; font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+          padding: 4px 12px; border-radius: 100px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block;
         }
         .status--available { background: rgba(34,197,94,0.1); color: #16a34a; border: 1px solid rgba(34,197,94,0.2); }
         .status--full { background: rgba(239,68,68,0.1); color: #dc2626; border: 1px solid rgba(239,68,68,0.2); }
@@ -159,22 +196,44 @@ export default function StudentRoomsPage() {
 
         .info-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
         .info-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #4A6580; }
-        .info-item span { font-weight: 500; color: #0D1B2A; }
+        .info-item span { font-weight: 600; color: var(--navy); }
 
         .facilities { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; flex: 1; }
         .facility-chip {
-          background: #F8F9FA; border: 1px solid rgba(13,27,42,0.09); color: #5C738A;
-          padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;
+          background: #F8F9FA; border: 1px solid var(--border); color: #5C738A;
+          padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;
         }
 
+        /* Container cho nhóm nút */
+        .action-buttons {
+          display: flex; flex-direction: column; gap: 12px; margin-top: auto;
+        }
+
+        /* Nút Xem chi tiết */
+        .btn-preview {
+          width: 100%; padding: 12px; border-radius: 10px; font-family: 'DM Sans', sans-serif;
+          font-size: 15px; font-weight: 700; text-align: center; border: 1px solid var(--border); 
+          color: var(--navy); background: var(--white); cursor: pointer; transition: all 0.2s;
+          display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;
+        }
+        .btn-preview:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+        /* Nút Đăng ký */
         .btn-book {
           width: 100%; padding: 14px; border-radius: 10px; font-family: 'DM Sans', sans-serif;
-          font-size: 15px; font-weight: 600; text-align: center; border: none; cursor: pointer;
+          font-size: 15px; font-weight: 700; text-align: center; border: none; cursor: pointer;
           transition: all 0.2s;
         }
-        .btn-book--active { background: #0D1B2A; color: #ffffff; }
+        .btn-book--active { background: var(--navy); color: var(--white); }
         .btn-book--active:hover { background: #1a334d; box-shadow: 0 4px 12px rgba(13,27,42,0.15); }
         .btn-book--disabled { background: #E2E8F0; color: #94A3B8; cursor: not-allowed; }
+
+        /* Animation cho Modal */
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-modal { animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
         @media (max-width: 640px) {
           .header { flex-direction: column; align-items: flex-start; }
@@ -182,114 +241,131 @@ export default function StudentRoomsPage() {
         }
       `}</style>
 
-      {/* ── Header & Search ── */}
-      <header className="header">
-        <div className="header-left">
-          <Link href="/student" className="btn-back" title="Quay lại">
-            {Icons.back}
-          </Link>
-          <div>
-            <h1 className="page-title">Tìm kiếm phòng</h1>
-            <p className="page-subtitle">Khám phá và đăng ký không gian lưu trú của bạn</p>
-          </div>
-        </div>
-        
-        <div className="search-box">
-          <span style={{ color: "#8A9BAD" }}>{Icons.search}</span>
-          <input 
-            type="text" 
-            placeholder="Tìm theo tòa nhà hoặc tên phòng..." 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-      </header>
-
-      {/* ── Room List ── */}
-      {loading ? (
-        <div style={{ textAlign: "center", padding: "60px", color: "#8A9BAD" }}>
-          <p>Đang tải danh sách phòng...</p>
-        </div>
-      ) : filteredRooms.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "60px", background: "#ffffff", borderRadius: "16px", border: "1px solid rgba(13,27,42,0.09)" }}>
-          <div style={{ color: "#8A9BAD", marginBottom: "12px", display: "flex", justifyContent: "center" }}>{Icons.search}</div>
-          <p style={{ fontWeight: 600, fontSize: "16px" }}>Không tìm thấy phòng phù hợp</p>
-          <p style={{ fontSize: "14px", color: "#8A9BAD", marginTop: "4px" }}>Thử thay đổi từ khóa tìm kiếm của bạn.</p>
-        </div>
-      ) : (
-        <div className="room-grid">
-          {filteredRooms.map((room) => (
-            <div key={room._id} className="room-card">
-              
-              {/* Tên & Trạng thái */}
-              <div className="card-header">
-                <div className="room-name">{room.name}</div>
-                <div className={`status-badge ${
-                  room.status === 'AVAILABLE' ? 'status--available' : 
-                  room.status === 'FULL' ? 'status--full' : 'status--maintenance'
-                }`}>
-                  {room.status === 'AVAILABLE' ? 'Còn trống' : 
-                   room.status === 'FULL' ? 'Đã đầy' : 'Bảo trì'}
-                </div>
-              </div>
-
-              {/* Thông tin cơ bản */}
-              <div className="info-list">
-                <div className="info-item">
-                  {Icons.building} Tòa nhà <span>{room.building}</span> — Tầng <span>{room.floor}</span>
-                </div>
-                <div className="info-item">
-                  {Icons.users} Sức chứa <span>{room.currentOccupancy} / {room.capacity}</span> người
-                </div>
-                <div className="info-item">
-                  {Icons.wallet} Giá: <span style={{ color: "#C9A84C", fontSize: "16px", fontWeight: "bold" }}>{room.price.toLocaleString('vi-VN')} đ/tháng</span>
-                </div>
-              </div>
-
-              {/* Tiện ích */}
-              <div className="facilities">
-                {room.facilities && room.facilities.length > 0 ? (
-                  room.facilities.map((fac, idx) => (
-                    <span key={idx} className="facility-chip">{fac}</span>
-                  ))
-                ) : (
-                  <span className="facility-chip" style={{ opacity: 0.5 }}>Chưa cập nhật tiện ích</span>
-                )}
-              </div>
-
-              {/* Hiển thị thông báo ngay trên nút bấm cho từng phòng cụ thể */}
-              {message.roomId === room._id && message.text && (
-                <div style={{ 
-                  padding: '10px', 
-                  marginBottom: '16px', 
-                  borderRadius: '8px', 
-                  fontSize: '13px', 
-                  backgroundColor: message.type === 'success' ? '#dcfce7' : '#fee2e2', 
-                  color: message.type === 'success' ? '#166534' : '#991b1b', 
-                  textAlign: 'center' 
-                }}>
-                  {message.text}
-                </div>
-              )}
-
-              {/* Nút hành động */}
-              {room.status === 'AVAILABLE' ? (
-                <button 
-                  className={`btn-book ${processingId === room._id ? 'btn-book--disabled' : 'btn-book--active'}`}
-                  onClick={() => handleBookRoom(room._id, room.name)}
-                  disabled={processingId === room._id}
-                >
-                  {processingId === room._id ? 'Đang xử lý...' : 'Đăng ký phòng này'}
-                </button>
-              ) : (
-                <button className="btn-book btn-book--disabled" disabled>
-                  {room.status === 'FULL' ? 'Phòng đã kín chỗ' : 'Phòng đang bảo trì'}
-                </button>
-              )}
+      <div className="app-container">
+        {/* ── Header & Search ── */}
+        <header className="header">
+          <div className="header-left">
+            <Link href="/student" className="btn-back" title="Quay lại">
+              {Icons.back}
+            </Link>
+            <div>
+              <h1 className="page-title">Tìm kiếm phòng</h1>
+              <p className="page-subtitle">Khám phá và đăng ký không gian lưu trú của bạn</p>
             </div>
-          ))}
-        </div>
-      )}
-    </div>
+          </div>
+          
+          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+            <div className="search-box">
+              <span style={{ color: "var(--muted)" }}>{Icons.search}</span>
+              <input 
+                type="text" 
+                placeholder="Tìm theo tòa nhà hoặc tên phòng..." 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            {/* Đã thêm chuông thông báo vào ngay cạnh thanh tìm kiếm */}
+            <NotificationBell />
+          </div>
+        </header>
+
+        {/* ── Room List ── */}
+        {loading ? (
+          <div style={{ textAlign: "center", padding: "60px", color: "var(--muted)" }}>
+            <p className="font-medium">Đang tải danh sách phòng...</p>
+          </div>
+        ) : filteredRooms.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "60px", background: "var(--white)", borderRadius: "16px", border: "1px solid var(--border)" }}>
+            <div style={{ color: "var(--muted)", marginBottom: "12px", display: "flex", justifyContent: "center" }}>{Icons.search}</div>
+            <p style={{ fontWeight: 700, fontSize: "16px" }}>Không tìm thấy phòng phù hợp</p>
+            <p style={{ fontSize: "14px", color: "var(--muted)", marginTop: "4px" }}>Thử thay đổi từ khóa tìm kiếm của bạn.</p>
+          </div>
+        ) : (
+          <div className="room-grid">
+            {filteredRooms.map((room) => (
+              <div key={room._id} className="room-card">
+                
+                {/* Tên & Trạng thái */}
+                <div className="card-header">
+                  <div className="room-name">{room.name}</div>
+                  <div className={`status-badge ${
+                    room.status === 'AVAILABLE' ? 'status--available' : 
+                    room.status === 'FULL' ? 'status--full' : 'status--maintenance'
+                  }`}>
+                    {room.status === 'AVAILABLE' ? 'Còn trống' : 
+                     room.status === 'FULL' ? 'Đã đầy' : 'Bảo trì'}
+                  </div>
+                </div>
+
+                {/* Thông tin cơ bản */}
+                <div className="info-list">
+                  <div className="info-item">
+                    {Icons.building} Tòa nhà <span>{room.building}</span> — Tầng <span>{room.floor}</span>
+                  </div>
+                  <div className="info-item">
+                    {Icons.users} Sức chứa <span>{room.currentOccupancy} / {room.capacity}</span> người
+                  </div>
+                  <div className="info-item">
+                    {Icons.wallet} Giá: <span style={{ color: "var(--gold)", fontSize: "16px" }}>{room.price.toLocaleString('vi-VN')} đ/tháng</span>
+                  </div>
+                </div>
+
+                {/* Tiện ích */}
+                <div className="facilities">
+                  {room.facilities && room.facilities.length > 0 ? (
+                    room.facilities.map((fac, idx) => (
+                      <span key={idx} className="facility-chip">{fac}</span>
+                    ))
+                  ) : (
+                    <span className="facility-chip" style={{ opacity: 0.5 }}>Chưa cập nhật tiện ích</span>
+                  )}
+                </div>
+
+                {/* Hiển thị thông báo ngay trên nút bấm cho từng phòng cụ thể */}
+                {message.roomId === room._id && message.text && (
+                  <div style={{ 
+                    padding: '10px', 
+                    marginBottom: '16px', 
+                    borderRadius: '8px', 
+                    fontSize: '13px',
+                    fontWeight: 700, 
+                    backgroundColor: message.type === 'success' ? '#dcfce7' : '#fee2e2', 
+                    color: message.type === 'success' ? '#166534' : '#991b1b', 
+                    textAlign: 'center' 
+                  }}>
+                    {message.text}
+                  </div>
+                )}
+
+                {/* Nút hành động */}
+                <div className="action-buttons">
+                  {/* Nút Xem chi tiết (Đã đổi thành Link mở tab mới) */}
+                  <Link href={`/student/rooms/${room._id}`} target="_blank" className="btn-preview">
+                    {Icons.eye} Xem chi tiết
+                  </Link>
+
+                  {/* Nút Đăng ký (Ở dưới) */}
+                  {room.status === 'AVAILABLE' ? (
+                    <button 
+                      className={`btn-book ${processingId === room._id ? 'btn-book--disabled' : 'btn-book--active'}`}
+                      onClick={() => handleBookRoom(room._id, room.name)}
+                      disabled={processingId === room._id}
+                    >
+                      {processingId === room._id ? 'Đang xử lý...' : 'Đăng ký phòng này'}
+                    </button>
+                  ) : (
+                    <button className="btn-book btn-book--disabled" disabled>
+                      {room.status === 'FULL' ? 'Phòng đã kín chỗ' : 'Phòng đang bảo trì'}
+                    </button>
+                  )}
+                </div>
+
+              </div>
+            ))}
+          </div>
+        )}
+
+      </div>
+    </RoleGuard>
   );
 }
