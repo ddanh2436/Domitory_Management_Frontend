@@ -11,7 +11,8 @@ interface Student {
   phone?: string;
   cccd?: string;
   room?: { name: string; building: string };
-  status?: string;
+  accessStatus?: string;
+  blockReason?: string;
   avatar?: string;
 }
 
@@ -30,8 +31,14 @@ export default function AdminStudentsPage() {
   const [search, setSearch] = useState("");
   const [alertMsg, setAlertMsg] = useState({ text: "", type: "" });
   
+  const [activeTab, setActiveTab] = useState<"ACTIVE" | "LOCKED">("ACTIVE");
+
   // STATE CHO MODAL SINH VIÊN
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  
+  // TÍNH NĂNG MỚI: State quản lý Tab bên trong Modal
+  const [modalTab, setModalTab] = useState<"PROFILE" | "SECURITY">("PROFILE");
+
   const [editForm, setEditForm] = useState({
     fullName: "",
     phone: "",
@@ -39,6 +46,7 @@ export default function AdminStudentsPage() {
     avatar: "" 
   });
   const [adminMessage, setAdminMessage] = useState("");
+  const [blockReasonInput, setBlockReasonInput] = useState(""); 
 
   const loadData = async () => {
     setLoading(true);
@@ -57,7 +65,6 @@ export default function AdminStudentsPage() {
 
   useEffect(() => { loadData(); }, []);
 
-  // Hàm mở Modal khi click vào dòng sinh viên
   const handleRowClick = (student: Student) => {
     setSelectedStudent(student);
     setEditForm({
@@ -67,9 +74,10 @@ export default function AdminStudentsPage() {
       avatar: student.avatar || "", 
     });
     setAdminMessage(""); 
+    setBlockReasonInput(""); 
+    setModalTab("PROFILE"); // Reset về tab Profile mỗi khi mở sinh viên mới
   };
 
-  // HÀM XỬ LÝ UPLOAD ẢNH TỪ MÁY
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -86,7 +94,6 @@ export default function AdminStudentsPage() {
     reader.readAsDataURL(file);
   };
 
-  // Hàm Cập nhật thông tin & Gửi thông báo
   const handleUpdateAndNotify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudent) return;
@@ -119,14 +126,14 @@ export default function AdminStudentsPage() {
           },
           body: JSON.stringify({
             userId: selectedStudent._id,
-            title: "Thông báo từ Ban Quản Lý (Về hồ sơ cá nhân)",
+            title: "Thông báo từ Ban Quản Lý",
             message: adminMessage,
             isRead: false
           }),
         });
       }
 
-      setAlertMsg({ text: "Đã cập nhật thông tin thành công!", type: "success" });
+      setAlertMsg({ text: "Đã lưu thay đổi thành công!", type: "success" });
       setSelectedStudent(null);
       loadData(); 
 
@@ -136,7 +143,54 @@ export default function AdminStudentsPage() {
     }
   };
 
-  // HÀM XỬ LÝ XÓA SINH VIÊN
+  const handleBlockUser = async () => {
+    if (!selectedStudent) return;
+    if (!blockReasonInput.trim()) {
+      alert("Vui lòng nhập lý do khóa tài khoản!");
+      return;
+    }
+
+    const isConfirm = window.confirm(`Khóa tài khoản sinh viên ${selectedStudent.fullName}? Người này sẽ không thể đăng nhập nữa.`);
+    if (!isConfirm) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const res = await fetch(`${API_URL}/api/users/${selectedStudent._id}/block`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reason: blockReasonInput }),
+      });
+
+      if (!res.ok) throw new Error("Lỗi khi khóa");
+      setAlertMsg({ text: "Đã khóa tài khoản thành công!", type: "success" });
+      setSelectedStudent(null);
+      loadData();
+    } catch (error) {
+      setAlertMsg({ text: "Không thể khóa tài khoản!", type: "error" });
+    }
+  };
+
+  const handleUnblockUser = async () => {
+    if (!selectedStudent) return;
+    
+    try {
+      const token = localStorage.getItem("token");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const res = await fetch(`${API_URL}/api/users/${selectedStudent._id}/unblock`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error("Lỗi khi mở khóa");
+      setAlertMsg({ text: "Đã mở khóa tài khoản thành công!", type: "success" });
+      setSelectedStudent(null);
+      loadData();
+    } catch (error) {
+      setAlertMsg({ text: "Không thể mở khóa tài khoản!", type: "error" });
+    }
+  };
+
   const handleDeleteStudent = async () => {
     if (!selectedStudent) return;
     
@@ -150,37 +204,37 @@ export default function AdminStudentsPage() {
 
       const res = await fetch(`${API_URL}/api/users/${selectedStudent._id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) {
-        throw new Error("Không thể xóa sinh viên");
-      }
+      if (!res.ok) throw new Error("Không thể xóa sinh viên");
 
       setAlertMsg({ text: "Đã xóa sinh viên khỏi hệ thống!", type: "success" });
       setSelectedStudent(null); 
       loadData(); 
-
     } catch (error) {
-      console.error(error);
       setAlertMsg({ text: "Lỗi kết nối hoặc Backend chưa mở API xóa!", type: "error" });
     }
   };
 
-  const filteredStudents = students.filter(s =>
+  const searchedStudents = students.filter(s =>
     s.fullName?.toLowerCase().includes(search.toLowerCase()) ||
     s.email?.toLowerCase().includes(search.toLowerCase()) ||
     (s.mssv ?? "").toLowerCase().includes(search.toLowerCase())
   );
+
+  const displayedStudents = searchedStudents.filter(s => {
+    if (activeTab === "ACTIVE") return s.accessStatus !== "LOCKED";
+    if (activeTab === "LOCKED") return s.accessStatus === "LOCKED";
+    return true;
+  });
 
   return (
     <div className="w-full text-slate-800 font-sans relative">
       <style>{`
         :root { --navy: #0D1B2A; --gold: #C9A84C; --gold-dim: rgba(201,168,76,0.18); --gold-border: rgba(201,168,76,0.25); --white: #ffffff; --muted: #8A9BAD; --border: rgba(13,27,42,0.09); --row-hover: rgba(201,168,76,0.04); }
         .panel { background: var(--white); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 28px; }
-        .panel__header { padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 16px; }
+        .panel__header { padding: 20px 24px 10px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
         .panel__title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--navy); letter-spacing: -0.2px; }
         .panel__subtitle { font-size: 12.5px; color: var(--muted); }
         .panel__header-right { display: flex; align-items: center; gap: 10px; }
@@ -188,6 +242,13 @@ export default function AdminStudentsPage() {
         .search-wrap__icon { position: absolute; left: 11px; color: var(--muted); pointer-events: none; display: flex; }
         .search-input { padding: 8px 12px 8px 34px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--navy); background: #F9F8F6; outline: none; width: 220px; transition: border-color 0.15s, background 0.15s; }
         .search-input:focus { border-color: var(--gold); background: var(--white); }
+        
+        .tabs-container { display: flex; gap: 12px; padding: 0 24px 16px 24px; border-bottom: 1px solid var(--border); background: var(--white); }
+        .tab-btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+        .tab-btn.active { background: var(--navy); color: var(--gold); }
+        .tab-btn.inactive { background: #f1f5f9; color: var(--muted); }
+        .tab-btn.inactive:hover { background: #e2e8f0; }
+
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table thead tr { border-bottom: 1px solid var(--border); }
         .data-table th { padding: 10px 20px; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-align: left; white-space: nowrap; background: #FAFAF9; }
@@ -198,30 +259,50 @@ export default function AdminStudentsPage() {
         .cell-name { font-size: 14px; font-weight: 500; color: var(--navy); }
         .cell-mssv { font-size: 13px; font-weight: 500; color: var(--gold); font-family: 'DM Sans', monospace; }
         .cell-email { font-size: 13px; color: #4A6580; }
-        .cell-status span { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 100px; font-size: 11.5px; font-weight: 500; background: rgba(34,197,94,0.1); color: #16a34a; border: 1px solid rgba(34,197,94,0.2); }
-        .cell-status span::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #22c55e; }
+        .cell-status span { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 100px; font-size: 11.5px; font-weight: 500; }
+        
+        .status-active { background: rgba(34,197,94,0.1); color: #16a34a; border: 1px solid rgba(34,197,94,0.2); }
+        .status-active::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #22c55e; }
+        .status-locked { background: rgba(220,38,38,0.1); color: #dc2626; border: 1px solid rgba(220,38,38,0.2); }
+        .status-locked::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #ef4444; }
+        
         .skeleton { display: inline-block; border-radius: 4px; background: linear-gradient(90deg, #F0EDE8 25%, #E8E4DE 50%, #F0EDE8 75%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; }
         @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 
         /* Styles cho Student Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(13, 27, 42, 0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; }
-        .modal-card { background: var(--white); border-radius: 16px; border: 1px solid var(--gold-border); width: 440px; max-width: 90%; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
+        .modal-card { background: var(--white); border-radius: 16px; border: 1px solid var(--gold-border); width: 440px; max-width: 90%; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); display: flex; flex-direction: column; max-height: 90vh; }
         .modal-header { padding: 20px 24px; background: var(--navy); color: var(--white); display: flex; align-items: center; justify-content: space-between; }
         .modal-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--gold); }
         .modal-close { background: transparent; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 24px; line-height: 1; display: flex; align-items: center; transition: color 0.15s; }
         .modal-close:hover { color: var(--white); }
-        .modal-body { padding: 24px; }
+        
+        /* TÍNH NĂNG MỚI: CSS CHO TABS BÊN TRONG MODAL */
+        .modal-inner-tabs { display: flex; gap: 20px; border-bottom: 1px solid var(--border); padding: 0 24px; background: #fafaf9; }
+        .modal-inner-tab-btn { padding: 14px 4px 12px 4px; border: none; background: transparent; font-size: 13.5px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; margin-bottom: -1px; }
+        .modal-inner-tab-btn.active { color: var(--navy); border-bottom-color: var(--gold); }
+        .modal-inner-tab-btn:hover:not(.active) { color: var(--navy); }
+        
+        .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
         .form-group { margin-bottom: 18px; }
         .form-label { display: block; font-size: 12px; font-weight: 500; color: var(--navy); margin-bottom: 6px; letter-spacing: 0.02em; }
         .form-input-text { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--navy); background: #F9F8F6; outline: none; transition: border-color 0.15s, background 0.15s; }
         .form-input-text:focus { border-color: var(--gold); background: var(--white); }
-        .modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; gap: 10px; flex-wrap: wrap; }
+        .modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 20px; }
         .btn-cancel { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--navy); font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
         .btn-cancel:hover { background: #FAFAF9; }
         .btn-submit { padding: 9px 18px; border-radius: 8px; border: none; background: var(--navy); color: var(--gold); font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--gold-border); transition: background 0.15s; }
         .btn-submit:hover { background: #162a3f; }
         .btn-delete { padding: 9px 14px; border-radius: 8px; border: none; background: #fee2e2; color: #dc2626; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
         .btn-delete:hover { background: #fca5a5; }
+        
+        .btn-block { padding: 10px 14px; border-radius: 8px; border: none; background: #fff7ed; color: #ea580c; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #fed7aa; transition: background 0.15s; display: flex; justify-content: center; width: 100%; }
+        .btn-block:hover { background: #ffedd5; }
+        .btn-unblock { padding: 10px 14px; border-radius: 8px; border: none; background: #f0fdf4; color: #16a34a; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #bbf7d0; transition: background 0.15s; display: flex; justify-content: center; width: 100%; }
+        .btn-unblock:hover { background: #dcfce7; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.2s ease-out forwards; }
       `}</style>
 
       {alertMsg.text && (
@@ -233,8 +314,8 @@ export default function AdminStudentsPage() {
       <div className="panel">
         <div className="panel__header">
           <div className="panel__header-left">
-            <div className="panel__title">Danh sách sinh viên hệ thống</div>
-            <div className="panel__subtitle">Bấm vào sinh viên để sửa thông tin hoặc xóa tài khoản!</div>
+            <div className="panel__title">Quản lý tài khoản Sinh viên</div>
+            <div className="panel__subtitle">Xem danh sách, sửa hồ sơ hoặc khóa tài khoản vi phạm</div>
           </div>
           <div className="panel__header-right">
             <div className="search-wrap">
@@ -249,6 +330,22 @@ export default function AdminStudentsPage() {
             </div>
           </div>
         </div>
+
+        <div className="tabs-container">
+          <button 
+            className={`tab-btn ${activeTab === "ACTIVE" ? "active" : "inactive"}`}
+            onClick={() => setActiveTab("ACTIVE")}
+          >
+            Đang hoạt động ({searchedStudents.filter(s => s.accessStatus !== "LOCKED").length})
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === "LOCKED" ? "active" : "inactive"}`}
+            onClick={() => setActiveTab("LOCKED")}
+          >
+            Bị khóa ({searchedStudents.filter(s => s.accessStatus === "LOCKED").length})
+          </button>
+        </div>
+
         <div style={{ overflowX: "auto" }}>
           <table className="data-table">
             <thead>
@@ -273,8 +370,8 @@ export default function AdminStudentsPage() {
                     <td><span className="skeleton" style={{ width: 60, height: 18, borderRadius: 100 }} /></td>
                   </tr>
                 ))
-              ) : filteredStudents.length > 0 ? (
-                filteredStudents.map((student, index) => (
+              ) : displayedStudents.length > 0 ? (
+                displayedStudents.map((student, index) => (
                   <tr key={student._id} onClick={() => handleRowClick(student)}>
                     <td className="cell-index">{index + 1}</td>
                     <td className="px-4 py-3">
@@ -302,18 +399,30 @@ export default function AdminStudentsPage() {
                         {student.room ? `P.${student.room.name} - Tòa ${student.room.building}` : "Chưa xếp phòng"}
                       </div>
                     </td>
-                    <td className="cell-status"><span>Hoạt động</span></td>
+                    <td className="cell-status">
+                      {student.accessStatus === 'LOCKED' ? (
+                        <span className="status-locked">Bị khóa</span>
+                      ) : (
+                        <span className="status-active">Hoạt động</span>
+                      )}
+                    </td>
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan={6} className="text-center py-8 text-slate-400">Không tìm thấy sinh viên phù hợp.</td></tr>
+                <tr>
+                  <td colSpan={6} className="text-center py-8 text-slate-400">
+                    {activeTab === "ACTIVE" 
+                      ? "Không có sinh viên nào đang hoạt động phù hợp."
+                      : "Không có sinh viên nào đang bị khóa."}
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* ─── MODAL CẬP NHẬT HOẶC XÓA SINH VIÊN ───────────────────────────────── */}
+      {/* ─── MODAL QUẢN LÝ SINH VIÊN ───────────────────────────────── */}
       {selectedStudent && (
         <div className="modal-overlay" onClick={() => setSelectedStudent(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
@@ -321,87 +430,158 @@ export default function AdminStudentsPage() {
               <div className="modal-title">Hồ sơ Sinh viên</div>
               <button type="button" className="modal-close" onClick={() => setSelectedStudent(null)}>×</button>
             </div>
+
+            {/* THANH ĐIỀU HƯỚNG BÊN TRONG MODAL */}
+            <div className="modal-inner-tabs">
+              <button 
+                type="button" 
+                className={`modal-inner-tab-btn ${modalTab === 'PROFILE' ? 'active' : ''}`} 
+                onClick={() => setModalTab('PROFILE')}
+              >
+                Thông tin cá nhân
+              </button>
+              <button 
+                type="button" 
+                className={`modal-inner-tab-btn ${modalTab === 'SECURITY' ? 'active' : ''}`} 
+                onClick={() => setModalTab('SECURITY')}
+              >
+                Quản lý quyền & Lời nhắn
+              </button>
+            </div>
+
             <form onSubmit={handleUpdateAndNotify} className="modal-body">
               
-              <div className="form-group" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "20px" }}>
-                {editForm.avatar ? (
-                  <img 
-                    src={editForm.avatar} 
-                    alt="Preview" 
-                    style={{ width: "60px", height: "60px", borderRadius: "50%", objectFit: "cover" as const, border: "2px solid var(--gold)" }} 
-                  />
-                ) : (
-                  <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: "#F1EFEA", display: "flex", alignItems: "center" as const, justifyContent: "center" as const, fontSize: "14px", color: "var(--muted)", fontWeight: "bold" }}>
-                    Avt
+              {/* TAB 1: THÔNG TIN CÁ NHÂN */}
+              {modalTab === 'PROFILE' && (
+                <div className="animate-fadeIn">
+                  <div className="form-group" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "20px" }}>
+                    {editForm.avatar ? (
+                      <img 
+                        src={editForm.avatar} 
+                        alt="Preview" 
+                        style={{ width: "60px", height: "60px", borderRadius: "50%", objectFit: "cover" as const, border: "2px solid var(--gold)" }} 
+                      />
+                    ) : (
+                      <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: "#F1EFEA", display: "flex", alignItems: "center" as const, justifyContent: "center" as const, fontSize: "14px", color: "var(--muted)", fontWeight: "bold" }}>
+                        Avt
+                      </div>
+                    )}
+                    
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      <input 
+                        type="file" 
+                        id="avatarUpload" 
+                        accept="image/*" 
+                        style={{ display: "none" }} 
+                        onChange={handleImageUpload} 
+                      />
+                      <button 
+                        type="button" 
+                        style={{ padding: "8px 12px", background: "var(--navy)", color: "var(--gold)", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}
+                        onClick={() => document.getElementById("avatarUpload")?.click()}
+                      >
+                        📷 Chọn Ảnh
+                      </button>
+                      {editForm.avatar && (
+                        <button 
+                          type="button" 
+                          style={{ padding: "8px 12px", background: "transparent", color: "#dc2626", border: "1px solid #fca5a5", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}
+                          onClick={() => setEditForm({ ...editForm, avatar: "" })}
+                        >
+                          Xóa Ảnh
+                        </button>
+                      )}
+                    </div>
                   </div>
-                )}
-                
-                <div style={{ display: "flex", gap: "10px" }}>
-                  <input 
-                    type="file" 
-                    id="avatarUpload" 
-                    accept="image/*" 
-                    style={{ display: "none" }} 
-                    onChange={handleImageUpload} 
-                  />
-                  <button 
-                    type="button" 
-                    style={{ padding: "8px 12px", background: "var(--navy)", color: "var(--gold)", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}
-                    onClick={() => document.getElementById("avatarUpload")?.click()}
-                  >
-                    📷 Chọn Ảnh
-                  </button>
-                  {editForm.avatar && (
-                    <button 
-                      type="button" 
-                      style={{ padding: "8px 12px", background: "transparent", color: "#dc2626", border: "1px solid #fca5a5", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}
-                      onClick={() => setEditForm({ ...editForm, avatar: "" })}
-                    >
-                      Xóa Ảnh
-                    </button>
-                  )}
+
+                  <div className="form-group">
+                    <label className="form-label">Tài khoản Email</label>
+                    <input type="text" className="form-input-text" style={{ backgroundColor: "#F1EFEA", cursor: "not-allowed", color: "var(--muted)" }} value={selectedStudent.email} readOnly />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Họ và Tên</label>
+                    <input type="text" className="form-input-text" required value={editForm.fullName} onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Số điện thoại</label>
+                    <input type="text" className="form-input-text" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Số CCCD</label>
+                    <input type="text" className="form-input-text" value={editForm.cccd} onChange={(e) => setEditForm({ ...editForm, cccd: e.target.value })} />
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="form-group">
-                <label className="form-label">Tài khoản Email</label>
-                <input type="text" className="form-input-text" style={{ backgroundColor: "#F1EFEA", cursor: "not-allowed", color: "var(--muted)" }} value={selectedStudent.email} readOnly />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Họ và Tên</label>
-                <input type="text" className="form-input-text" required value={editForm.fullName} onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Số điện thoại</label>
-                <input type="text" className="form-input-text" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Số CCCD</label>
-                <input type="text" className="form-input-text" value={editForm.cccd} onChange={(e) => setEditForm({ ...editForm, cccd: e.target.value })} />
-              </div>
+              {/* TAB 2: LỜI NHẮN VÀ BẢO MẬT TÀI KHOẢN */}
+              {modalTab === 'SECURITY' && (
+                <div className="animate-fadeIn">
+                  
+                  {/* Khu vực Gửi Lời Nhắn */}
+                  <div className="form-group">
+                    <label className="form-label" style={{ color: "var(--navy)", fontWeight: "bold", fontSize: "13px" }}>
+                      📨 Gửi lời nhắn / Thông báo đến sinh viên
+                    </label>
+                    <p style={{fontSize: "12px", color: "var(--muted)", marginBottom: "10px"}}>
+                      Thông báo này sẽ xuất hiện ở chuông thông báo của sinh viên khi bạn bấm "Lưu thay đổi".
+                    </p>
+                    <textarea
+                      className="form-input-text"
+                      placeholder="VD: Nhắc nhở nộp phạt vi phạm, bổ sung giấy tờ tạm trú..."
+                      value={adminMessage}
+                      onChange={e => setAdminMessage(e.target.value)}
+                      style={{ resize: "none", height: "80px", fontFamily: "inherit" }}
+                    />
+                  </div>
 
-              <hr style={{ margin: "20px 0", borderTop: "1px solid var(--border)" }} />
-              
-              <div className="form-group">
-                <label className="form-label" style={{ color: "#d9534f", fontWeight: "bold" }}>
-                  Lời nhắn từ Ban Quản Lý (Tạo thông báo)
-                </label>
-                <textarea
-                  className="form-input-text"
-                  placeholder="VD: Cập nhật lại số điện thoại cho đúng nhé..."
-                  value={adminMessage}
-                  onChange={e => setAdminMessage(e.target.value)}
-                  style={{ resize: "none", height: "70px", fontFamily: "inherit" }}
-                />
-              </div>
+                  <hr style={{ margin: "24px 0", borderTop: "1px solid var(--border)" }} />
 
+                  {/* Khu vực Khóa/Mở Khóa Tài Khoản */}
+                  <div className="form-group">
+                    <label className="form-label" style={{ color: selectedStudent.accessStatus === 'LOCKED' ? "#16a34a" : "#ea580c", fontWeight: "bold", fontSize: "14px" }}>
+                      {selectedStudent.accessStatus === 'LOCKED' ? "🔒 Trạng thái: Đang bị khóa" : "🔓 Quản lý truy cập (Khóa tài khoản)"}
+                    </label>
+                    
+                    {selectedStudent.accessStatus === 'LOCKED' ? (
+                      <div style={{ background: "#fef2f2", padding: "16px", borderRadius: "8px", border: "1px solid #fee2e2" }}>
+                        <p style={{ fontSize: "13px", color: "#dc2626", marginBottom: "12px", fontWeight: 500 }}>
+                          Sinh viên này hiện đang bị chặn đăng nhập.<br/>
+                          <span style={{color: "#7f1d1d", marginTop: "4px", display: "inline-block"}}>Lý do: {selectedStudent.blockReason || "Không có lý do"}</span>
+                        </p>
+                        <button type="button" className="btn-unblock" onClick={handleUnblockUser}>
+                          🔓 Mở khóa tài khoản ngay
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ background: "#fff7ed", padding: "16px", borderRadius: "8px", border: "1px solid #ffedd5" }}>
+                        <p style={{ fontSize: "12px", color: "#9a3412", marginBottom: "12px" }}>
+                          Khi bị khóa, sinh viên sẽ bị đăng xuất tự động và không thể tiếp tục truy cập vào hệ thống cho đến khi được mở lại.
+                        </p>
+                        <input 
+                          type="text" 
+                          className="form-input-text" 
+                          placeholder="Nhập lý do khóa tài khoản (bắt buộc)..." 
+                          value={blockReasonInput}
+                          onChange={(e) => setBlockReasonInput(e.target.value)}
+                          style={{ marginBottom: "12px", borderColor: "#fdba74" }}
+                        />
+                        <button type="button" className="btn-block" onClick={handleBlockUser}>
+                          🔒 Xác nhận Khóa tài khoản
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* FOOTER CHUNG CỦA MODAL */}
               <div className="modal-actions">
                 <button type="button" className="btn-delete" onClick={handleDeleteStudent}>
                   🗑️ Xóa sinh viên
                 </button>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button type="button" className="btn-cancel" onClick={() => setSelectedStudent(null)}>Hủy bỏ</button>
-                  <button type="submit" className="btn-submit">Lưu & Gửi</button>
+                  <button type="submit" className="btn-submit">Lưu thay đổi</button>
                 </div>
               </div>
             </form>
