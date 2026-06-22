@@ -24,7 +24,14 @@ export default function StudentContractPage() {
         const res = await fetch("http://localhost:3001/api/contracts/my-contract", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (res.ok) setContract(await res.json());
+        if (res.ok) {
+          const text = await res.text();
+          if (text) {
+            setContract(JSON.parse(text)); 
+          } else {
+            setContract(null); 
+          }
+        }
       } catch (err) {
         console.error(err);
       } finally {
