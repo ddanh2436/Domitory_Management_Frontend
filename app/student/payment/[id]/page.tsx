@@ -139,8 +139,8 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
         });
         
         if (invRes.ok) {
-          const allInvoices = await invRes.json();
-          const targetInvoice = allInvoices.find((inv: any) => inv._id === invoiceId);
+          const allInvoices = (await invRes.json()) as Array<{ _id: string; roomName?: string }>;
+          const targetInvoice = allInvoices.find((inv) => inv._id === invoiceId);
           
           if (targetInvoice) {
             targetInvoice.roomName = profile.room?.name || "Phòng KTX";

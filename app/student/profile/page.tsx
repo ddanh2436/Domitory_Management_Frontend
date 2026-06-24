@@ -71,7 +71,10 @@ export default function StudentProfilePage() {
     }
   };
 
-  useEffect(() => { loadProfile(); }, []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadProfile();
+  }, []);
 
   // Xử lý khi sinh viên chọn file ảnh
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

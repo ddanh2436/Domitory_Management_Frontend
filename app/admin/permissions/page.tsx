@@ -84,8 +84,8 @@ export default function AdminPermissionsPage() {
         }
 
         setAccounts(data.map(normalizeAccount).filter((account: AccountAccess) => account.id));
-      } catch (error: any) {
-        setErrorMsg(error.message || "Không thể tải danh sách tài khoản.");
+      } catch (error: unknown) {
+        setErrorMsg(error instanceof Error ? error.message : "Không thể tải danh sách tài khoản.");
       } finally {
         setLoading(false);
       }
@@ -133,8 +133,8 @@ export default function AdminPermissionsPage() {
       setAccounts((current) =>
         current.map((account) => account.id === id ? updatedAccount : account)
       );
-    } catch (error: any) {
-      setErrorMsg(error.message || "Không thể cập nhật phân quyền.");
+    } catch (error: unknown) {
+      setErrorMsg(error instanceof Error ? error.message : "Không thể cập nhật phân quyền.");
     } finally {
       setSavingAccountId(null);
     }

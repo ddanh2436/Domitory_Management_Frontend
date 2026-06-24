@@ -15,6 +15,14 @@ interface AdminProfile {
   avatar?: string;
 }
 
+interface BookingSummary {
+  status: string;
+}
+
+interface MaintenanceSummary {
+  status: string;
+}
+
 function DormifyLogoMark({ size = 36 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 42 42" fill="none">
@@ -133,16 +141,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           headers: { Authorization: `Bearer ${token}` },
         });
         if (resBookings.ok) {
-          const bData = await resBookings.json();
-          setPendingBookings(bData.filter((b: any) => b.status === "PENDING").length);
+          const bData = (await resBookings.json()) as BookingSummary[];
+          setPendingBookings(bData.filter((booking) => booking.status === "PENDING").length);
         }
 
         const resMaintenance = await fetch("http://localhost:3001/api/maintenance", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (resMaintenance.ok) {
-          const mData = await resMaintenance.json();
-          setPendingMaintenance(mData.filter((req: any) => req.status === "PENDING").length);
+          const mData = (await resMaintenance.json()) as MaintenanceSummary[];
+          setPendingMaintenance(mData.filter((req) => req.status === "PENDING").length);
         }
       } catch (error) {
         console.error("Lỗi đồng bộ dữ liệu Layout Admin:", error);
