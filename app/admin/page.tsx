@@ -46,7 +46,7 @@ function StatCard({
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const [students, setStudents] = useState<Student[]>([]);
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<Array<{ status: string }>>([]);
   const [maintenanceCount, setMaintenanceCount] = useState(0);
   
   const [revenueData, setRevenueData] = useState([]);
@@ -69,12 +69,12 @@ export default function AdminDashboard() {
       if (resBookings.ok) setBookings(await resBookings.json());
       if (resMaint.ok) {
         const maintList = await resMaint.json();
-        setMaintenanceCount(maintList.filter((m: any) => m.status !== "RESOLVED").length);
+        setMaintenanceCount(maintList.filter((m: { status: string }) => m.status !== "RESOLVED").length);
       }
       if (revStatsRes.ok) setRevenueData(await revStatsRes.json());
       if (maintStatsRes.ok) setMaintenanceData(await maintStatsRes.json());
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Lỗi đồng bộ dữ liệu từ đám mây:", error);
     } finally {
       setLoading(false);
@@ -82,6 +82,7 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadDashboardData();
   }, []);
 
@@ -209,7 +210,7 @@ export default function AdminDashboard() {
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {maintenanceData.map((entry: any, index) => {
+                        {maintenanceData.map((entry: { name: string; value: number }, index) => {
                           let color = "#64748b";
                           if (entry.name === "Chưa xử lý") color = COLORS[0];
                           if (entry.name === "Đang sửa chữa") color = COLORS[1];

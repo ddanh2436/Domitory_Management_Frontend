@@ -38,7 +38,7 @@ export function getLoggedInUser(): JwtPayload | null {
     }
     
     return decoded;
-  } catch (error) {
+  } catch {
     localStorage.removeItem("token");
     return null;
   }

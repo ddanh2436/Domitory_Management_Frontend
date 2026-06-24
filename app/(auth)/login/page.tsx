@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GoogleLogin } from "@react-oauth/google";
+import type { CredentialResponse } from "@react-oauth/google";
 import { getDashboardPath, getLoggedInUser } from "@/app/utils/auth";
 import { FaUser, FaIdCard, FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -120,8 +121,8 @@ export default function AuthPage() {
       if (!res.ok) throw new Error(data.message || "Có lỗi xảy ra từ máy chủ.");
       setMessage({ type: "success", text: "Đăng ký thành công! Đang chuyển hướng..." });
       setTimeout(() => switchTab("login"), 1500);
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+    } catch (err: unknown) {
+      setMessage({ type: "error", text: err instanceof Error ? err.message : "Có lỗi xảy ra." });
     } finally {
       setLoading(false);
     }
@@ -143,15 +144,20 @@ export default function AuthPage() {
       localStorage.setItem("token", data.access_token);
       const user = getLoggedInUser();
       if (user) router.push(getDashboardPath(user.role));
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+    } catch (err: unknown) {
+      setMessage({ type: "error", text: err instanceof Error ? err.message : "Sai thông tin đăng nhập." });
     } finally {
       setLoading(false);
     }
   };
 
   // ── Google login (same logic as original) ──
-  const handleGoogleSuccess = async (credentialResponse: any) => {
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) {
+      setMessage({ type: "error", text: "Không nhận được thông tin xác thực từ Google." });
+      return;
+    }
+
     setLoading(true);
     setMessage(null);
     try {
@@ -165,8 +171,8 @@ export default function AuthPage() {
       localStorage.setItem("token", data.access_token);
       const user = getLoggedInUser();
       if (user) router.push(getDashboardPath(user.role));
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+    } catch (err: unknown) {
+      setMessage({ type: "error", text: err instanceof Error ? err.message : "Lỗi đăng nhập Google." });
     } finally {
       setLoading(false);
     }

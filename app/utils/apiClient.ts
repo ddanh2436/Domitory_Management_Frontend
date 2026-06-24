@@ -21,7 +21,7 @@ export const apiClient = {
     });
   },
 
-  post: async (endpoint: string, body: any) => {
+  post: async (endpoint: string, body: unknown) => {
     return fetch(`${getBaseUrl()}${endpoint}`, {
       method: "POST",
       headers: getHeaders(),
@@ -29,7 +29,7 @@ export const apiClient = {
     });
   },
 
-  patch: async (endpoint: string, body?: any) => {
+  patch: async (endpoint: string, body?: unknown) => {
     return fetch(`${getBaseUrl()}${endpoint}`, {
       method: "PATCH",
       headers: getHeaders(),

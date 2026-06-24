@@ -63,7 +63,10 @@ export default function AdminStudentsPage() {
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadData();
+  }, []);
 
   const handleRowClick = (student: Student) => {
     setSelectedStudent(student);
@@ -523,7 +526,7 @@ export default function AdminStudentsPage() {
                       📨 Gửi lời nhắn / Thông báo đến sinh viên
                     </label>
                     <p style={{fontSize: "12px", color: "var(--muted)", marginBottom: "10px"}}>
-                      Thông báo này sẽ xuất hiện ở chuông thông báo của sinh viên khi bạn bấm "Lưu thay đổi".
+                      Thông báo này sẽ xuất hiện ở chuông thông báo của sinh viên khi bạn bấm &quot;Lưu thay đổi&quot;.
                     </p>
                     <textarea
                       className="form-input-text"

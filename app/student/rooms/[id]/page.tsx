@@ -4,322 +4,182 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import RoleGuard from "../../../components/RoleGuard";
+import { apiClient } from "../../../utils/apiClient";
+
+interface Occupant {
+  userId: string;
+  fullName: string;
+  mssv: string;
+  avatar?: string;
+  contactInfo?: { phone?: string; email?: string } | null;
+  checkInDate: string;
+  roomStatus: string;
+}
 
 interface Room {
-  _id: string;
-  name: string;
+  roomId: string;
+  roomNumber: string;
+  roomType: string;
   building: string;
   floor: number;
   capacity: number;
   currentOccupancy: number;
   price: number;
   status: 'AVAILABLE' | 'FULL' | 'MAINTENANCE';
+  availabilityStatus: string;
   facilities: string[];
+  occupants: Occupant[];
 }
 
 export default function RoomDetailPage() {
   const params = useParams();
   const id = params.id as string;
-  
-  // State của Phòng
+
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: string } | null>(null);
+  const [error, setError] = useState("");
 
-  // State của Profile (dành cho Header)
-  const [profile, setProfile] = useState<any>(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
-
-  // Lấy chi tiết phòng
   useEffect(() => {
     const fetchRoomDetail = async () => {
+      setLoading(true);
+      setError("");
+
       try {
-        const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:3001/api/rooms", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await apiClient.get(`/rooms/${id}`);
+        const result = await response.json();
+
         if (response.ok) {
-          const result = await response.json();
-          const foundRoom = result.data.find((r: Room) => r._id === id);
-          setRoom(foundRoom || null);
+          setRoom(result.data);
+        } else {
+          setRoom(null);
+          setError(result.message || "Bạn không có quyền xem phòng này.");
         }
       } catch (error) {
-        console.error("Lỗi:", error);
+        console.error(error);
+        setError("Không thể kết nối đến máy chủ.");
       } finally {
         setLoading(false);
       }
     };
+
     if (id) fetchRoomDetail();
   }, [id]);
 
-  // Lấy thông tin Profile cho Header
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:3001/api/users/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          setProfile(await res.json());
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoadingProfile(false);
-      }
-    };
-    fetchProfile();
-  }, []);
-
-  // Xử lý nút Đăng xuất
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
-  };
-
-  const handleBookRoom = async () => {
-    if (!room || !window.confirm(`Bạn có chắc chắn muốn đăng ký phòng ${room.name}?`)) return;
-    setProcessing(true);
-    setMessage(null);
-
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3001/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ roomId: room._id }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setMessage({ text: "Gửi yêu cầu đăng ký thành công! Vui lòng chờ duyệt.", type: "success" });
-      } else {
-        setMessage({ text: data.message || "Có lỗi xảy ra", type: "error" });
-      }
-    } catch (error) {
-      setMessage({ text: "Lỗi kết nối đến máy chủ.", type: "error" });
-    } finally {
-      setProcessing(false);
-    }
-  };
-
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-slate-500 font-medium bg-[#F5F3EF]">Đang tải thông tin chi tiết...</div>;
+    return <div className="min-h-screen flex items-center justify-center text-slate-500 font-medium bg-[#F5F3EF]">Đang tải thông tin phòng của bạn...</div>;
   }
 
-  if (!room) {
+  if (error) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#F5F3EF]">
-        <h2 className="text-2xl font-bold text-slate-800 mb-4">Không tìm thấy phòng</h2>
+        <h2 className="text-2xl font-bold text-slate-800 mb-4">Không thể hiển thị phòng</h2>
+        <p className="text-slate-500 mb-4">{error}</p>
         <Link href="/student/rooms" className="text-blue-600 hover:underline">Quay lại danh sách</Link>
       </div>
     );
   }
 
+  if (!room) {
+    return null;
+  }
+
   return (
     <RoleGuard allowedRoles={["STUDENT"]}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
-        body { background: #f8f9fa; font-family: 'DM Sans', sans-serif; color: #1e293b; }
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=DM+Sans:wght@400;500;700&display=swap');
+        .room-detail { max-width: 1180px; margin: 0 auto; padding: 24px 0 8px; color: #0D1B2A; }
+        .room-header { background: #0D1B2A; color: #fff; border-radius: 24px; padding: 28px; margin-bottom: 24px; border: 1px solid rgba(201,168,76,0.25); }
+        .room-header__title { font-family: 'Fraunces', serif; font-size: 32px; margin: 8px 0 10px; }
+        .room-layout { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 20px; }
+        .panel { background: #fff; border: 1px solid rgba(13,27,42,0.09); border-radius: 20px; padding: 24px; box-shadow: 0 10px 24px rgba(13,27,42,0.04); }
+        .panel-title { font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 16px; }
+        .occupant { border: 1px solid rgba(13,27,42,0.08); border-radius: 18px; padding: 16px; display: grid; grid-template-columns: auto 1fr; gap: 14px; margin-top: 14px; }
+        .avatar { width: 58px; height: 58px; border-radius: 18px; overflow: hidden; background: linear-gradient(135deg, #0D1B2A, #284766); color: #C9A84C; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; font-size: 22px; }
+        .status { display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+        .status--active { background: rgba(34,197,94,0.12); color: #16a34a; }
+        .status--warning { background: rgba(245,158,11,0.12); color: #d97706; }
+        .meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .meta-item { padding: 14px 16px; border-radius: 14px; background: #f8fafc; border: 1px solid rgba(13,27,42,0.08); display: flex; justify-content: space-between; gap: 12px; }
+        .meta-item span:first-child { color: #64748b; }
+        .meta-item span:last-child { color: #0D1B2A; font-weight: 700; text-align: right; }
+        .side-line { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(13,27,42,0.08); font-size: 14px; }
+        .side-line:last-child { border-bottom: 0; padding-bottom: 0; }
+        .side-line span:first-child { color: #64748b; }
+        .side-line span:last-child { color: #0D1B2A; font-weight: 700; text-align: right; }
+        .occupant-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; font-size: 13px; color: #334155; margin-top: 10px; }
+        @media (max-width: 960px) { .room-layout { grid-template-columns: 1fr; } .meta, .occupant-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 640px) { .room-detail { padding-top: 12px; } .room-header__title { font-size: 26px; } .meta, .occupant-grid { grid-template-columns: 1fr; } .panel { padding: 18px; } }
       `}</style>
 
-      {/* ── THANH ĐIỀU HƯỚNG TRÊN CÙNG (CẬP NHẬT HEADER) ── */}
-      <nav className="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          
-          {/* Nút Quay lại */}
-          <Link href="/student/rooms" className="flex items-center text-slate-600 hover:text-slate-900 font-medium text-sm gap-2 transition-colors">
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Về trang tìm kiếm
-          </Link>
-
-          {/* Nhóm Nút Đăng Xuất + Avatar */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#E05A6A] bg-[#E05A6A]/10 hover:bg-[#E05A6A]/20 border border-[#E05A6A]/30 transition-all"
-              type="button"
-            >
-              <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-              </svg>
-              Đăng xuất
-            </button>
-
-            {loadingProfile ? (
-              <div className="w-9 h-9 rounded-[9px] bg-slate-200 animate-pulse"></div>
-            ) : profile?.avatar ? (
-              <Link
-                href="/student/profile"
-                className="block w-9 h-9 rounded-[9px] border-[1.5px] border-[#C9A84C] overflow-hidden hover:scale-105 transition-transform"
-                title="Hồ sơ cá nhân"
-              >
-                <img
-                  src={profile.avatar}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                />
-              </Link>
-            ) : (
-              <Link
-                href="/student/profile"
-                className="flex items-center justify-center w-9 h-9 rounded-[9px] bg-[#0D1B2A] border-[1.5px] border-[#C9A84C] text-[#C9A84C] font-serif font-bold text-xs hover:scale-105 transition-transform"
-                title="Hồ sơ cá nhân"
-              >
-                {(profile?.fullName ?? "SV").trim().split(" ").pop()?.[0]?.toUpperCase() ?? "S"}
-              </Link>
-            )}
-          </div>
-
-        </div>
-      </nav>
-
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Dòng Breadcrumb */}
-        <div className="text-sm text-slate-500 mb-6 uppercase tracking-wide font-semibold">
-          TRANG CHỦ / TÒA NHÀ {room.building} / <span className="text-green-600">PHÒNG {room.name}</span>
+      <div className="room-detail">
+        <div className="room-header">
+          <Link href="/student/rooms" className="text-white/80 hover:text-white text-sm font-semibold" style={{ textDecoration: "none" }}>← Quay lại danh sách</Link>
+          <div className="room-header__title">Phòng {room.roomNumber}</div>
+          <div style={{ color: "rgba(255,255,255,0.72)", fontSize: 14 }}>Thông tin chỉ hiển thị cho phòng của bạn.</div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          
-          {/* ── CỘT TRÁI: NỘI DUNG CHÍNH ── */}
-          <div className="lg:w-2/3">
-            
-            {/* Khung Ảnh Lớn */}
-            <div className="w-full aspect-[16/9] bg-slate-200 rounded-2xl overflow-hidden mb-8 relative shadow-sm border border-slate-200">
-              <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/auth-bg.jpg')" }}></div>
-              <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                1/6 hình ảnh
-              </div>
+        <div className="room-layout">
+          <section className="panel">
+            <div className="panel-title">Tổng quan chi tiết</div>
+            <div className="meta">
+              <div className="meta-item"><span>Loại phòng</span><span>{room.roomType}</span></div>
+              <div className="meta-item"><span>Trạng thái</span><span>{room.availabilityStatus}</span></div>
+              <div className="meta-item"><span>Tòa nhà</span><span>{room.building}</span></div>
+              <div className="meta-item"><span>Tầng</span><span>{room.floor}</span></div>
+              <div className="meta-item"><span>Sức chứa</span><span>{room.currentOccupancy} / {room.capacity}</span></div>
+              <div className="meta-item"><span>Giá</span><span>{room.price.toLocaleString("vi-VN")} đ/tháng</span></div>
             </div>
 
-            {/* Tiêu đề & Địa chỉ */}
-            <h1 className="text-3xl font-bold text-slate-900 mb-4">{`Phòng Ký túc xá chất lượng cao ${room.name} - Tòa ${room.building}`}</h1>
-            <div className="flex items-center gap-2 text-slate-600 mb-8 border-b border-slate-200 pb-6">
-              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.242-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-              Khu Ký túc xá sinh viên, Tầng {room.floor}, Tòa nhà {room.building}
-            </div>
-
-            {/* Đặc điểm & Tiện ích */}
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-slate-900 mb-5 flex items-center gap-2 border-l-4 border-[#C9A84C] pl-3">ĐẶC ĐIỂM NỔI BẬT</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {room.facilities && room.facilities.length > 0 ? (
-                  room.facilities.map((fac, idx) => (
-                    <div key={idx} className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm text-sm font-semibold text-slate-700">
-                      <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      {fac}
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-slate-500 italic text-sm">Chưa cập nhật thông tin tiện ích</p>
-                )}
-              </div>
-            </div>
-
-            {/* Thông tin Mô tả */}
-            <div className="mb-8 bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2 border-l-4 border-blue-500 pl-3">THÔNG TIN MÔ TẢ</h3>
-                <button className="flex items-center gap-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg transition-colors">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                  Sao chép nội dung
-                </button>
-              </div>
-              <div className="text-slate-700 leading-relaxed space-y-4">
-                <p><strong>Dormify hân hạnh mang đến cho bạn không gian sống lý tưởng tại phòng {room.name}.</strong></p>
-                <ul className="list-disc pl-5 space-y-2">
-                  <li>Phòng được thiết kế rộng rãi, thoáng mát tại tầng {room.floor}.</li>
-                  <li>Mức giá siêu tiết kiệm chỉ với <strong>{room.price.toLocaleString('vi-VN')} đồng/tháng</strong>.</li>
-                  <li>Không gian chia sẻ tối đa cho {room.capacity} sinh viên, hiện tại đang có {room.currentOccupancy} bạn đang lưu trú.</li>
-                  <li>Giờ giấc tự do, bảo vệ 24/7 an ninh tuyệt đối.</li>
-                  <li>Gần trạm xe buýt và các khu vực tiện ích siêu thị, chợ sinh viên.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* ── CỘT PHẢI: KHUNG ĐẶT PHÒNG (STICKY) ── */}
-          <div className="lg:w-1/3">
-            <div className="sticky top-24 bg-white rounded-2xl border border-slate-200 shadow-lg p-6">
-              
-              {/* Profile Giả lập */}
-              <div className="flex flex-col items-center border-b border-slate-100 pb-6 mb-6">
-                <div className="w-20 h-20 rounded-full bg-blue-100 border-4 border-white shadow-md flex items-center justify-center mb-3">
-                  <span className="text-3xl">👨‍💼</span>
-                </div>
-                <h4 className="font-bold text-lg text-slate-900">Ban Quản Lý KTX</h4>
-                <div className="flex items-center gap-1.5 text-green-600 text-sm font-semibold mt-1">
-                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                  Đã được chứng thực
-                </div>
-              </div>
-
-              {/* Thông số Giá & Chỗ */}
-              <div className="mb-6 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Giá thuê:</span>
-                  <span className="text-2xl font-bold text-[#C9A84C]">{room.price.toLocaleString('vi-VN')}đ</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Hiện trạng:</span>
-                  <span className="font-bold text-slate-800">{room.currentOccupancy} / {room.capacity} người</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Trạng thái:</span>
-                  <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wide ${room.status === 'AVAILABLE' ? 'bg-green-100 text-green-700' : room.status === 'FULL' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
-                    {room.status === 'AVAILABLE' ? 'CÒN CHỖ' : room.status === 'FULL' ? 'HẾT CHỖ' : 'BẢO TRÌ'}
+            <div style={{ marginTop: 22 }}>
+              <div className="panel-title" style={{ marginBottom: 12 }}>Tiện ích</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                {room.facilities.map((facility) => (
+                  <span key={facility} style={{ padding: "8px 12px", borderRadius: 999, background: "rgba(13,27,42,0.04)", border: "1px solid rgba(13,27,42,0.08)", fontSize: 13, fontWeight: 600 }}>
+                    {facility}
                   </span>
-                </div>
+                ))}
               </div>
-
-              {/* Thông báo thao tác */}
-              {message && (
-                <div className={`p-3 mb-5 rounded-xl text-sm font-bold text-center ${message.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
-                  {message.text}
-                </div>
-              )}
-
-              {/* Nút Hành Động */}
-              <div className="flex flex-col gap-3">
-                {room.status === 'AVAILABLE' ? (
-                  <button 
-                    onClick={handleBookRoom}
-                    disabled={processing}
-                    className="w-full bg-[#0D1B2A] hover:bg-slate-800 text-white font-bold text-lg py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
-                  >
-                    {processing ? 'Đang gửi...' : 'ĐĂNG KÝ PHÒNG NÀY'}
-                  </button>
-                ) : (
-                   <button disabled className="w-full bg-slate-200 text-slate-400 font-bold text-lg py-4 rounded-xl cursor-not-allowed">
-                    {room.status === 'FULL' ? 'PHÒNG ĐÃ KÍN' : 'ĐANG BẢO TRÌ'}
-                  </button>
-                )}
-                
-                <div className="flex gap-3">
-                  <button className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold py-3 rounded-xl border border-blue-200 flex items-center justify-center gap-2 transition-colors">
-                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 5.8 2 10.5c0 2.7 1.48 5.1 3.8 6.64-.17 1.48-.84 3.12-.89 3.23a.5.5 0 00.67.62c1.4-.49 2.94-1.25 4.12-2.11.75.14 1.53.22 2.3.22 5.52 0 10-3.8 10-8.5S17.52 2 12 2zm-3.5 9a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3.5 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3.5 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" /></svg>
-                    Zalo
-                  </button>
-                  <button className="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-600 font-semibold py-3 rounded-xl border border-amber-200 flex items-center justify-center gap-2 transition-colors">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                    Gọi điện
-                  </button>
-                </div>
-              </div>
-
-              {/* Dòng chữ cảnh báo nhỏ */}
-              <div className="mt-6 bg-[#fff7ed] p-4 rounded-xl border border-orange-200 text-xs text-orange-800 text-justify leading-relaxed">
-                Phản hồi cho chúng tôi biết nếu thông tin không đúng. Chúng tôi sẽ xác minh và có biện pháp xử lý kịp thời. Xin cảm ơn các bạn!
-              </div>
-
             </div>
-          </div>
 
+            <div style={{ marginTop: 24 }}>
+              <div className="panel-title">Cư dân cùng phòng</div>
+              {room.occupants.map((occupant) => (
+                <div key={occupant.userId} className="occupant">
+                  <div className="avatar">
+                    {occupant.avatar ? <img src={occupant.avatar} alt={occupant.fullName} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : occupant.fullName.charAt(0)}
+                  </div>
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
+                      <div>
+                        <div style={{ fontSize: 17, fontWeight: 700 }}>{occupant.fullName}</div>
+                        <div style={{ color: "#64748b", fontSize: 13 }}>MSSV: {occupant.mssv}</div>
+                      </div>
+                      <span className={`status ${occupant.roomStatus === "CONFIRMED" ? "status--active" : "status--warning"}`}>{occupant.roomStatus}</span>
+                    </div>
+                    <div className="occupant-grid">
+                      <div><strong>Check-in:</strong> {new Date(occupant.checkInDate).toLocaleDateString("vi-VN")}</div>
+                      <div><strong>Email:</strong> {occupant.contactInfo?.email || "Không công khai"}</div>
+                      <div><strong>Điện thoại:</strong> {occupant.contactInfo?.phone || "Không công khai"}</div>
+                      <div><strong>Phòng:</strong> {room.roomNumber}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <aside className="panel">
+            <div className="panel-title">Ghi chú quyền riêng tư</div>
+            <div className="side-line"><span>Phạm vi truy cập</span><span>Chỉ occupants của phòng này</span></div>
+            <div className="side-line"><span>Contact</span><span>Chỉ khi cho phép</span></div>
+            <div className="side-line"><span>Kiểm tra quyền</span><span>API nội bộ</span></div>
+            <div className="side-line"><span>Log bảo mật</span><span>Đã bật</span></div>
+            <div style={{ marginTop: 18, padding: 16, borderRadius: 16, background: "#fff7ed", border: "1px solid #fed7aa", color: "#9a3412", fontSize: 13, lineHeight: 1.6 }}>
+              Nếu bạn mở một phòng khác không thuộc quyền, hệ thống sẽ từ chối ngay tại lớp API và ghi nhận hành vi truy cập không hợp lệ.
+            </div>
+          </aside>
         </div>
-      </main>
+      </div>
     </RoleGuard>
   );
 }
