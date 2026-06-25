@@ -1,48 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import RoleGuard from "../../../components/RoleGuard";
-
-interface Room {
-  _id: string;
-  name: string;
-  building: string;
-  floor: number;
-  capacity: number;
-  currentOccupancy: number;
-  price: number;
-  status: 'AVAILABLE' | 'FULL' | 'MAINTENANCE';
-  facilities: string[];
-}
+import { useParams, useRouter } from "next/navigation";
+import { apiClient } from "../../../utils/apiClient";
+import { 
+  ArrowLeft, MapPin, CheckCircle2, Shield, 
+  Wifi, Wind, Bed, Zap, Clock, Info, ShieldCheck, Sparkles
+} from "lucide-react";
 
 export default function RoomDetailPage() {
   const params = useParams();
-  const id = params.id as string;
+  const router = useRouter();
   
-  // State của Phòng
-  const [room, setRoom] = useState<Room | null>(null);
+  const [room, setRoom] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: string } | null>(null);
+  const [hasPendingBooking, setHasPendingBooking] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // State của Profile (dành cho Header)
-  const [profile, setProfile] = useState<any>(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
-
-  // Lấy chi tiết phòng
   useEffect(() => {
-    const fetchRoomDetail = async () => {
+    const fetchRoomData = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:3001/api/rooms", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (response.ok) {
-          const result = await response.json();
-          const foundRoom = result.data.find((r: Room) => r._id === id);
-          setRoom(foundRoom || null);
+        const [roomRes, bookingsRes] = await Promise.all([
+          apiClient.get(`/rooms/${params.id}`),
+          apiClient.get('/bookings/me')
+        ]);
+
+        if (roomRes.ok) setRoom(await roomRes.json());
+        if (bookingsRes.ok) {
+          const myBookings = await bookingsRes.json();
+          setHasPendingBooking(myBookings.some((b: any) => b.status === "PENDING" || b.status === "ACTIVE"));
         }
       } catch (error) {
         console.error("Lỗi:", error);
@@ -50,276 +36,216 @@ export default function RoomDetailPage() {
         setLoading(false);
       }
     };
-    if (id) fetchRoomDetail();
-  }, [id]);
+    if (params.id) fetchRoomData();
+  }, [params.id]);
 
-  // Lấy thông tin Profile cho Header
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:3001/api/users/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          setProfile(await res.json());
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoadingProfile(false);
-      }
-    };
-    fetchProfile();
-  }, []);
+  const handleBooking = async () => {
+    if (hasPendingBooking || isSubmitting) return;
+    if (!window.confirm("Xác nhận gửi yêu cầu đăng ký phòng này?")) return;
 
-  // Xử lý nút Đăng xuất
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
-  };
-
-  const handleBookRoom = async () => {
-    if (!room || !window.confirm(`Bạn có chắc chắn muốn đăng ký phòng ${room.name}?`)) return;
-    setProcessing(true);
-    setMessage(null);
-
+    setIsSubmitting(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3001/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ roomId: room._id }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setMessage({ text: "Gửi yêu cầu đăng ký thành công! Vui lòng chờ duyệt.", type: "success" });
+      const res = await apiClient.post('/bookings', { roomId: room._id });
+      if (res.ok) {
+        alert("🎉 Đặt phòng thành công! Ban Quản Lý sẽ sớm liên hệ với bạn.");
+        router.push("/student");
       } else {
-        setMessage({ text: data.message || "Có lỗi xảy ra", type: "error" });
+        const data = await res.json();
+        alert(data.message || "Đã xảy ra lỗi khi đặt phòng.");
       }
     } catch (error) {
-      setMessage({ text: "Lỗi kết nối đến máy chủ.", type: "error" });
+      alert("Lỗi kết nối máy chủ. Vui lòng thử lại sau.");
     } finally {
-      setProcessing(false);
+      setIsSubmitting(false);
     }
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-slate-500 font-medium bg-[#F5F3EF]">Đang tải thông tin chi tiết...</div>;
+    return (
+      <div className="min-h-screen bg-white max-w-7xl mx-auto px-4 sm:px-6 py-12 animate-pulse">
+        <div className="h-10 bg-slate-100 rounded-xl w-1/3 mb-8"></div>
+        <div className="h-[400px] bg-slate-100 rounded-3xl mb-12"></div>
+        <div className="grid lg:grid-cols-3 gap-16">
+          <div className="lg:col-span-2 space-y-8">
+            <div className="h-12 bg-slate-100 rounded-xl w-3/4"></div>
+            <div className="h-6 bg-slate-100 rounded-lg w-1/2"></div>
+            <div className="h-48 bg-slate-100 rounded-2xl mt-10"></div>
+          </div>
+          <div className="h-[450px] bg-slate-100 rounded-3xl"></div>
+        </div>
+      </div>
+    );
   }
 
   if (!room) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F5F3EF]">
-        <h2 className="text-2xl font-bold text-slate-800 mb-4">Không tìm thấy phòng</h2>
-        <Link href="/student/rooms" className="text-blue-600 hover:underline">Quay lại danh sách</Link>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+        <div className="p-8 bg-white rounded-3xl shadow-sm border border-slate-100 text-center max-w-sm">
+          <Info className="w-14 h-14 text-slate-300 mx-auto mb-5" />
+          <h2 className="text-xl font-bold text-slate-800">Không tìm thấy phòng</h2>
+          <p className="text-slate-500 text-[15px] leading-relaxed mt-2 mb-8">Căn phòng này có thể đã bị xóa hoặc tạm thời không có sẵn trên hệ thống.</p>
+          <button onClick={() => router.back()} className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-colors">Quay lại danh sách</button>
+        </div>
       </div>
     );
   }
 
   return (
-    <RoleGuard allowedRoles={["STUDENT"]}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
-        body { background: #f8f9fa; font-family: 'DM Sans', sans-serif; color: #1e293b; }
-      `}</style>
+    <div className="min-h-screen bg-white pb-24 font-sans">
+      {/* Nút Back Tinh tế */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-6">
+        <button 
+          onClick={() => router.back()} 
+          className="group inline-flex items-center text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors"
+        >
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 group-hover:bg-slate-200 mr-3 transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+          </span>
+          Trở về tìm kiếm
+        </button>
+      </div>
 
-      {/* ── THANH ĐIỀU HƯỚNG TRÊN CÙNG (CẬP NHẬT HEADER) ── */}
-      <nav className="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          
-          {/* Nút Quay lại */}
-          <Link href="/student/rooms" className="flex items-center text-slate-600 hover:text-slate-900 font-medium text-sm gap-2 transition-colors">
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Về trang tìm kiếm
-          </Link>
-
-          {/* Nhóm Nút Đăng Xuất + Avatar */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold text-[#E05A6A] bg-[#E05A6A]/10 hover:bg-[#E05A6A]/20 border border-[#E05A6A]/30 transition-all"
-              type="button"
-            >
-              <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-              </svg>
-              Đăng xuất
-            </button>
-
-            {loadingProfile ? (
-              <div className="w-9 h-9 rounded-[9px] bg-slate-200 animate-pulse"></div>
-            ) : profile?.avatar ? (
-              <Link
-                href="/student/profile"
-                className="block w-9 h-9 rounded-[9px] border-[1.5px] border-[#C9A84C] overflow-hidden hover:scale-105 transition-transform"
-                title="Hồ sơ cá nhân"
-              >
-                <img
-                  src={profile.avatar}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                />
-              </Link>
-            ) : (
-              <Link
-                href="/student/profile"
-                className="flex items-center justify-center w-9 h-9 rounded-[9px] bg-[#0D1B2A] border-[1.5px] border-[#C9A84C] text-[#C9A84C] font-serif font-bold text-xs hover:scale-105 transition-transform"
-                title="Hồ sơ cá nhân"
-              >
-                {(profile?.fullName ?? "SV").trim().split(" ").pop()?.[0]?.toUpperCase() ?? "S"}
-              </Link>
-            )}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6">
+        {/* Header Thông tin */}
+        <div className="mb-10">
+          <h1 className="text-3xl sm:text-[40px] font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
+            {room.name} <span className="font-light text-slate-400">|</span> Ký túc xá Tiêu chuẩn
+          </h1>
+          <div className="flex items-center text-slate-600 font-medium text-[15px]">
+            <MapPin className="w-5 h-5 mr-2 text-rose-500" />
+            Tòa <span className="text-slate-900 font-bold mx-1">{room.building}</span>, 
+            Tầng <span className="text-slate-900 font-bold mx-1">{room.floor}</span>
+            <span className="mx-3 text-slate-300">|</span>
+            <span className="inline-flex items-center text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md text-sm font-bold">
+              Đang có {room.currentOccupancy || 0}/{room.capacity} sinh viên
+            </span>
           </div>
-
-        </div>
-      </nav>
-
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Dòng Breadcrumb */}
-        <div className="text-sm text-slate-500 mb-6 uppercase tracking-wide font-semibold">
-          TRANG CHỦ / TÒA NHÀ {room.building} / <span className="text-green-600">PHÒNG {room.name}</span>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        {/* Image Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[420px] mb-16 rounded-3xl overflow-hidden">
+          <div className="md:col-span-2 bg-slate-200 hover:brightness-95 transition-all cursor-pointer">
+            <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=1000" alt="Main" className="w-full h-full object-cover" />
+          </div>
+          <div className="hidden md:grid grid-rows-2 gap-3">
+            <div className="bg-slate-200 hover:brightness-95 transition-all cursor-pointer">
+              <img src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=500" alt="Detail 1" className="w-full h-full object-cover" />
+            </div>
+            <div className="bg-slate-200 hover:brightness-95 transition-all cursor-pointer">
+              <img src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=500" alt="Detail 2" className="w-full h-full object-cover" />
+            </div>
+          </div>
+          <div className="hidden md:grid grid-rows-2 gap-3">
+            <div className="bg-slate-200 hover:brightness-95 transition-all cursor-pointer">
+              <img src="https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&q=80&w=500" alt="Detail 3" className="w-full h-full object-cover" />
+            </div>
+            <div className="bg-slate-200 hover:brightness-95 transition-all cursor-pointer relative">
+              <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=500" alt="Detail 4" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white font-bold tracking-wide cursor-pointer hover:bg-black/40 transition-colors">
+                Khám phá ảnh
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Layout Hai Cột */}
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 relative">
           
-          {/* ── CỘT TRÁI: NỘI DUNG CHÍNH ── */}
-          <div className="lg:w-2/3">
+          {/* CỘT TRÁI (Nội dung chi tiết - Chiếm 7 cột) */}
+          <div className="lg:col-span-7 space-y-12">
             
-            {/* Khung Ảnh Lớn */}
-            <div className="w-full aspect-[16/9] bg-slate-200 rounded-2xl overflow-hidden mb-8 relative shadow-sm border border-slate-200">
-              <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/auth-bg.jpg')" }}></div>
-              <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                1/6 hình ảnh
+            {/* Box Tiện nghi */}
+            <div className="pb-10 border-b border-slate-200">
+              <h2 className="text-2xl font-extrabold text-slate-900 mb-8 tracking-tight">Tiện nghi có sẵn</h2>
+              <div className="grid grid-cols-2 gap-y-6 gap-x-4">
+                <div className="flex items-center text-slate-700 font-medium text-[15px]"><Bed className="w-6 h-6 mr-4 text-slate-400 stroke-[1.5px]"/> Giường tầng cao cấp</div>
+                <div className="flex items-center text-slate-700 font-medium text-[15px]"><Wind className="w-6 h-6 mr-4 text-slate-400 stroke-[1.5px]"/> Máy lạnh Inverter</div>
+                <div className="flex items-center text-slate-700 font-medium text-[15px]"><Wifi className="w-6 h-6 mr-4 text-slate-400 stroke-[1.5px]"/> Wifi băng thông rộng</div>
+                <div className="flex items-center text-slate-700 font-medium text-[15px]"><Zap className="w-6 h-6 mr-4 text-slate-400 stroke-[1.5px]"/> Điện nước tiêu chuẩn</div>
+                <div className="flex items-center text-slate-700 font-medium text-[15px]"><Shield className="w-6 h-6 mr-4 text-slate-400 stroke-[1.5px]"/> Hệ thống An ninh 24/7</div>
+                <div className="flex items-center text-slate-700 font-medium text-[15px]"><Clock className="w-6 h-6 mr-4 text-slate-400 stroke-[1.5px]"/> Giờ giấc linh hoạt</div>
               </div>
             </div>
 
-            {/* Tiêu đề & Địa chỉ */}
-            <h1 className="text-3xl font-bold text-slate-900 mb-4">{`Phòng Ký túc xá chất lượng cao ${room.name} - Tòa ${room.building}`}</h1>
-            <div className="flex items-center gap-2 text-slate-600 mb-8 border-b border-slate-200 pb-6">
-              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.242-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-              Khu Ký túc xá sinh viên, Tầng {room.floor}, Tòa nhà {room.building}
-            </div>
-
-            {/* Đặc điểm & Tiện ích */}
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-slate-900 mb-5 flex items-center gap-2 border-l-4 border-[#C9A84C] pl-3">ĐẶC ĐIỂM NỔI BẬT</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {room.facilities && room.facilities.length > 0 ? (
-                  room.facilities.map((fac, idx) => (
-                    <div key={idx} className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm text-sm font-semibold text-slate-700">
-                      <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      {fac}
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-slate-500 italic text-sm">Chưa cập nhật thông tin tiện ích</p>
-                )}
-              </div>
-            </div>
-
-            {/* Thông tin Mô tả */}
-            <div className="mb-8 bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2 border-l-4 border-blue-500 pl-3">THÔNG TIN MÔ TẢ</h3>
-                <button className="flex items-center gap-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg transition-colors">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                  Sao chép nội dung
-                </button>
-              </div>
-              <div className="text-slate-700 leading-relaxed space-y-4">
-                <p><strong>Dormify hân hạnh mang đến cho bạn không gian sống lý tưởng tại phòng {room.name}.</strong></p>
-                <ul className="list-disc pl-5 space-y-2">
-                  <li>Phòng được thiết kế rộng rãi, thoáng mát tại tầng {room.floor}.</li>
-                  <li>Mức giá siêu tiết kiệm chỉ với <strong>{room.price.toLocaleString('vi-VN')} đồng/tháng</strong>.</li>
-                  <li>Không gian chia sẻ tối đa cho {room.capacity} sinh viên, hiện tại đang có {room.currentOccupancy} bạn đang lưu trú.</li>
-                  <li>Giờ giấc tự do, bảo vệ 24/7 an ninh tuyệt đối.</li>
-                  <li>Gần trạm xe buýt và các khu vực tiện ích siêu thị, chợ sinh viên.</li>
-                </ul>
+            {/* Giới thiệu (Tăng khoảng cách chữ) */}
+            <div className="pb-10">
+              <h2 className="text-2xl font-extrabold text-slate-900 mb-6 tracking-tight">Giới thiệu về không gian</h2>
+              <div className="text-[16px] text-slate-600 leading-9 space-y-6 tracking-[0.015em]">
+                <p>
+                  Chào mừng bạn đến với hệ thống Ký túc xá Dormify. Phòng <strong className="text-slate-900 font-bold">{room.name}</strong> được thiết kế theo tiêu chuẩn hiện đại nhất, nhằm tối ưu hóa trọn vẹn không gian sinh hoạt và học tập cho sinh viên.
+                </p>
+                <p>
+                  Vị trí đắc địa nằm tại tòa <strong className="text-slate-900 font-bold">{room.building}</strong> giúp bạn dễ dàng di chuyển tiếp cận các khu vực trọng yếu như căn tin, thư viện và bến xe buýt trung tâm. Môi trường sống văn minh, thân thiện cùng hệ thống an ninh chặt chẽ đảm bảo mang lại sự an tâm tuyệt đối trong suốt quá trình lưu trú.
+                </p>
               </div>
             </div>
           </div>
 
-          {/* ── CỘT PHẢI: KHUNG ĐẶT PHÒNG (STICKY) ── */}
-          <div className="lg:w-1/3">
-            <div className="sticky top-24 bg-white rounded-2xl border border-slate-200 shadow-lg p-6">
+          {/* CỘT PHẢI (Booking Card - Chiếm 5 cột) */}
+          <div className="lg:col-span-5 relative">
+            <div className="sticky top-8 bg-white border border-slate-200 rounded-3xl p-8 shadow-[0_12px_40px_-15px_rgba(0,0,0,0.1)]">
               
-              {/* Profile Giả lập */}
-              <div className="flex flex-col items-center border-b border-slate-100 pb-6 mb-6">
-                <div className="w-20 h-20 rounded-full bg-blue-100 border-4 border-white shadow-md flex items-center justify-center mb-3">
-                  <span className="text-3xl">👨‍💼</span>
+              {/* Box Giá */}
+              <div className="flex items-baseline mb-8 pb-8 border-b border-slate-100">
+                <span className="text-4xl font-extrabold text-slate-900 tracking-tight">
+                  {new Intl.NumberFormat('vi-VN').format(room.price || 1500000)}<span className="text-2xl">đ</span>
+                </span>
+                <span className="text-slate-500 font-medium ml-2 text-lg">/ tháng</span>
+              </div>
+
+              {/* Box Thông số nhanh */}
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <span className="block text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Hiện trạng</span>
+                  <span className="text-[15px] font-bold text-slate-800">{room.currentOccupancy || 0} / {room.capacity} Khách</span>
                 </div>
-                <h4 className="font-bold text-lg text-slate-900">Ban Quản Lý KTX</h4>
-                <div className="flex items-center gap-1.5 text-green-600 text-sm font-semibold mt-1">
-                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                  Đã được chứng thực
+                <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100/50">
+                  <span className="block text-[11px] font-extrabold text-emerald-600/80 uppercase tracking-widest mb-1">Trạng thái</span>
+                  <span className="text-[15px] font-bold text-emerald-700">Sẵn sàng đón tiếp</span>
                 </div>
               </div>
 
-              {/* Thông số Giá & Chỗ */}
-              <div className="mb-6 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Giá thuê:</span>
-                  <span className="text-2xl font-bold text-[#C9A84C]">{room.price.toLocaleString('vi-VN')}đ</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Hiện trạng:</span>
-                  <span className="font-bold text-slate-800">{room.currentOccupancy} / {room.capacity} người</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Trạng thái:</span>
-                  <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wide ${room.status === 'AVAILABLE' ? 'bg-green-100 text-green-700' : room.status === 'FULL' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
-                    {room.status === 'AVAILABLE' ? 'CÒN CHỖ' : room.status === 'FULL' ? 'HẾT CHỖ' : 'BẢO TRÌ'}
-                  </span>
-                </div>
-              </div>
+              {/* Cam kết Trust Badges */}
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start">
+                  <ShieldCheck className="w-5 h-5 mr-3 text-emerald-500 shrink-0 mt-0.5" />
+                  <span className="text-[14px] text-slate-600 font-medium leading-relaxed tracking-wide">Bảo mật thông tin & Xử lý duyệt đơn nhanh chóng.</span>
+                </li>
+                <li className="flex items-start">
+                  <Sparkles className="w-5 h-5 mr-3 text-emerald-500 shrink-0 mt-0.5" />
+                  <span className="text-[14px] text-slate-600 font-medium leading-relaxed tracking-wide">Không phát sinh bất kỳ khoản phí môi giới nào.</span>
+                </li>
+              </ul>
 
-              {/* Thông báo thao tác */}
-              {message && (
-                <div className={`p-3 mb-5 rounded-xl text-sm font-bold text-center ${message.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
-                  {message.text}
+              {/* Thông báo lỗi (Nếu có) */}
+              {hasPendingBooking && (
+                <div className="mb-6 bg-rose-50 text-rose-700 text-sm font-semibold p-4 rounded-xl border border-rose-100 flex items-start">
+                  <Info className="w-5 h-5 mr-2 shrink-0" />
+                  Bạn đang có đơn chờ duyệt. Vui lòng hoàn tất hoặc hủy đơn cũ trước.
                 </div>
               )}
 
-              {/* Nút Hành Động */}
-              <div className="flex flex-col gap-3">
-                {room.status === 'AVAILABLE' ? (
-                  <button 
-                    onClick={handleBookRoom}
-                    disabled={processing}
-                    className="w-full bg-[#0D1B2A] hover:bg-slate-800 text-white font-bold text-lg py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
-                  >
-                    {processing ? 'Đang gửi...' : 'ĐĂNG KÝ PHÒNG NÀY'}
-                  </button>
-                ) : (
-                   <button disabled className="w-full bg-slate-200 text-slate-400 font-bold text-lg py-4 rounded-xl cursor-not-allowed">
-                    {room.status === 'FULL' ? 'PHÒNG ĐÃ KÍN' : 'ĐANG BẢO TRÌ'}
-                  </button>
-                )}
-                
-                <div className="flex gap-3">
-                  <button className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold py-3 rounded-xl border border-blue-200 flex items-center justify-center gap-2 transition-colors">
-                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 5.8 2 10.5c0 2.7 1.48 5.1 3.8 6.64-.17 1.48-.84 3.12-.89 3.23a.5.5 0 00.67.62c1.4-.49 2.94-1.25 4.12-2.11.75.14 1.53.22 2.3.22 5.52 0 10-3.8 10-8.5S17.52 2 12 2zm-3.5 9a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3.5 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3.5 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" /></svg>
-                    Zalo
-                  </button>
-                  <button className="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-600 font-semibold py-3 rounded-xl border border-amber-200 flex items-center justify-center gap-2 transition-colors">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                    Gọi điện
-                  </button>
-                </div>
-              </div>
+              {/* Nút Call to Action */}
+              <button 
+                onClick={handleBooking}
+                disabled={hasPendingBooking || isSubmitting}
+                className={`w-full py-4 rounded-2xl font-bold text-white text-[16px] tracking-wide transition-all duration-200 ${
+                  hasPendingBooking 
+                    ? "bg-slate-200 text-slate-400 cursor-not-allowed" 
+                    : "bg-[#E11D48] hover:bg-[#BE123C] shadow-lg shadow-rose-500/30 active:scale-[0.98]"
+                }`}
+              >
+                {isSubmitting ? "HỆ THỐNG ĐANG XỬ LÝ..." : "GỬI ĐƠN ĐĂNG KÝ NGAY"}
+              </button>
 
-              {/* Dòng chữ cảnh báo nhỏ */}
-              <div className="mt-6 bg-[#fff7ed] p-4 rounded-xl border border-orange-200 text-xs text-orange-800 text-justify leading-relaxed">
-                Phản hồi cho chúng tôi biết nếu thông tin không đúng. Chúng tôi sẽ xác minh và có biện pháp xử lý kịp thời. Xin cảm ơn các bạn!
+              <div className="text-center text-slate-400 text-[13px] font-medium mt-5 tracking-wide">
+                Bạn chưa phải thanh toán lúc này.
               </div>
-
             </div>
           </div>
 
         </div>
       </main>
-    </RoleGuard>
+    </div>
   );
 }
