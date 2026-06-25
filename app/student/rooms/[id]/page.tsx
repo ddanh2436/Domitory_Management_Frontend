@@ -32,7 +32,8 @@ export default function RoomDetailPage() {
           setHasPendingBooking(myBookings.some((b: any) => b.status === "PENDING" || b.status === "ACTIVE"));
         }
       } catch (error) {
-        console.error("Lỗi:", error);
+        console.error(error);
+        setError("Không thể kết nối đến máy chủ.");
       } finally {
         setLoading(false);
       }
@@ -80,7 +81,7 @@ export default function RoomDetailPage() {
     );
   }
 
-  if (!room) {
+  if (error) {
     return (
       <RoleGuard allowedRoles={["STUDENT"]}>
         <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
@@ -93,6 +94,10 @@ export default function RoomDetailPage() {
         </div>
       </RoleGuard>
     );
+  }
+
+  if (!room) {
+    return null;
   }
 
   return (
@@ -152,7 +157,6 @@ export default function RoomDetailPage() {
                 </div>
               </div>
             </div>
-          </div>
 
           {/* Layout Hai Cột */}
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 relative">

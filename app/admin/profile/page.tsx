@@ -52,7 +52,10 @@ export default function AdminProfilePage() {
     }
   };
 
-  useEffect(() => { loadProfile(); }, []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadProfile();
+  }, []);
 
   // Xử lý khi Admin chọn file ảnh
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,7 +93,7 @@ export default function AdminProfilePage() {
         const err = await response.json();
         setAlertMsg({ text: err.message || "Lỗi cập nhật.", type: "error" });
       }
-    } catch (error) {
+    } catch {
       setAlertMsg({ text: "Không thể kết nối đến server.", type: "error" });
     }
   };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 
 interface Notification {
@@ -19,6 +20,7 @@ export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -100,7 +102,7 @@ export default function NotificationBell() {
   // 2. Hàm xử lý khi Click vào thông báo
   const handleClickNotif = (link?: string) => {
     setIsOpen(false); // Đóng dropdown
-    if (link) window.location.href = link; // Chuyển trang nếu có link
+    if (link) router.push(link); // Chuyển trang nếu có link
   };
 
   return (
