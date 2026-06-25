@@ -79,7 +79,7 @@ export default function StudentRoomsPage() {
           return;
         }
 
-        setRoom(payload.data);
+        setRoom(payload.data || payload);
       } catch (requestError) {
         console.error(requestError);
         setError("Không thể kết nối đến máy chủ.");
@@ -187,8 +187,9 @@ export default function StudentRoomsPage() {
               <div style={{ marginTop: 24 }}>
                 <div className="panel-title" style={{ marginBottom: 12 }}>Danh sách cư dân cùng phòng</div>
                 <div className="occupant-list">
-                  {room.occupants.map((occupant) => (
-                    <article key={occupant.userId} className="occupant">
+                  {/* ĐÃ SỬA LỖI KEY Ở ĐÂY BẰNG CÁCH THÊM FALLBACK index và _id */}
+                  {room.occupants.map((occupant, index) => (
+                    <article key={occupant.userId || (occupant as any)._id || occupant.mssv || `occupant-${index}`} className="occupant">
                       <div className="avatar">
                         {occupant.avatar ? <img src={occupant.avatar} alt={occupant.fullName} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : occupant.fullName.charAt(0)}
                       </div>
@@ -198,10 +199,10 @@ export default function StudentRoomsPage() {
                             <div className="occupant-name">{occupant.fullName}</div>
                             <div className="occupant-id">MSSV: {occupant.mssv}</div>
                           </div>
-                          <span className={`status ${occupant.roomStatus === "CONFIRMED" ? "status--active" : "status--warning"}`}>{occupant.roomStatus}</span>
+                          <span className={`status ${occupant.roomStatus === "CONFIRMED" ? "status--active" : "status--warning"}`}>{occupant.roomStatus || "CONFIRMED"}</span>
                         </div>
                         <div className="occupant-grid">
-                          <div><strong>Ngày check-in:</strong> {new Date(occupant.checkInDate).toLocaleDateString("vi-VN")}</div>
+                          <div><strong>Ngày check-in:</strong> {occupant.checkInDate ? new Date(occupant.checkInDate).toLocaleDateString("vi-VN") : "N/A"}</div>
                           <div><strong>Email:</strong> {occupant.contactInfo?.email || "Không công khai"}</div>
                           <div><strong>Điện thoại:</strong> {occupant.contactInfo?.phone || "Không công khai"}</div>
                           <div><strong>Phòng:</strong> {room.roomNumber}</div>
