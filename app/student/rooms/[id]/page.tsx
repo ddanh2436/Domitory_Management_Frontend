@@ -1,58 +1,35 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import RoleGuard from "../../../components/RoleGuard";
+import { useParams, useRouter } from "next/navigation";
 import { apiClient } from "../../../utils/apiClient";
-
-interface Occupant {
-  userId: string;
-  fullName: string;
-  mssv: string;
-  avatar?: string;
-  contactInfo?: { phone?: string; email?: string } | null;
-  checkInDate: string;
-  roomStatus: string;
-}
-
-interface Room {
-  roomId: string;
-  roomNumber: string;
-  roomType: string;
-  building: string;
-  floor: number;
-  capacity: number;
-  currentOccupancy: number;
-  price: number;
-  status: 'AVAILABLE' | 'FULL' | 'MAINTENANCE';
-  availabilityStatus: string;
-  facilities: string[];
-  occupants: Occupant[];
-}
+import RoleGuard from "../../../components/RoleGuard"; // Tích hợp bảo mật từ nhánh main
+import { 
+  ArrowLeft, MapPin, CheckCircle2, Shield, 
+  Wifi, Wind, Bed, Zap, Clock, Info, ShieldCheck, Sparkles
+} from "lucide-react";
 
 export default function RoomDetailPage() {
   const params = useParams();
-  const id = params.id as string;
-
-  const [room, setRoom] = useState<Room | null>(null);
+  const router = useRouter();
+  
+  const [room, setRoom] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [hasPendingBooking, setHasPendingBooking] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const fetchRoomDetail = async () => {
-      setLoading(true);
-      setError("");
-
+    const fetchRoomData = async () => {
       try {
-        const response = await apiClient.get(`/rooms/${id}`);
-        const result = await response.json();
+        const [roomRes, bookingsRes] = await Promise.all([
+          apiClient.get(`/rooms/${params.id}`),
+          apiClient.get('/bookings/me')
+        ]);
 
-        if (response.ok) {
-          setRoom(result.data);
-        } else {
-          setRoom(null);
-          setError(result.message || "Bạn không có quyền xem phòng này.");
+        if (roomRes.ok) setRoom(await roomRes.json());
+        if (bookingsRes.ok) {
+          const myBookings = await bookingsRes.json();
+          setHasPendingBooking(myBookings.some((b: any) => b.status === "PENDING" || b.status === "ACTIVE"));
         }
       } catch (error) {
         console.error(error);
@@ -61,21 +38,61 @@ export default function RoomDetailPage() {
         setLoading(false);
       }
     };
+    if (params.id) fetchRoomData();
+  }, [params.id]);
 
-    if (id) fetchRoomDetail();
-  }, [id]);
+  const handleBooking = async () => {
+    if (hasPendingBooking || isSubmitting) return;
+    if (!window.confirm("Xác nhận gửi yêu cầu đăng ký phòng này?")) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await apiClient.post('/bookings', { roomId: room._id });
+      if (res.ok) {
+        alert("🎉 Đặt phòng thành công! Ban Quản Lý sẽ sớm liên hệ với bạn.");
+        router.push("/student");
+      } else {
+        const data = await res.json();
+        alert(data.message || "Đã xảy ra lỗi khi đặt phòng.");
+      }
+    } catch (error) {
+      alert("Lỗi kết nối máy chủ. Vui lòng thử lại sau.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-slate-500 font-medium bg-[#F5F3EF]">Đang tải thông tin phòng của bạn...</div>;
+    return (
+      <RoleGuard allowedRoles={["STUDENT"]}>
+        <div className="min-h-screen bg-white max-w-7xl mx-auto px-4 sm:px-6 py-12 animate-pulse">
+          <div className="h-10 bg-slate-100 rounded-xl w-1/3 mb-8"></div>
+          <div className="h-[400px] bg-slate-100 rounded-3xl mb-12"></div>
+          <div className="grid lg:grid-cols-3 gap-16">
+            <div className="lg:col-span-2 space-y-8">
+              <div className="h-12 bg-slate-100 rounded-xl w-3/4"></div>
+              <div className="h-6 bg-slate-100 rounded-lg w-1/2"></div>
+              <div className="h-48 bg-slate-100 rounded-2xl mt-10"></div>
+            </div>
+            <div className="h-[450px] bg-slate-100 rounded-3xl"></div>
+          </div>
+        </div>
+      </RoleGuard>
+    );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F5F3EF]">
-        <h2 className="text-2xl font-bold text-slate-800 mb-4">Không thể hiển thị phòng</h2>
-        <p className="text-slate-500 mb-4">{error}</p>
-        <Link href="/student/rooms" className="text-blue-600 hover:underline">Quay lại danh sách</Link>
-      </div>
+      <RoleGuard allowedRoles={["STUDENT"]}>
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+          <div className="p-8 bg-white rounded-3xl shadow-sm border border-slate-100 text-center max-w-sm">
+            <Info className="w-14 h-14 text-slate-300 mx-auto mb-5" />
+            <h2 className="text-xl font-bold text-slate-800">Không tìm thấy phòng</h2>
+            <p className="text-slate-500 text-[15px] leading-relaxed mt-2 mb-8">Căn phòng này có thể đã bị xóa hoặc tạm thời không có sẵn trên hệ thống.</p>
+            <button onClick={() => router.back()} className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-colors">Quay lại danh sách</button>
+          </div>
+        </div>
+      </RoleGuard>
     );
   }
 
@@ -85,100 +102,151 @@ export default function RoomDetailPage() {
 
   return (
     <RoleGuard allowedRoles={["STUDENT"]}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=DM+Sans:wght@400;500;700&display=swap');
-        .room-detail { max-width: 1180px; margin: 0 auto; padding: 24px 0 8px; color: #0D1B2A; }
-        .room-header { background: #0D1B2A; color: #fff; border-radius: 24px; padding: 28px; margin-bottom: 24px; border: 1px solid rgba(201,168,76,0.25); }
-        .room-header__title { font-family: 'Fraunces', serif; font-size: 32px; margin: 8px 0 10px; }
-        .room-layout { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 20px; }
-        .panel { background: #fff; border: 1px solid rgba(13,27,42,0.09); border-radius: 20px; padding: 24px; box-shadow: 0 10px 24px rgba(13,27,42,0.04); }
-        .panel-title { font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 16px; }
-        .occupant { border: 1px solid rgba(13,27,42,0.08); border-radius: 18px; padding: 16px; display: grid; grid-template-columns: auto 1fr; gap: 14px; margin-top: 14px; }
-        .avatar { width: 58px; height: 58px; border-radius: 18px; overflow: hidden; background: linear-gradient(135deg, #0D1B2A, #284766); color: #C9A84C; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; font-size: 22px; }
-        .status { display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
-        .status--active { background: rgba(34,197,94,0.12); color: #16a34a; }
-        .status--warning { background: rgba(245,158,11,0.12); color: #d97706; }
-        .meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        .meta-item { padding: 14px 16px; border-radius: 14px; background: #f8fafc; border: 1px solid rgba(13,27,42,0.08); display: flex; justify-content: space-between; gap: 12px; }
-        .meta-item span:first-child { color: #64748b; }
-        .meta-item span:last-child { color: #0D1B2A; font-weight: 700; text-align: right; }
-        .side-line { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(13,27,42,0.08); font-size: 14px; }
-        .side-line:last-child { border-bottom: 0; padding-bottom: 0; }
-        .side-line span:first-child { color: #64748b; }
-        .side-line span:last-child { color: #0D1B2A; font-weight: 700; text-align: right; }
-        .occupant-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; font-size: 13px; color: #334155; margin-top: 10px; }
-        @media (max-width: 960px) { .room-layout { grid-template-columns: 1fr; } .meta, .occupant-grid { grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 640px) { .room-detail { padding-top: 12px; } .room-header__title { font-size: 26px; } .meta, .occupant-grid { grid-template-columns: 1fr; } .panel { padding: 18px; } }
-      `}</style>
-
-      <div className="room-detail">
-        <div className="room-header">
-          <Link href="/student/rooms" className="text-white/80 hover:text-white text-sm font-semibold" style={{ textDecoration: "none" }}>← Quay lại danh sách</Link>
-          <div className="room-header__title">Phòng {room.roomNumber}</div>
-          <div style={{ color: "rgba(255,255,255,0.72)", fontSize: 14 }}>Thông tin chỉ hiển thị cho phòng của bạn.</div>
+      <div className="min-h-screen bg-white pb-24 font-sans">
+        {/* Nút Back Tinh tế */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-6">
+          <button 
+            onClick={() => router.back()} 
+            className="group inline-flex items-center text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors"
+          >
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 group-hover:bg-slate-200 mr-3 transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+            </span>
+            Trở về tìm kiếm
+          </button>
         </div>
 
-        <div className="room-layout">
-          <section className="panel">
-            <div className="panel-title">Tổng quan chi tiết</div>
-            <div className="meta">
-              <div className="meta-item"><span>Loại phòng</span><span>{room.roomType}</span></div>
-              <div className="meta-item"><span>Trạng thái</span><span>{room.availabilityStatus}</span></div>
-              <div className="meta-item"><span>Tòa nhà</span><span>{room.building}</span></div>
-              <div className="meta-item"><span>Tầng</span><span>{room.floor}</span></div>
-              <div className="meta-item"><span>Sức chứa</span><span>{room.currentOccupancy} / {room.capacity}</span></div>
-              <div className="meta-item"><span>Giá</span><span>{room.price.toLocaleString("vi-VN")} đ/tháng</span></div>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6">
+          {/* Header Thông tin */}
+          <div className="mb-10">
+            <h1 className="text-3xl sm:text-[40px] font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
+              {room.name} <span className="font-light text-slate-400">|</span> Ký túc xá Tiêu chuẩn
+            </h1>
+            <div className="flex items-center text-slate-600 font-medium text-[15px]">
+              <MapPin className="w-5 h-5 mr-2 text-rose-500" />
+              Tòa <span className="text-slate-900 font-bold mx-1">{room.building}</span>, 
+              Tầng <span className="text-slate-900 font-bold mx-1">{room.floor}</span>
+              <span className="mx-3 text-slate-300">|</span>
+              <span className="inline-flex items-center text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md text-sm font-bold">
+                Đang có {room.currentOccupancy || 0}/{room.capacity} sinh viên
+              </span>
             </div>
+          </div>
 
-            <div style={{ marginTop: 22 }}>
-              <div className="panel-title" style={{ marginBottom: 12 }}>Tiện ích</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                {room.facilities.map((facility) => (
-                  <span key={facility} style={{ padding: "8px 12px", borderRadius: 999, background: "rgba(13,27,42,0.04)", border: "1px solid rgba(13,27,42,0.08)", fontSize: 13, fontWeight: 600 }}>
-                    {facility}
-                  </span>
-                ))}
+          {/* Image Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[420px] mb-16 rounded-3xl overflow-hidden">
+            <div className="md:col-span-2 bg-slate-200 hover:brightness-95 transition-all cursor-pointer">
+              <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=1000" alt="Main" className="w-full h-full object-cover" />
+            </div>
+            <div className="hidden md:grid grid-rows-2 gap-3">
+              <div className="bg-slate-200 hover:brightness-95 transition-all cursor-pointer">
+                <img src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=500" alt="Detail 1" className="w-full h-full object-cover" />
+              </div>
+              <div className="bg-slate-200 hover:brightness-95 transition-all cursor-pointer">
+                <img src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=500" alt="Detail 2" className="w-full h-full object-cover" />
+              </div>
+            </div>
+            <div className="hidden md:grid grid-rows-2 gap-3">
+              <div className="bg-slate-200 hover:brightness-95 transition-all cursor-pointer">
+                <img src="https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&q=80&w=500" alt="Detail 3" className="w-full h-full object-cover" />
+              </div>
+              <div className="bg-slate-200 hover:brightness-95 transition-all cursor-pointer relative">
+                <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=500" alt="Detail 4" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white font-bold tracking-wide cursor-pointer hover:bg-black/40 transition-colors">
+                  Khám phá ảnh
+                </div>
               </div>
             </div>
 
-            <div style={{ marginTop: 24 }}>
-              <div className="panel-title">Cư dân cùng phòng</div>
-              {room.occupants.map((occupant) => (
-                <div key={occupant.userId} className="occupant">
-                  <div className="avatar">
-                    {occupant.avatar ? <img src={occupant.avatar} alt={occupant.fullName} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : occupant.fullName.charAt(0)}
+          {/* Layout Hai Cột */}
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 relative">
+            
+            {/* CỘT TRÁI */}
+            <div className="lg:col-span-7 space-y-12">
+              <div className="pb-10 border-b border-slate-200">
+                <h2 className="text-2xl font-extrabold text-slate-900 mb-8 tracking-tight">Tiện nghi có sẵn</h2>
+                <div className="grid grid-cols-2 gap-y-6 gap-x-4">
+                  <div className="flex items-center text-slate-700 font-medium text-[15px]"><Bed className="w-6 h-6 mr-4 text-slate-400 stroke-[1.5px]"/> Giường tầng cao cấp</div>
+                  <div className="flex items-center text-slate-700 font-medium text-[15px]"><Wind className="w-6 h-6 mr-4 text-slate-400 stroke-[1.5px]"/> Máy lạnh Inverter</div>
+                  <div className="flex items-center text-slate-700 font-medium text-[15px]"><Wifi className="w-6 h-6 mr-4 text-slate-400 stroke-[1.5px]"/> Wifi băng thông rộng</div>
+                  <div className="flex items-center text-slate-700 font-medium text-[15px]"><Zap className="w-6 h-6 mr-4 text-slate-400 stroke-[1.5px]"/> Điện nước tiêu chuẩn</div>
+                  <div className="flex items-center text-slate-700 font-medium text-[15px]"><Shield className="w-6 h-6 mr-4 text-slate-400 stroke-[1.5px]"/> Hệ thống An ninh 24/7</div>
+                  <div className="flex items-center text-slate-700 font-medium text-[15px]"><Clock className="w-6 h-6 mr-4 text-slate-400 stroke-[1.5px]"/> Giờ giấc linh hoạt</div>
+                </div>
+              </div>
+
+              <div className="pb-10">
+                <h2 className="text-2xl font-extrabold text-slate-900 mb-6 tracking-tight">Giới thiệu về không gian</h2>
+                <div className="text-[16px] text-slate-600 leading-9 space-y-6 tracking-[0.015em]">
+                  <p>
+                    Chào mừng bạn đến với hệ thống Ký túc xá Dormify. Phòng <strong className="text-slate-900 font-bold">{room.name}</strong> được thiết kế theo tiêu chuẩn hiện đại nhất, nhằm tối ưu hóa trọn vẹn không gian sinh hoạt và học tập cho sinh viên.
+                  </p>
+                  <p>
+                    Vị trí đắc địa nằm tại tòa <strong className="text-slate-900 font-bold">{room.building}</strong> giúp bạn dễ dàng di chuyển tiếp cận các khu vực trọng yếu như căn tin, thư viện và bến xe buýt trung tâm. Môi trường sống văn minh, thân thiện cùng hệ thống an ninh chặt chẽ đảm bảo mang lại sự an tâm tuyệt đối trong suốt quá trình lưu trú.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* CỘT PHẢI (Booking Card) */}
+            <div className="lg:col-span-5 relative">
+              <div className="sticky top-8 bg-white border border-slate-200 rounded-3xl p-8 shadow-[0_12px_40px_-15px_rgba(0,0,0,0.1)]">
+                <div className="flex items-baseline mb-8 pb-8 border-b border-slate-100">
+                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight">
+                    {new Intl.NumberFormat('vi-VN').format(room.price || 1500000)}<span className="text-2xl">đ</span>
+                  </span>
+                  <span className="text-slate-500 font-medium ml-2 text-lg">/ tháng</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <span className="block text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Hiện trạng</span>
+                    <span className="text-[15px] font-bold text-slate-800">{room.currentOccupancy || 0} / {room.capacity} Khách</span>
                   </div>
-                  <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
-                      <div>
-                        <div style={{ fontSize: 17, fontWeight: 700 }}>{occupant.fullName}</div>
-                        <div style={{ color: "#64748b", fontSize: 13 }}>MSSV: {occupant.mssv}</div>
-                      </div>
-                      <span className={`status ${occupant.roomStatus === "CONFIRMED" ? "status--active" : "status--warning"}`}>{occupant.roomStatus}</span>
-                    </div>
-                    <div className="occupant-grid">
-                      <div><strong>Check-in:</strong> {new Date(occupant.checkInDate).toLocaleDateString("vi-VN")}</div>
-                      <div><strong>Email:</strong> {occupant.contactInfo?.email || "Không công khai"}</div>
-                      <div><strong>Điện thoại:</strong> {occupant.contactInfo?.phone || "Không công khai"}</div>
-                      <div><strong>Phòng:</strong> {room.roomNumber}</div>
-                    </div>
+                  <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100/50">
+                    <span className="block text-[11px] font-extrabold text-emerald-600/80 uppercase tracking-widest mb-1">Trạng thái</span>
+                    <span className="text-[15px] font-bold text-emerald-700">Sẵn sàng đón tiếp</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </section>
 
-          <aside className="panel">
-            <div className="panel-title">Ghi chú quyền riêng tư</div>
-            <div className="side-line"><span>Phạm vi truy cập</span><span>Chỉ occupants của phòng này</span></div>
-            <div className="side-line"><span>Contact</span><span>Chỉ khi cho phép</span></div>
-            <div className="side-line"><span>Kiểm tra quyền</span><span>API nội bộ</span></div>
-            <div className="side-line"><span>Log bảo mật</span><span>Đã bật</span></div>
-            <div style={{ marginTop: 18, padding: 16, borderRadius: 16, background: "#fff7ed", border: "1px solid #fed7aa", color: "#9a3412", fontSize: 13, lineHeight: 1.6 }}>
-              Nếu bạn mở một phòng khác không thuộc quyền, hệ thống sẽ từ chối ngay tại lớp API và ghi nhận hành vi truy cập không hợp lệ.
+                <ul className="space-y-4 mb-8">
+                  <li className="flex items-start">
+                    <ShieldCheck className="w-5 h-5 mr-3 text-emerald-500 shrink-0 mt-0.5" />
+                    <span className="text-[14px] text-slate-600 font-medium leading-relaxed tracking-wide">Bảo mật thông tin & Xử lý duyệt đơn nhanh chóng.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Sparkles className="w-5 h-5 mr-3 text-emerald-500 shrink-0 mt-0.5" />
+                    <span className="text-[14px] text-slate-600 font-medium leading-relaxed tracking-wide">Không phát sinh bất kỳ khoản phí môi giới nào.</span>
+                  </li>
+                </ul>
+
+                {hasPendingBooking && (
+                  <div className="mb-6 bg-rose-50 text-rose-700 text-sm font-semibold p-4 rounded-xl border border-rose-100 flex items-start">
+                    <Info className="w-5 h-5 mr-2 shrink-0" />
+                    Bạn đang có đơn chờ duyệt. Vui lòng hoàn tất hoặc hủy đơn cũ trước.
+                  </div>
+                )}
+
+                <button 
+                  onClick={handleBooking}
+                  disabled={hasPendingBooking || isSubmitting}
+                  className={`w-full py-4 rounded-2xl font-bold text-white text-[16px] tracking-wide transition-all duration-200 ${
+                    hasPendingBooking 
+                      ? "bg-slate-200 text-slate-400 cursor-not-allowed" 
+                      : "bg-[#E11D48] hover:bg-[#BE123C] shadow-lg shadow-rose-500/30 active:scale-[0.98]"
+                  }`}
+                >
+                  {isSubmitting ? "HỆ THỐNG ĐANG XỬ LÝ..." : "GỬI ĐƠN ĐĂNG KÝ NGAY"}
+                </button>
+
+                <div className="text-center text-slate-400 text-[13px] font-medium mt-5 tracking-wide">
+                  Bạn chưa phải thanh toán lúc này.
+                </div>
+              </div>
             </div>
-          </aside>
-        </div>
+
+          </div>
+        </main>
       </div>
     </RoleGuard>
   );
