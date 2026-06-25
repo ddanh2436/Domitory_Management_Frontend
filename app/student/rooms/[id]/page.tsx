@@ -9,11 +9,24 @@ import {
   Wifi, Wind, Bed, Zap, Clock, Info, ShieldCheck, Sparkles
 } from "lucide-react";
 
+interface RoomData {
+  _id: string;
+  name?: string;
+  roomNumber?: string;
+  building: string;
+  floor: number;
+  capacity: number;
+  currentOccupancy: number;
+  price: number;
+  status?: string;
+}
+
 export default function RoomDetailPage() {
   const params = useParams();
   const router = useRouter();
   
-  const [room, setRoom] = useState<any>(null);
+  // 2. SỬ DỤNG INTERFACE THAY VÌ "any"
+  const [room, setRoom] = useState<RoomData | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasPendingBooking, setHasPendingBooking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,7 +42,7 @@ export default function RoomDetailPage() {
         if (roomRes.ok) setRoom(await roomRes.json());
         if (bookingsRes.ok) {
           const myBookings = await bookingsRes.json();
-          setHasPendingBooking(myBookings.some((b: any) => b.status === "PENDING" || b.status === "ACTIVE"));
+          setHasPendingBooking(myBookings.some((b: { status: string }) => b.status === "PENDING" || b.status === "ACTIVE"));
         }
       } catch (error) {
         console.error("Lỗi:", error);
@@ -41,7 +54,7 @@ export default function RoomDetailPage() {
   }, [params.id]);
 
   const handleBooking = async () => {
-    if (hasPendingBooking || isSubmitting) return;
+    if (hasPendingBooking || isSubmitting || !room) return;
     if (!window.confirm("Xác nhận gửi yêu cầu đăng ký phòng này?")) return;
 
     setIsSubmitting(true);
@@ -61,6 +74,7 @@ export default function RoomDetailPage() {
     }
   };
 
+  // --- TRẠNG THÁI LOADING (Skeleton) ---
   if (loading) {
     return (
       <RoleGuard allowedRoles={["STUDENT"]}>
@@ -80,6 +94,7 @@ export default function RoomDetailPage() {
     );
   }
 
+  // --- TRẠNG THÁI LỖI / KHÔNG TÌM THẤY ---
   if (!room) {
     return (
       <RoleGuard allowedRoles={["STUDENT"]}>
@@ -95,9 +110,11 @@ export default function RoomDetailPage() {
     );
   }
 
+  // --- GIAO DIỆN CHÍNH ---
   return (
     <RoleGuard allowedRoles={["STUDENT"]}>
       <div className="min-h-screen bg-white pb-24 font-sans">
+        
         {/* Nút Back Tinh tế */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-6">
           <button 
@@ -112,10 +129,11 @@ export default function RoomDetailPage() {
         </div>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6">
+          
           {/* Header Thông tin */}
           <div className="mb-10">
             <h1 className="text-3xl sm:text-[40px] font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
-              {room.name} <span className="font-light text-slate-400">|</span> Ký túc xá Tiêu chuẩn
+              {room.name || room.roomNumber} <span className="font-light text-slate-400">|</span> Ký túc xá Tiêu chuẩn
             </h1>
             <div className="flex items-center text-slate-600 font-medium text-[15px]">
               <MapPin className="w-5 h-5 mr-2 text-rose-500" />
@@ -175,7 +193,7 @@ export default function RoomDetailPage() {
                 <h2 className="text-2xl font-extrabold text-slate-900 mb-6 tracking-tight">Giới thiệu về không gian</h2>
                 <div className="text-[16px] text-slate-600 leading-9 space-y-6 tracking-[0.015em]">
                   <p>
-                    Chào mừng bạn đến với hệ thống Ký túc xá Dormify. Phòng <strong className="text-slate-900 font-bold">{room.name}</strong> được thiết kế theo tiêu chuẩn hiện đại nhất, nhằm tối ưu hóa trọn vẹn không gian sinh hoạt và học tập cho sinh viên.
+                    Chào mừng bạn đến với hệ thống Ký túc xá Dormify. Phòng <strong className="text-slate-900 font-bold">{room.name || room.roomNumber}</strong> được thiết kế theo tiêu chuẩn hiện đại nhất, nhằm tối ưu hóa trọn vẹn không gian sinh hoạt và học tập cho sinh viên.
                   </p>
                   <p>
                     Vị trí đắc địa nằm tại tòa <strong className="text-slate-900 font-bold">{room.building}</strong> giúp bạn dễ dàng di chuyển tiếp cận các khu vực trọng yếu như căn tin, thư viện và bến xe buýt trung tâm. Môi trường sống văn minh, thân thiện cùng hệ thống an ninh chặt chẽ đảm bảo mang lại sự an tâm tuyệt đối trong suốt quá trình lưu trú.
