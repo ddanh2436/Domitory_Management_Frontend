@@ -2,8 +2,16 @@
 
 import { useEffect, useState } from "react";
 
+interface Booking {
+  _id: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  createdAt: string;
+  user?: { fullName?: string; mssv?: string };
+  room?: { name?: string; building?: string };
+}
+
 export default function AdminBookingsPage() {
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionMsg, setActionMsg] = useState({ text: "", type: "" });
 
@@ -25,6 +33,7 @@ export default function AdminBookingsPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBookings();
   }, []);
 

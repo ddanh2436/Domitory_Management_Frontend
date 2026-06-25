@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { apiClient } from "../../../utils/apiClient";
-import RoleGuard from "../../../components/RoleGuard"; // Tích hợp bảo mật từ nhánh main
+import RoleGuard from "../../../components/RoleGuard";
 import { 
   ArrowLeft, MapPin, CheckCircle2, Shield, 
   Wifi, Wind, Bed, Zap, Clock, Info, ShieldCheck, Sparkles
@@ -25,32 +25,38 @@ export default function RoomDetailPage() {
   const params = useParams();
   const router = useRouter();
   
-  // 2. SỬ DỤNG INTERFACE THAY VÌ "any"
   const [room, setRoom] = useState<RoomData | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasPendingBooking, setHasPendingBooking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const fetchRoomData = async () => {
-      try {
-        const [roomRes, bookingsRes] = await Promise.all([
-          apiClient.get(`/rooms/${params.id}`),
-          apiClient.get('/bookings/me')
-        ]);
+    const fetchRoom = async () => {
+      setLoading(true);
 
-        if (roomRes.ok) setRoom(await roomRes.json());
-        if (bookingsRes.ok) {
-          const myBookings = await bookingsRes.json();
-          setHasPendingBooking(myBookings.some((b: { status: string }) => b.status === "PENDING" || b.status === "ACTIVE"));
+      // Handle "me" as special case - redirect to main rooms page
+      if (params.id === "me") {
+        router.replace("/student/rooms");
+        return;
+      }
+
+      try {
+        const response = await apiClient.get(`/rooms/${params.id}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          setRoom(data.data || data);
+        } else {
+          setRoom(null);
         }
       } catch (error) {
         console.error("Lỗi:", error);
+        setRoom(null);
       } finally {
         setLoading(false);
       }
     };
-    if (params.id) fetchRoomData();
+    if (params.id) fetchRoom();
   }, [params.id]);
 
   const handleBooking = async () => {
@@ -74,13 +80,12 @@ export default function RoomDetailPage() {
     }
   };
 
-  // --- TRẠNG THÁI LOADING (Skeleton) ---
   if (loading) {
     return (
       <RoleGuard allowedRoles={["STUDENT"]}>
         <div className="min-h-screen bg-white max-w-7xl mx-auto px-4 sm:px-6 py-12 animate-pulse">
           <div className="h-10 bg-slate-100 rounded-xl w-1/3 mb-8"></div>
-          <div className="h-[400px] bg-slate-100 rounded-3xl mb-12"></div>
+          <div className="h-[400px] bg-slate-100 rounded-3xl mb-16"></div>
           <div className="grid lg:grid-cols-3 gap-16">
             <div className="lg:col-span-2 space-y-8">
               <div className="h-12 bg-slate-100 rounded-xl w-3/4"></div>
@@ -94,7 +99,6 @@ export default function RoomDetailPage() {
     );
   }
 
-  // --- TRẠNG THÁI LỖI / KHÔNG TÌM THẤY ---
   if (!room) {
     return (
       <RoleGuard allowedRoles={["STUDENT"]}>
@@ -110,12 +114,9 @@ export default function RoomDetailPage() {
     );
   }
 
-  // --- GIAO DIỆN CHÍNH ---
   return (
     <RoleGuard allowedRoles={["STUDENT"]}>
       <div className="min-h-screen bg-white pb-24 font-sans">
-        
-        {/* Nút Back Tinh tế */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-6">
           <button 
             onClick={() => router.back()} 
@@ -129,8 +130,6 @@ export default function RoomDetailPage() {
         </div>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6">
-          
-          {/* Header Thông tin */}
           <div className="mb-10">
             <h1 className="text-3xl sm:text-[40px] font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
               {room.name || room.roomNumber} <span className="font-light text-slate-400">|</span> Ký túc xá Tiêu chuẩn
@@ -146,7 +145,6 @@ export default function RoomDetailPage() {
             </div>
           </div>
 
-          {/* Image Grid */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[420px] mb-16 rounded-3xl overflow-hidden">
             <div className="md:col-span-2 bg-slate-200 hover:brightness-95 transition-all cursor-pointer">
               <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=1000" alt="Main" className="w-full h-full object-cover" />
@@ -172,10 +170,7 @@ export default function RoomDetailPage() {
             </div>
           </div>
 
-          {/* Layout Hai Cột */}
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 relative">
-            
-            {/* CỘT TRÁI */}
             <div className="lg:col-span-7 space-y-12">
               <div className="pb-10 border-b border-slate-200">
                 <h2 className="text-2xl font-extrabold text-slate-900 mb-8 tracking-tight">Tiện nghi có sẵn</h2>
@@ -202,7 +197,6 @@ export default function RoomDetailPage() {
               </div>
             </div>
 
-            {/* CỘT PHẢI (Booking Card) */}
             <div className="lg:col-span-5 relative">
               <div className="sticky top-8 bg-white border border-slate-200 rounded-3xl p-8 shadow-[0_12px_40px_-15px_rgba(0,0,0,0.1)]">
                 <div className="flex items-baseline mb-8 pb-8 border-b border-slate-100">
@@ -258,7 +252,6 @@ export default function RoomDetailPage() {
                 </div>
               </div>
             </div>
-
           </div>
         </main>
       </div>
