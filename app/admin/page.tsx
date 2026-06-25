@@ -20,6 +20,14 @@ interface Student {
   status?: string;
 }
 
+interface Booking {
+  _id: string;
+  status: string;
+  createdAt: string;
+  user?: { fullName: string; mssv?: string };
+  room?: { name: string; building: string; floor?: string };
+}
+
 const COLORS = ["#EF4444", "#F59E0B", "#10B981"]; // Đỏ (Pending), Vàng (In progress), Xanh (Resolved)
 
 // ─── COMPONENT STAT CARD GỐC CỦA BẠN ──────────────────────────────────────────
@@ -46,11 +54,11 @@ function StatCard({
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const [students, setStudents] = useState<Student[]>([]);
-  const [bookings, setBookings] = useState<Array<{ status: string }>>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [maintenanceCount, setMaintenanceCount] = useState(0);
   
-  const [revenueData, setRevenueData] = useState([]);
-  const [maintenanceData, setMaintenanceData] = useState([]);
+  const [revenueData, setRevenueData] = useState<any[]>([]);
+  const [maintenanceData, setMaintenanceData] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [alertMsg, setAlertMsg] = useState({ text: "", type: "" });
@@ -71,8 +79,8 @@ export default function AdminDashboard() {
         const maintList = await resMaint.json();
         setMaintenanceCount(maintList.filter((m: { status: string }) => m.status !== "RESOLVED").length);
       }
-      if (revStatsRes.ok) setRevenueData(await revStatsRes.json());
-      if (maintStatsRes.ok) setMaintenanceData(await maintStatsRes.json());
+      if (revStatsRes.ok) setRevenueData(await revStatsRes.json() as any[]);
+      if (maintStatsRes.ok) setMaintenanceData(await maintStatsRes.json() as any[]);
 
     } catch (error: unknown) {
       console.error("Lỗi đồng bộ dữ liệu từ đám mây:", error);
@@ -277,8 +285,8 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="inline-flex gap-2">
-                          <button onClick={() => handleBookingAction(b._id, "approve", b.room?.name)} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-semibold shadow-sm transition-colors">Chấp nhận</button>
-                          <button onClick={() => handleBookingAction(b._id, "reject", b.room?.name)} className="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-md text-xs font-semibold border border-rose-200 transition-colors">Từ chối</button>
+<button onClick={() => handleBookingAction(b._id, "approve", b.room?.name || "")} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-semibold shadow-sm transition-colors">Chấp nhận</button>
+                           <button onClick={() => handleBookingAction(b._id, "reject", b.room?.name || "")} className="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-md text-xs font-semibold border border-rose-200 transition-colors">Từ chối</button>
                         </div>
                       </td>
                     </tr>

@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import type { UserRole } from "../../../utils/auth";
+import type { UserRole } from "../../utils/auth";
 import type { ViewerContext } from "./types";
 
 function decodeTokenPayload(token: string) {

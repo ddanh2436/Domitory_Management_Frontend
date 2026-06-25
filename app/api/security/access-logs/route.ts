@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getViewerFromRequest, isAdminViewer } from "../../rooms/_auth";
 import { getAccessDeniedLogs } from "../../rooms/_audit";
 
-export function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
   const viewer = getViewerFromRequest(request);
 
   if (!viewer) {

@@ -3,7 +3,7 @@ import { getViewerFromRequest } from "../_auth";
 import { logAccessDenied } from "../_audit";
 import { findRoomByViewer, toPublicRoomView } from "../data";
 
-export function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
   const viewer = getViewerFromRequest(request);
 
   if (!viewer) {

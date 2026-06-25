@@ -1,4 +1,4 @@
-import type { UserRole } from "../../../utils/auth";
+import type { UserRole } from "../../utils/auth";
 
 export type RoomStatus = "AVAILABLE" | "FULL" | "MAINTENANCE";
 export type OccupancyStatus = "CONFIRMED" | "TEMPORARY" | "PENDING_CHECKOUT";

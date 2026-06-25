@@ -29,7 +29,7 @@ interface Room {
   status: "AVAILABLE" | "FULL" | "MAINTENANCE";
   availabilityStatus: string;
   facilities: string[];
-  occupants: Occupant[];
+  occupants?: Occupant[];
 }
 
 export default function AdminRoomsPage() {
@@ -163,38 +163,42 @@ export default function AdminRoomsPage() {
 
                 <div className="mt-5">
                   <div className="text-lg font-bold text-[#0D1B2A] mb-3">Occupants</div>
-                  {selectedRoom.occupants.map((occupant) => (
-                    <div key={occupant.userId} className="occupant">
-                      <div className="occupant-head">
-                        <div>
-                          <div className="occupant-name">{occupant.fullName}</div>
-                          <div className="text-sm text-slate-500">MSSV: {occupant.mssv}</div>
+                  {selectedRoom.occupants && selectedRoom.occupants.length > 0 ? (
+                    selectedRoom.occupants.map((occupant) => (
+                      <div key={occupant.userId} className="occupant">
+                        <div className="occupant-head">
+                          <div>
+                            <div className="occupant-name">{occupant.fullName}</div>
+                            <div className="text-sm text-slate-500">MSSV: {occupant.mssv}</div>
+                          </div>
+                          <span className={`tag ${occupant.roomStatus === "CONFIRMED" ? "tag--available" : "tag--maintenance"}`}>{occupant.roomStatus}</span>
                         </div>
-                        <span className={`tag ${occupant.roomStatus === "CONFIRMED" ? "tag--available" : "tag--maintenance"}`}>{occupant.roomStatus}</span>
-                      </div>
-                      <div className="occupant-meta">
-                        <div><strong>Ngày sinh:</strong> {new Date(occupant.dateOfBirth).toLocaleDateString("vi-VN")}</div>
-                        <div><strong>Check-in:</strong> {new Date(occupant.checkInDate).toLocaleDateString("vi-VN")}</div>
-                        <div><strong>Email:</strong> {occupant.contactInfo?.email || "Không công khai"}</div>
-                        <div><strong>Điện thoại:</strong> {occupant.contactInfo?.phone || "Không công khai"}</div>
-                        <div><strong>Hợp đồng:</strong> {occupant.contractInfo.contractNumber}</div>
-                        <div><strong>Phòng hiện tại:</strong> {occupant.currentRoomAssignment.roomNumber}</div>
-                      </div>
+                        <div className="occupant-meta">
+                          <div><strong>Ngày sinh:</strong> {new Date(occupant.dateOfBirth).toLocaleDateString("vi-VN")}</div>
+                          <div><strong>Check-in:</strong> {new Date(occupant.checkInDate).toLocaleDateString("vi-VN")}</div>
+                          <div><strong>Email:</strong> {occupant.contactInfo?.email || "Không công khai"}</div>
+                          <div><strong>Điện thoại:</strong> {occupant.contactInfo?.phone || "Không công khai"}</div>
+                          <div><strong>Hợp đồng:</strong> {occupant.contractInfo.contractNumber}</div>
+                          <div><strong>Phòng hiện tại:</strong> {occupant.currentRoomAssignment.roomNumber}</div>
+                        </div>
 
-                      <div className="mt-4">
-                        <div className="text-sm font-semibold text-slate-700 mb-2">Booking history</div>
-                        <div className="space-y-2">
-                          {occupant.bookingHistory.map((booking) => (
-                            <div key={booking.bookingId} className="flex items-center justify-between gap-3 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-                              <span>{booking.roomNumber}</span>
-                              <span>{new Date(booking.requestedAt).toLocaleString("vi-VN")}</span>
-                              <span>{booking.status}</span>
-                            </div>
-                          ))}
+                        <div className="mt-4">
+                          <div className="text-sm font-semibold text-slate-700 mb-2">Booking history</div>
+                          <div className="space-y-2">
+                            {occupant.bookingHistory.map((booking) => (
+                              <div key={booking.bookingId} className="flex items-center justify-between gap-3 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                                <span>{booking.roomNumber}</span>
+                                <span>{new Date(booking.requestedAt).toLocaleString("vi-VN")}</span>
+                                <span>{booking.status}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <div className="text-sm text-slate-500 italic">Chưa có cư dân nào trong phòng.</div>
+                  )}
                 </div>
 
                 <div className="mt-5 muted-box">
