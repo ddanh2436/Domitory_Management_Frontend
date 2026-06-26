@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RoleGuard from "../../components/RoleGuard";
-import NotificationBell from "../../components/NotificationBell";
 import { apiClient } from "../../utils/apiClient";
 
 interface Occupant {
@@ -63,18 +62,26 @@ export default function StudentRoomsPage() {
   const [room, setRoom] = useState<RoomData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // THÊM MỚI: State để nhận diện việc sinh viên chưa có phòng
+  const [hasNoRoom, setHasNoRoom] = useState(false); 
 
   useEffect(() => {
     const fetchRoom = async () => {
       setLoading(true);
       setError("");
+      setHasNoRoom(false);
 
       try {
         const response = await apiClient.get("/rooms/me");
         const payload = await response.json();
 
         if (!response.ok) {
-          setError(payload.message || "Không thể tải thông tin phòng của bạn.");
+          // THÊM MỚI: Nếu lỗi là 404 (Không tìm thấy phòng do chưa đăng ký) -> Hiện giao diện "Mời đăng ký"
+          if (response.status === 404) {
+            setHasNoRoom(true);
+          } else {
+            setError(payload.message || "Không thể tải thông tin phòng của bạn.");
+          }
           setRoom(null);
           return;
         }
@@ -157,6 +164,34 @@ export default function StudentRoomsPage() {
 
         {loading ? (
           <div className="panel loading-box">Đang tải thông tin phòng và danh sách người ở cùng...</div>
+        ) : hasNoRoom ? (
+          /* THÊM MỚI: Giao diện trống thân thiện mời đặt phòng */
+          <div className="panel flex flex-col items-center text-center py-16 px-6">
+            <div className="w-20 h-20 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-6">
+              <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-slate-800 mb-3">Bạn chưa được phân phòng</h2>
+            <p className="text-slate-500 mb-8 max-w-md mx-auto leading-relaxed">
+              Bạn chưa có thông tin phòng ở trong hệ thống. Hãy xem danh sách các phòng đang còn trống và đăng ký để bắt đầu trải nghiệm lưu trú nhé!
+            </p>
+            <div className="flex gap-4">
+              {/* Nút bấm dẫn tới trang /student/book-room vừa code lúc nãy */}
+              <Link 
+                href="/student/book-room" 
+                className="px-6 py-3 bg-[#0D1B2A] hover:bg-[#1f3b5c] text-white font-semibold rounded-xl transition-colors shadow-lg shadow-blue-900/20"
+              >
+                Khám phá & Đặt phòng
+              </Link>
+              <Link 
+                href="/student/bookings" 
+                className="px-6 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl transition-colors"
+              >
+                Xem lịch sử đơn
+              </Link>
+            </div>
+          </div>
         ) : error ? (
           <div className="error-box">{error}</div>
         ) : room ? (
@@ -187,7 +222,6 @@ export default function StudentRoomsPage() {
               <div style={{ marginTop: 24 }}>
                 <div className="panel-title" style={{ marginBottom: 12 }}>Danh sách cư dân cùng phòng</div>
                 <div className="occupant-list">
-                  {/* ĐÃ SỬA LỖI KEY Ở ĐÂY BẰNG CÁCH THÊM FALLBACK index và _id */}
                   {room.occupants.map((occupant, index) => (
                     <article key={occupant.userId || (occupant as any)._id || occupant.mssv || `occupant-${index}`} className="occupant">
                       <div className="avatar">
