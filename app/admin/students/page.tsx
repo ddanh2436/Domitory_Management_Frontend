@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiClient } from "../../utils/apiClient"; // TÍCH HỢP APICLIENT VÀO ĐÂY
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Student {
@@ -35,8 +36,6 @@ export default function AdminStudentsPage() {
 
   // STATE CHO MODAL SINH VIÊN
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  
-  // TÍNH NĂNG MỚI: State quản lý Tab bên trong Modal
   const [modalTab, setModalTab] = useState<"PROFILE" | "SECURITY">("PROFILE");
 
   const [editForm, setEditForm] = useState({
@@ -51,11 +50,12 @@ export default function AdminStudentsPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const resStudents = await fetch("http://localhost:3001/api/users/students", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (resStudents.ok) setStudents(await resStudents.json());
+      // Đã rút gọn bằng apiClient
+      const resStudents = await apiClient.get("/users/students");
+      if (resStudents.ok) {
+        const data = await resStudents.json();
+        setStudents(data);
+      }
     } catch (error) {
       console.error("Lỗi đồng bộ dữ liệu:", error);
     } finally {
@@ -64,7 +64,6 @@ export default function AdminStudentsPage() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadData();
   }, []);
 
@@ -78,7 +77,7 @@ export default function AdminStudentsPage() {
     });
     setAdminMessage(""); 
     setBlockReasonInput(""); 
-    setModalTab("PROFILE"); // Reset về tab Profile mỗi khi mở sinh viên mới
+    setModalTab("PROFILE");
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,17 +101,8 @@ export default function AdminStudentsPage() {
     if (!selectedStudent) return;
 
     try {
-      const token = localStorage.getItem("token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
-      const updateRes = await fetch(`${API_URL}/api/users/${selectedStudent._id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(editForm),
-      });
+      // Rút gọn bằng apiClient
+      const updateRes = await apiClient.patch(`/users/${selectedStudent._id}`, editForm);
 
       if (!updateRes.ok) {
         const err = await updateRes.json().catch(() => ({}));
@@ -120,19 +110,14 @@ export default function AdminStudentsPage() {
         return;
       }
 
+      // Đã sửa lại tên trường "recipient" cho chuẩn xác với Schema Notification
       if (adminMessage.trim() !== "") {
-        await fetch(`${API_URL}/api/notifications`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            userId: selectedStudent._id,
-            title: "Thông báo từ Ban Quản Lý",
-            message: adminMessage,
-            isRead: false
-          }),
+        await apiClient.post("/notifications", {
+          recipient: selectedStudent._id,
+          title: "Thông báo từ Ban Quản Lý",
+          message: adminMessage,
+          type: "SYSTEM",
+          isRead: false
         });
       }
 
@@ -157,13 +142,7 @@ export default function AdminStudentsPage() {
     if (!isConfirm) return;
 
     try {
-      const token = localStorage.getItem("token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-      const res = await fetch(`${API_URL}/api/users/${selectedStudent._id}/block`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ reason: blockReasonInput }),
-      });
+      const res = await apiClient.patch(`/users/${selectedStudent._id}/block`, { reason: blockReasonInput });
 
       if (!res.ok) throw new Error("Lỗi khi khóa");
       setAlertMsg({ text: "Đã khóa tài khoản thành công!", type: "success" });
@@ -178,12 +157,7 @@ export default function AdminStudentsPage() {
     if (!selectedStudent) return;
     
     try {
-      const token = localStorage.getItem("token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-      const res = await fetch(`${API_URL}/api/users/${selectedStudent._id}/unblock`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await apiClient.patch(`/users/${selectedStudent._id}/unblock`);
 
       if (!res.ok) throw new Error("Lỗi khi mở khóa");
       setAlertMsg({ text: "Đã mở khóa tài khoản thành công!", type: "success" });
@@ -202,13 +176,7 @@ export default function AdminStudentsPage() {
     if (!isConfirm) return;
 
     try {
-      const token = localStorage.getItem("token");
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
-      const res = await fetch(`${API_URL}/api/users/${selectedStudent._id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await apiClient.delete(`/users/${selectedStudent._id}`);
 
       if (!res.ok) throw new Error("Không thể xóa sinh viên");
 
@@ -280,7 +248,6 @@ export default function AdminStudentsPage() {
         .modal-close { background: transparent; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 24px; line-height: 1; display: flex; align-items: center; transition: color 0.15s; }
         .modal-close:hover { color: var(--white); }
         
-        /* TÍNH NĂNG MỚI: CSS CHO TABS BÊN TRONG MODAL */
         .modal-inner-tabs { display: flex; gap: 20px; border-bottom: 1px solid var(--border); padding: 0 24px; background: #fafaf9; }
         .modal-inner-tab-btn { padding: 14px 4px 12px 4px; border: none; background: transparent; font-size: 13.5px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; margin-bottom: -1px; }
         .modal-inner-tab-btn.active { color: var(--navy); border-bottom-color: var(--gold); }
@@ -434,7 +401,6 @@ export default function AdminStudentsPage() {
               <button type="button" className="modal-close" onClick={() => setSelectedStudent(null)}>×</button>
             </div>
 
-            {/* THANH ĐIỀU HƯỚNG BÊN TRONG MODAL */}
             <div className="modal-inner-tabs">
               <button 
                 type="button" 
@@ -520,7 +486,6 @@ export default function AdminStudentsPage() {
               {modalTab === 'SECURITY' && (
                 <div className="animate-fadeIn">
                   
-                  {/* Khu vực Gửi Lời Nhắn */}
                   <div className="form-group">
                     <label className="form-label" style={{ color: "var(--navy)", fontWeight: "bold", fontSize: "13px" }}>
                       📨 Gửi lời nhắn / Thông báo đến sinh viên
@@ -539,7 +504,6 @@ export default function AdminStudentsPage() {
 
                   <hr style={{ margin: "24px 0", borderTop: "1px solid var(--border)" }} />
 
-                  {/* Khu vực Khóa/Mở Khóa Tài Khoản */}
                   <div className="form-group">
                     <label className="form-label" style={{ color: selectedStudent.accessStatus === 'LOCKED' ? "#16a34a" : "#ea580c", fontWeight: "bold", fontSize: "14px" }}>
                       {selectedStudent.accessStatus === 'LOCKED' ? "🔒 Trạng thái: Đang bị khóa" : "🔓 Quản lý truy cập (Khóa tài khoản)"}
