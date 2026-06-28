@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { apiClient } from "../../utils/apiClient"; // ĐÃ THÊM IMPORT apiClient
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface MaintenanceRequest {
@@ -151,18 +152,24 @@ export default function StudentMaintenancePage() {
 
   const fetchRequests = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const profileRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/users/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const profile = await profileRes.json();
+      // ĐÃ SỬA: Dùng apiClient thay vì fetch thủ công để tránh lỗi duplicate URL
+      const profileRes = await apiClient.get("/users/profile");
+      const profilePayload = await profileRes.json();
+      const profile = profilePayload.data || profilePayload;
 
-      if (!profile.room) { setHasRoom(false); setLoading(false); return; }
+      if (!profile.room) { 
+        setHasRoom(false); 
+        setLoading(false); 
+        return; 
+      } else {
+        setHasRoom(true);
+      }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/maintenance/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) setRequests(await res.json());
+      const res = await apiClient.get("/maintenance/me");
+      if (res.ok) {
+        const payload = await res.json();
+        setRequests(payload.data || payload || []);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -178,13 +185,10 @@ export default function StudentMaintenancePage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/maintenance`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(form),
-      });
+      // ĐÃ SỬA: Dùng apiClient
+      const res = await apiClient.post("/maintenance", form);
       const data = await res.json();
+      
       if (res.ok) {
         setToast({ type: "success", text: "Đã gửi báo cáo sự cố thành công!" });
         setForm({ title: "", description: "", priority: "MEDIUM" });

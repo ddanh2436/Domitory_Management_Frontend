@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { apiClient } from "../../utils/apiClient"; // THÊM IMPORT apiClient
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
@@ -234,11 +235,13 @@ export default function AdminMaintenancePage() {
   const fetchRequests = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/maintenance`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) setRequests(await res.json());
+      // ĐÃ SỬA: Sử dụng apiClient thay vì fetch thủ công để tránh lỗi đường dẫn /api/api
+      const res = await apiClient.get("/maintenance");
+      if (res.ok) {
+        const payload = await res.json();
+        // Xử lý trường hợp backend trả về trực tiếp mảng hoặc bọc trong { data: [...] }
+        setRequests(payload.data || payload || []);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -254,13 +257,12 @@ export default function AdminMaintenancePage() {
     if (!confirm) return;
     setProcessing(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/maintenance/${confirm.requestId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ status: confirm.nextStatus }),
+      // ĐÃ SỬA: Sử dụng apiClient
+      const res = await apiClient.patch(`/maintenance/${confirm.requestId}/status`, {
+        status: confirm.nextStatus
       });
       const data = await res.json();
+      
       if (res.ok) {
         setToast({ type: "success", text: "Cập nhật tiến độ thành công!" });
         setRequests((prev) => prev.map((r) => r._id === confirm.requestId ? { ...r, status: confirm.nextStatus, resolvedAt: confirm.nextStatus === "RESOLVED" ? new Date().toISOString() : r.resolvedAt } : r ));
