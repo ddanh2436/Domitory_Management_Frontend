@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { io, Socket } from "socket.io-client";
 import RoleGuard from "../components/RoleGuard";
 
 interface Profile {
@@ -39,11 +40,12 @@ function Avatar({ name, size = 44 }: { name: string; size?: number }) {
   return <div className="st-avatar" style={{ width: size, height: size, fontSize: size * 0.35 }}>{initials}</div>;
 }
 
-function NavItem({ icon, label, active = false, href = "#" }: { icon: React.ReactNode; label: string; active?: boolean; href?: string; }) {
+function NavItem({ icon, label, active = false, href = "#", badge }: { icon: React.ReactNode; label: string; active?: boolean; href?: string; badge?: number; }) {
   return (
     <Link href={href} className={`st-nav-item ${active ? "st-nav-item--active" : ""}`}>
       <span className="st-nav-icon">{icon}</span>
       <span className="st-nav-label">{label}</span>
+      {badge != null && badge > 0 && <span className="st-nav-badge">{badge}</span>}
     </Link>
   );
 }
@@ -67,6 +69,11 @@ const Icons = {
   invoice: (
     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  ),
+  bell: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
     </svg>
   ),
   wrench: (
@@ -97,23 +104,61 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const loadStudentData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:3001/api/users/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) setProfile(await res.json());
+        if (!token) return;
+
+        const [profileRes, notificationsRes] = await Promise.all([
+          fetch("http://localhost:3001/api/users/profile", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch("http://localhost:3001/api/notifications/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        if (profileRes.ok) {
+          setProfile(await profileRes.json());
+        }
+
+        if (notificationsRes.ok) {
+          const notifications = await notificationsRes.json();
+
+          if (Array.isArray(notifications)) {
+            setUnreadNotifications(notifications.filter((item) => !item.isRead).length);
+          }
+        }
       } catch (e) {
         console.error(e);
       } finally {
         setLoading(false);
       }
     };
-    fetchProfile();
+
+    void loadStudentData();
   }, [pathname]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    socketRef.current = io("http://localhost:3001", {
+      auth: { token },
+    });
+
+    socketRef.current.on("newNotification", () => {
+      setUnreadNotifications((prev) => prev + 1);
+    });
+
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -157,6 +202,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         .st-nav-item:hover { background: rgba(255,255,255,0.05); }
         .st-nav-icon { color: var(--muted); flex-shrink: 0; display: flex; }
         .st-nav-label { font-size: 13px; font-weight: 400; color: rgba(255,255,255,0.5); flex: 1; }
+        .st-nav-badge { min-width: 20px; height: 20px; border-radius: 999px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; background: #eab308; color: var(--navy); font-size: 11px; font-weight: 700; }
         .st-nav-item--active { background: var(--gold-dim) !important; }
         .st-nav-item--active .st-nav-label { color: var(--gold) !important; font-weight: 500; }
         .st-nav-item--active .st-nav-icon  { color: var(--gold) !important; }
@@ -209,6 +255,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             <NavItem icon={Icons.doc} label="Hợp đồng điện tử" href="/student/contracts" active={pathname.startsWith("/student/contracts")} />
             <NavItem icon={Icons.invoice} label="Hóa đơn" href="/student/invoices" active={pathname.startsWith("/student/invoices")} />
             <NavItem icon={Icons.user} label="Hồ sơ cá nhân" href="/student/profile" active={pathname.startsWith("/student/profile")} />
+            <NavItem icon={Icons.bell} label="Thông báo" href="/student/notifications" active={pathname.startsWith("/student/notifications")} badge={unreadNotifications} />
             <NavItem icon={Icons.wrench} label="Yêu cầu sửa chữa" href="/student/maintenance" active={pathname.startsWith("/student/maintenance")} />
           </nav>
 
