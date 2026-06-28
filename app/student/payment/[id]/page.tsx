@@ -16,6 +16,7 @@ interface InvoiceData {
   waterFee: number;
   totalAmount: number;
   status: string;
+  dueDate?: string;
   roomName?: string;
 }
 
@@ -51,6 +52,14 @@ const EWALLET_OPTIONS = [
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatVND(n: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
+}
+
+function formatDateTime(value?: string) {
+  if (!value) return "Chưa đặt";
+  return new Intl.DateTimeFormat("vi-VN", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
 }
 
 function formatCardNumber(v: string) {
@@ -139,12 +148,14 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
         });
         
         if (invRes.ok) {
-          const allInvoices = (await invRes.json()) as Array<{ _id: string; roomName?: string }>;
+          const allInvoices = (await invRes.json()) as InvoiceData[];
           const targetInvoice = allInvoices.find((inv) => inv._id === invoiceId);
           
           if (targetInvoice) {
-            targetInvoice.roomName = profile.room?.name || "Phòng KTX";
-            setInvoice(targetInvoice);
+            setInvoice({
+              ...targetInvoice,
+              roomName: profile.room?.name || "Phòng KTX",
+            });
           }
         }
       } catch (err) {
@@ -408,7 +419,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
             </div>
             <div className="pm-meta-item">
               <span className="pm-meta-label">Hạn thanh toán</span>
-              <span className="pm-meta-val">30/{invoice.month < 10 ? `0${invoice.month}` : invoice.month}/{invoice.year}</span>
+              <span className="pm-meta-val">{formatDateTime(invoice.dueDate)}</span>
             </div>
           </div>
 

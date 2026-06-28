@@ -12,6 +12,7 @@ interface Invoice {
   waterFee: number;
   totalAmount: number;
   status: 'PENDING' | 'PAID' | 'OVERDUE';
+  dueDate?: string;
   createdAt: string;
   paidAt?: string;
 }
@@ -20,6 +21,18 @@ interface Room {
   _id: string;
   name: string;
   building: string;
+}
+
+function toDateTimeLocalValue(date: Date) {
+  const timezoneOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16);
+}
+
+function getDefaultDueDate() {
+  const date = new Date();
+  date.setDate(date.getDate() + 7);
+  date.setHours(23, 59, 0, 0);
+  return toDateTimeLocalValue(date);
 }
 
 export default function AdminInvoicesPage() {
@@ -37,6 +50,7 @@ export default function AdminInvoicesPage() {
     year: new Date().getFullYear(),
     electricityFee: 0,
     waterFee: 0,
+    dueDate: getDefaultDueDate(),
   });
 
   const fetchData = async () => {
@@ -126,6 +140,7 @@ export default function AdminInvoicesPage() {
           ...formData,
           electricityFee: Number(formData.electricityFee),
           waterFee: Number(formData.waterFee),
+          dueDate: new Date(formData.dueDate).toISOString(),
         }),
       });
 
@@ -133,6 +148,14 @@ export default function AdminInvoicesPage() {
       if (response.ok) {
         setActionMsg({ text: "Tạo hóa đơn thành công!", type: "success" });
         setShowModal(false);
+        setFormData({
+          roomId: "",
+          month: new Date().getMonth() + 1,
+          year: new Date().getFullYear(),
+          electricityFee: 0,
+          waterFee: 0,
+          dueDate: getDefaultDueDate(),
+        });
         fetchData();
       } else {
         setActionMsg({ text: data.message || "Lỗi tạo hóa đơn", type: "error" });
@@ -146,6 +169,14 @@ export default function AdminInvoicesPage() {
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+  };
+
+  const formatDateTime = (value?: string) => {
+    if (!value) return 'Chưa đặt';
+    return new Intl.DateTimeFormat('vi-VN', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    }).format(new Date(value));
   };
 
   return (
@@ -183,15 +214,16 @@ export default function AdminInvoicesPage() {
                 <th className="px-6 py-4 text-right font-semibold text-slate-600">Tiền phòng</th>
                 <th className="px-6 py-4 text-right font-semibold text-slate-600">Điện & Nước</th>
                 <th className="px-6 py-4 text-right font-bold text-slate-800">Tổng cộng</th>
+                <th className="px-6 py-4 text-left font-semibold text-slate-600">Hạn đóng</th>
                 <th className="px-6 py-4 text-center font-semibold text-slate-600">Trạng thái</th>
                 <th className="px-6 py-4 text-center font-semibold text-slate-600">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {loading ? (
-                <tr><td colSpan={7} className="text-center py-8 text-slate-500">Đang tải dữ liệu...</td></tr>
+                <tr><td colSpan={8} className="text-center py-8 text-slate-500">Đang tải dữ liệu...</td></tr>
               ) : invoices.length === 0 ? (
-                <tr><td colSpan={7} className="text-center py-8 text-slate-500">Chưa có hóa đơn nào.</td></tr>
+                <tr><td colSpan={8} className="text-center py-8 text-slate-500">Chưa có hóa đơn nào.</td></tr>
               ) : (
                 invoices.map((inv) => (
                   <tr key={inv._id} className="hover:bg-slate-50 transition-colors">
@@ -211,6 +243,9 @@ export default function AdminInvoicesPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-blue-700">
                       {formatCurrency(inv.totalAmount)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 text-xs">
+                      {formatDateTime(inv.dueDate)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold border ${
@@ -275,6 +310,17 @@ export default function AdminInvoicesPage() {
                   <label className="block text-sm font-medium text-slate-700 mb-1">Năm</label>
                   <input type="number" min="2020" required value={formData.year} onChange={(e) => setFormData({...formData, year: Number(e.target.value)})} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"/>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Hạn đóng tiền</label>
+                <input
+                  type="datetime-local"
+                  required
+                  value={formData.dueDate}
+                  onChange={(e) => setFormData({...formData, dueDate: e.target.value})}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
+                />
               </div>
 
               <div>
