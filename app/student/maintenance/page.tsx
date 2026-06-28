@@ -44,6 +44,13 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; bg: string; 
   REJECTED:    { label: "Bị từ chối",    color: "#dc2626", bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.2)",   icon: Icons.x },
 };
 
+const STATUS_WEIGHT: Record<Status, number> = {
+  PENDING: 1,
+  IN_PROGRESS: 2,
+  RESOLVED: 3,
+  REJECTED: 4,
+};
+
 // ─── Subcomponents ────────────────────────────────────────────────────────────
 function PriorityPill({ priority }: { priority: Priority }) {
   const c = PRIORITY_CONFIG[priority];
@@ -145,14 +152,14 @@ export default function StudentMaintenancePage() {
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem("token");
-      const profileRes = await fetch("http://localhost:3001/api/users/profile", {
+      const profileRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/users/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const profile = await profileRes.json();
 
       if (!profile.room) { setHasRoom(false); setLoading(false); return; }
 
-      const res = await fetch("http://localhost:3001/api/maintenance/me", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/maintenance/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setRequests(await res.json());
@@ -164,7 +171,6 @@ export default function StudentMaintenancePage() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchRequests();
   }, []);
 
@@ -173,7 +179,7 @@ export default function StudentMaintenancePage() {
     setSubmitting(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/api/maintenance", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/maintenance`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(form),
@@ -194,8 +200,16 @@ export default function StudentMaintenancePage() {
     }
   };
 
-  const filtered = activeFilter === "ALL" ? requests : requests.filter(r => r.status === activeFilter);
   const countByStatus = (s: Status) => requests.filter(r => r.status === s).length;
+  
+  const filtered = (activeFilter === "ALL" ? requests : requests.filter(r => r.status === activeFilter)).sort((a, b) => {
+    // Ưu tiên xếp hạng trạng thái
+    if (STATUS_WEIGHT[a.status] !== STATUS_WEIGHT[b.status]) {
+      return STATUS_WEIGHT[a.status] - STATUS_WEIGHT[b.status];
+    }
+    // Cùng trạng thái xếp theo thời gian mới nhất
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   return (
     <div className="w-full text-slate-800 font-sans relative">

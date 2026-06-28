@@ -54,7 +54,14 @@ const CONFIRM_MSG: Partial<Record<Status, string>> = {
   REJECTED: "Từ chối yêu cầu này? Hành động không thể hoàn tác.",
 };
 
-// ─── Icons (Chỉ giữ lại icon cần thiết) ───────────────────────────────────────
+const STATUS_WEIGHT: Record<Status, number> = {
+  PENDING: 1,
+  IN_PROGRESS: 2,
+  RESOLVED: 3,
+  REJECTED: 4,
+};
+
+// ─── Icons ────────────────────────────────────────────────────────────────────
 const I = {
   wrench: (
     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,7 +235,7 @@ export default function AdminMaintenancePage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/api/maintenance", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/maintenance`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setRequests(await res.json());
@@ -240,7 +247,6 @@ export default function AdminMaintenancePage() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchRequests();
   }, [fetchRequests]);
 
@@ -249,7 +255,7 @@ export default function AdminMaintenancePage() {
     setProcessing(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:3001/api/maintenance/${confirm.requestId}/status`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/maintenance/${confirm.requestId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status: confirm.nextStatus }),
@@ -277,6 +283,13 @@ export default function AdminMaintenancePage() {
     const q = searchQuery.toLowerCase();
     const matchSearch = !q || r.title.toLowerCase().includes(q) || r.room?.name.toLowerCase().includes(q) || r.user?.fullName.toLowerCase().includes(q) || (r.user?.mssv ?? "").toLowerCase().includes(q);
     return matchStatus && matchSearch;
+  }).sort((a, b) => {
+    // Ưu tiên xếp hạng trạng thái
+    if (STATUS_WEIGHT[a.status] !== STATUS_WEIGHT[b.status]) {
+      return STATUS_WEIGHT[a.status] - STATUS_WEIGHT[b.status];
+    }
+    // Cùng trạng thái xếp theo mới nhất
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
   return (
