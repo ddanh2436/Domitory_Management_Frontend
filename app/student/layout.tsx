@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import RoleGuard from "../components/RoleGuard";
+import NotificationBell from "../components/NotificationBell";
+import { apiClient } from "../utils/apiClient";
 
 interface Profile {
   fullName: string;
@@ -20,8 +22,6 @@ interface Profile {
   };
 }
 
-// ─── Logo: dùng ảnh PNG thật thay vì SVG vẽ tay ─────────────────────────────
-// Lưu ý: cần đặt file ảnh tại /public/Dormify.png trong project.
 function DormifyLogoMark({ size = 48, className = "" }: { size?: number; className?: string }) {
   return (
     <img
@@ -114,12 +114,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         if (!token) return;
 
         const [profileRes, notificationsRes] = await Promise.all([
-          fetch("http://localhost:3001/api/users/profile", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch("http://localhost:3001/api/notifications/me", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
+          apiClient.get("/users/profile"),
+          apiClient.get("/notifications/me"),
         ]);
 
         if (profileRes.ok) {
@@ -128,9 +124,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
         if (notificationsRes.ok) {
           const notifications = await notificationsRes.json();
-
           if (Array.isArray(notifications)) {
-            setUnreadNotifications(notifications.filter((item) => !item.isRead).length);
+            setUnreadNotifications(notifications.filter((item: any) => !item.isRead).length);
           }
         }
       } catch (e) {
@@ -147,7 +142,10 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    socketRef.current = io("http://localhost:3001", {
+    const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const socketUrl = rawApiUrl.replace(/\/api$/, "");
+    
+    socketRef.current = io(socketUrl, {
       auth: { token },
     });
 
@@ -185,7 +183,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           --sidebar-w: 240px;
         }
         .st-shell { display: flex; min-height: 100vh; background: var(--bg); font-family: 'DM Sans', sans-serif; }
-        .st-sidebar { width: var(--sidebar-w); flex-shrink: 0; background: var(--navy); min-height: 100vh; position: fixed; top: 0; left: 0; bottom: 0; border-right: 1px solid var(--gold-b); display: flex; flex-direction: column; z-index: 40; }
+        .st-sidebar { width: var(--sidebar-w); flex-shrink: 0; background: var(--navy); min-height: 100vh; position: fixed; top: 0; left: 0; bottom: 0; border-right: 1px solid var(--gold-b); display: flex; flex-direction: column; z-index: 50; }
         .st-brand { padding: 22px 18px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); text-decoration: none; transition: opacity 0.2s; }
         .st-brand:hover { opacity: 0.8; }
         .logo-align-up { transform: translateY(-2px); }
@@ -216,7 +214,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         .st-btn-action--logout .st-nav-icon { color: rgba(240,80,80,0.65); }
         .st-btn-action--logout span:last-child { font-size: 13px; color: rgba(240,80,80,0.75); }
         .st-main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
-        .st-body { padding: 26px 28px 52px; }
+        .st-body { padding: 0 28px 52px; }
         .st-sk { background: linear-gradient(90deg, #EDE9E3 25%, #E4E0D8 50%, #EDE9E3 75%); background-size: 400% 100%; animation: stShimmer 1.4s ease infinite; }
         @keyframes stShimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
       `}</style>
@@ -272,9 +270,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         </aside>
 
         <div className="st-main">
-          {/* Đã bỏ thanh topbar (header) — không gian phía trên sidebar
-             được dùng hết cho nội dung trang. Truy cập hồ sơ cá nhân
-             qua mục "Hồ sơ cá nhân" ở sidebar bên trái. */}
+          {/* HEADER CHỨA CHUÔNG THÔNG BÁO (Kính mờ) */}
+          <header className="sticky top-0 z-40 h-20 px-8 flex items-center justify-end bg-[#F2EFE9]/80 backdrop-blur-md">
+            <NotificationBell />
+          </header>
+
           <main className="st-body">
             {children}
           </main>

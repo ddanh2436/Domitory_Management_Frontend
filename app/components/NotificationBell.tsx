@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
+import { apiClient } from "../utils/apiClient"; // Bắt buộc dùng apiClient
 
 interface Notification {
   _id: string;
@@ -26,29 +27,31 @@ export default function NotificationBell() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    fetch("http://localhost:3001/api/notifications/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    // Sử dụng apiClient chuẩn để fetch
+    apiClient
+      .get("/notifications/me")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
-          console.log("Da tai danh sach thong bao tu DB:", data);
           setNotifications(data);
           setUnreadCount(data.filter((n) => !n.isRead).length);
         }
       })
-      .catch((err) => console.error("Loi goi API thong bao:", err));
+      .catch((err) => console.error("Lỗi gọi API thông báo:", err));
 
-    socketRef.current = io("http://localhost:3001", {
+    // Lấy URL động cho Socket.IO tránh hardcode
+    const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const socketUrl = rawApiUrl.replace(/\/api$/, "");
+
+    socketRef.current = io(socketUrl, {
       auth: { token },
     });
 
     socketRef.current.on("connect", () => {
-      console.log("Socket.IO da ket noi thanh cong mang Real-time!");
+      console.log("Socket.IO đã kết nối thành công mảng Real-time!");
     });
 
     socketRef.current.on("newNotification", (newNotif: Notification) => {
-      console.log("Nhan duoc 1 thong bao REAL-TIME moi:", newNotif);
       setNotifications((prev) => [newNotif, ...prev]);
       setUnreadCount((prev) => prev + 1);
     });
@@ -67,19 +70,22 @@ export default function NotificationBell() {
     };
   }, []);
 
-  const handleHoverRead = (notifId: string, isRead: boolean) => {
+  // TÍNH NĂNG HOVER TO READ
+  const handleHoverRead = async (notifId: string, isRead: boolean) => {
     if (isRead) return;
 
-    const token = localStorage.getItem("token");
-    fetch(`http://localhost:3001/api/notifications/${notifId}/read`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${token}` },
-    }).catch((err) => console.error("Loi danh dau da doc:", err));
-
+    // Optimistic UI: Cập nhật giao diện ngay lập tức cho người dùng
     setNotifications((prev) =>
       prev.map((n) => (n._id === notifId ? { ...n, isRead: true } : n)),
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
+
+    // Gọi API ngầm để lưu trạng thái
+    try {
+      await apiClient.patch(`/notifications/${notifId}/read`);
+    } catch (err) {
+      console.error("Lỗi đánh dấu đã đọc:", err);
+    }
   };
 
   const handleClickNotif = (link?: string) => {
@@ -88,26 +94,14 @@ export default function NotificationBell() {
   };
 
   return (
-    <div style={{ position: "relative" }} ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => {
-          console.log("Trang thai bam chuong hien tai:", !isOpen);
-          setIsOpen(!isOpen);
-        }}
-        style={{
-          width: "36px",
-          height: "36px",
-          borderRadius: "8px",
-          border: "1px solid rgba(13,27,42,0.15)",
-          background: isOpen ? "#F5F3EF" : "transparent",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          color: isOpen ? "#C9A84C" : "#8A9BAD",
-          padding: "8px",
-          position: "relative",
-        }}
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 border shadow-sm ${
+          isOpen
+            ? "bg-amber-50 text-amber-600 border-amber-200"
+            : "bg-white text-slate-500 hover:bg-slate-50 border-slate-200"
+        }`}
       >
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -118,67 +112,23 @@ export default function NotificationBell() {
           />
         </svg>
         {unreadCount > 0 && (
-          <span
-            style={{
-              position: "absolute",
-              top: "-4px",
-              right: "-4px",
-              background: "#ef4444",
-              color: "white",
-              fontSize: "10px",
-              fontWeight: "bold",
-              height: "16px",
-              minWidth: "16px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "0 4px",
-              border: "2px solid white",
-            }}
-          >
-            {unreadCount}
+          <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold h-[18px] min-w-[18px] rounded-full flex items-center justify-center px-1 border-2 border-white">
+            {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div
-          style={{
-            position: "absolute",
-            top: "45px",
-            right: "0",
-            width: "320px",
-            background: "white",
-            borderRadius: "12px",
-            border: "1px solid rgba(0,0,0,0.1)",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-            zIndex: 99999,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              padding: "12px 16px",
-              borderBottom: "1px solid #f1f5f9",
-              fontWeight: "bold",
-              fontSize: "14px",
-              background: "#f8fafc",
-              color: "#0F172A",
-            }}
-          >
-            Thông báo mới nhận
+        <div className="absolute top-[50px] right-0 w-[340px] bg-white rounded-2xl border border-slate-100 shadow-[0_10px_40px_rgba(13,27,42,0.12)] z-[99999] overflow-hidden">
+          <div className="px-4 py-3.5 border-b border-slate-100 bg-white flex justify-between items-center">
+            <span className="font-bold text-[15px] text-slate-900">Thông báo</span>
+            {unreadCount > 0 && (
+              <span className="text-[12px] text-amber-600 font-semibold">{unreadCount} chưa đọc</span>
+            )}
           </div>
-          <div style={{ maxHeight: "320px", overflowY: "auto" }}>
+          <div className="max-h-[360px] overflow-y-auto">
             {notifications.length === 0 ? (
-              <div
-                style={{
-                  padding: "30px 20px",
-                  textAlign: "center",
-                  color: "#64748b",
-                  fontSize: "13px",
-                }}
-              >
+              <div className="p-8 text-center text-slate-500 text-[13px]">
                 Không có thông báo nào.
               </div>
             ) : (
@@ -187,40 +137,27 @@ export default function NotificationBell() {
                   key={notif._id}
                   onMouseEnter={() => handleHoverRead(notif._id, notif.isRead)}
                   onClick={() => handleClickNotif(notif.link)}
-                  style={{
-                    padding: "12px 16px",
-                    borderBottom: "1px solid #f8fafc",
-                    cursor: "pointer",
-                    background: !notif.isRead ? "rgba(2,132,199,0.05)" : "transparent",
-                    display: "flex",
-                    gap: "10px",
-                    transition: "background 0.2s",
-                  }}
+                  className={`px-4 py-3.5 border-b border-slate-50 cursor-pointer flex gap-3 transition-colors duration-200 ${
+                    !notif.isRead ? "bg-sky-50/50" : "bg-white hover:bg-slate-50"
+                  }`}
                 >
                   <div
-                    style={{
-                      width: "6px",
-                      height: "6px",
-                      borderRadius: "50%",
-                      background: !notif.isRead ? "#0284c7" : "transparent",
-                      marginTop: "6px",
-                      transition: "background 0.2s",
-                    }}
+                    className={`w-2 h-2 rounded-full mt-1.5 shrink-0 transition-colors duration-200 ${
+                      !notif.isRead ? "bg-sky-600" : "bg-transparent"
+                    }`}
                   />
-                  <div style={{ flex: 1 }}>
+                  <div className="flex-1">
                     <div
-                      style={{
-                        fontSize: "13px",
-                        fontWeight: !notif.isRead ? "700" : "500",
-                        color: "#1E293B",
-                      }}
+                      className={`text-[13.5px] leading-snug text-slate-900 ${
+                        !notif.isRead ? "font-bold" : "font-medium"
+                      }`}
                     >
                       {notif.title}
                     </div>
-                    <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>
+                    <div className="text-[12.5px] text-slate-500 mt-1 leading-relaxed">
                       {notif.message}
                     </div>
-                    <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "6px" }}>
+                    <div className="text-[11px] text-slate-400 mt-2 font-medium">
                       {new Date(notif.createdAt).toLocaleString("vi-VN")}
                     </div>
                   </div>
