@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 
@@ -12,6 +12,19 @@ interface Notification {
   isRead: boolean;
   createdAt: string;
   link?: string;
+}
+
+function TrashIcon() {
+  return (
+    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M3 6h18m-2 0l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m4 0V4a2 2 0 012-2h2a2 2 0 012 2v2m-6 5v6m4-6v6"
+      />
+    </svg>
+  );
 }
 
 export default function NotificationBell() {
@@ -85,6 +98,36 @@ export default function NotificationBell() {
   const handleClickNotif = (link?: string) => {
     setIsOpen(false);
     if (link) router.push(link);
+  };
+
+  const handleDeleteNotification = async (
+    e: ReactMouseEvent<HTMLButtonElement>,
+    notifId: string,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await fetch(`http://localhost:3001/api/notifications/${notifId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        throw new Error("Delete notification failed");
+      }
+
+      setNotifications((prev) => {
+        const next = prev.filter((n) => n._id !== notifId);
+        setUnreadCount(next.filter((n) => !n.isRead).length);
+        return next;
+      });
+    } catch (err) {
+      console.error("Loi xoa thong bao:", err);
+    }
   };
 
   return (
@@ -224,6 +267,37 @@ export default function NotificationBell() {
                       {new Date(notif.createdAt).toLocaleString("vi-VN")}
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    title="Xoa thong bao"
+                    aria-label="Xoa thong bao"
+                    onClick={(e) => void handleDeleteNotification(e, notif._id)}
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "8px",
+                      border: "1px solid transparent",
+                      background: "transparent",
+                      color: "#94a3b8",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      flexShrink: 0,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "rgba(239,68,68,0.08)";
+                      e.currentTarget.style.borderColor = "rgba(239,68,68,0.16)";
+                      e.currentTarget.style.color = "#dc2626";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.borderColor = "transparent";
+                      e.currentTarget.style.color = "#94a3b8";
+                    }}
+                  >
+                    <TrashIcon />
+                  </button>
                 </div>
               ))
             )}
