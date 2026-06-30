@@ -23,23 +23,14 @@ interface MaintenanceSummary {
   status: string;
 }
 
+// ─── Đã thay Logo bằng ảnh Dormify.png ───
 function DormifyLogoMark({ size = 36 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 42 42" fill="none">
-      <rect width="42" height="42" rx="10" fill="#1A2E42" />
-      <rect x="10" y="8" width="4" height="26" rx="1" fill="#C9A84C" />
-      <path
-        d="M14 8 Q28 8 28 21 Q28 34 14 34"
-        stroke="#C9A84C"
-        strokeWidth="3.5"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <rect x="18" y="12" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <rect x="18" y="19" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <rect x="18" y="26" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
-      <line x1="10" y1="6" x2="26" y2="6" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
+    <img 
+      src="/Dormify.png" 
+      alt="Dormify Logo" 
+      style={{ width: size, height: size, objectFit: "contain" }} 
+    />
   );
 }
 
@@ -215,7 +206,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         .topbar__right { display: flex; align-items: center; gap: 12px; }
         .topbar__avatar { width: 36px; height: 36px; border-radius: 9px; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600; color: var(--gold); cursor: pointer; border: 1.5px solid var(--gold-border); transition: transform 0.1s; overflow: hidden; }
         .topbar__avatar:hover { transform: scale(1.05); border-color: var(--gold); }
-        .page-body { padding: 28px 32px 48px; flex: 1; }
+        .page-body { padding: 32px; flex: 1; }
       `}</style>
 
       <div className="admin-shell">
