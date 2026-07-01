@@ -9,6 +9,7 @@ interface MaintenanceRequest {
   _id: string;
   title: string;
   description: string;
+  imageUrl?: string;
   priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
   status: "PENDING" | "IN_PROGRESS" | "RESOLVED" | "REJECTED";
   createdAt: string;
@@ -28,6 +29,7 @@ const Icons = {
   clock:   <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
   alert:   <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>,
   building:<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>,
+  image:   <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" /></svg>,
 };
 
 // ─── Priority & Status Config ────────────────────────────────────────────────
@@ -95,6 +97,13 @@ function RequestCard({ req }: { req: MaintenanceRequest }) {
 
       <p className="mn-card-desc">{req.description}</p>
 
+      {req.imageUrl && (
+        <a className="mn-card-image-link" href={req.imageUrl} target="_blank" rel="noreferrer">
+          <img src={req.imageUrl} alt={`Anh su co ${req.title}`} className="mn-card-image" />
+          <span>{Icons.image} Xem anh dinh kem</span>
+        </a>
+      )}
+
       <div className="mn-card-foot">
         <PriorityPill priority={req.priority} />
         {req.resolvedAt && (
@@ -145,6 +154,8 @@ export default function StudentMaintenancePage() {
   const [submitting,   setSubmitting]  = useState(false);
   const [toast,        setToast]       = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [activeFilter, setActiveFilter] = useState<"ALL" | Status>("ALL");
+  const [imageFile,    setImageFile]   = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [form, setForm] = useState<{ title: string; description: string; priority: Priority }>({
     title: "", description: "", priority: "MEDIUM",
@@ -181,17 +192,59 @@ export default function StudentMaintenancePage() {
     void fetchRequests();
   }, []);
 
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreview(null);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(imageFile);
+    setImagePreview(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [imageFile]);
+
+  const handleImageChange = (file?: File) => {
+    if (!file) {
+      setImageFile(null);
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setToast({ type: "error", text: "Chi duoc dinh kem file anh." });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setToast({ type: "error", text: "Anh dinh kem khong duoc vuot qua 5MB." });
+      return;
+    }
+
+    setImageFile(file);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setImageFile(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      // ĐÃ SỬA: Dùng apiClient
-      const res = await apiClient.post("/maintenance", form);
+      const payload = new FormData();
+      payload.append("title", form.title);
+      payload.append("description", form.description);
+      payload.append("priority", form.priority);
+      if (imageFile) payload.append("image", imageFile);
+
+      const res = await apiClient.postForm("/maintenance", payload);
       const data = await res.json();
       
       if (res.ok) {
         setToast({ type: "success", text: "Đã gửi báo cáo sự cố thành công!" });
         setForm({ title: "", description: "", priority: "MEDIUM" });
+        setImageFile(null);
         setShowModal(false);
         fetchRequests();
       } else {
@@ -294,6 +347,9 @@ export default function StudentMaintenancePage() {
         .mn-card-meta-item { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--muted); }
         .mn-card-meta-item svg { width:12px; height:12px; stroke:currentColor; }
         .mn-card-desc { font-size:13.5px; color:#4A6580; line-height:1.7; margin-bottom:18px; padding:12px 16px; background:#F9F8F6; border-radius:8px; border:1px solid rgba(13,27,42,.05); }
+        .mn-card-image-link { display:flex; align-items:center; gap:12px; margin-bottom:18px; padding:10px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--navy); text-decoration:none; font-size:12.5px; font-weight:500; }
+        .mn-card-image-link:hover { border-color:var(--gold-b); color:#9a7b2c; }
+        .mn-card-image { width:72px; height:54px; object-fit:cover; border-radius:8px; border:1px solid var(--border); flex-shrink:0; }
         .mn-card-foot { display:flex; align-items:center; justify-content:space-between; padding-top:16px; border-top:1px solid var(--border); }
         .mn-card-resolved { display:flex; align-items:center; gap:6px; font-size:12.5px; color:#16a34a; font-weight:500; }
         .mn-card-resolved svg { width:13px; height:13px; stroke:currentColor; }
@@ -349,6 +405,13 @@ export default function StudentMaintenancePage() {
         .mn-input:focus, .mn-textarea:focus { border-color:var(--gold); background:var(--white); }
         .mn-input::placeholder, .mn-textarea::placeholder { color:var(--muted); }
         .mn-textarea { resize:vertical; min-height:96px; line-height:1.6; }
+
+        .mn-file-control { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px; border:1px dashed rgba(13,27,42,.18); border-radius:10px; background:#F9F8F6; }
+        .mn-file-btn { display:inline-flex; align-items:center; gap:8px; padding:9px 13px; border-radius:8px; border:1px solid var(--border); background:#fff; color:var(--navy); font-size:12.5px; font-weight:500; cursor:pointer; transition:all .15s; }
+        .mn-file-btn:hover { border-color:var(--gold); color:#9a7b2c; }
+        .mn-file-name { flex:1; min-width:0; color:var(--muted); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .mn-file-clear { border:none; background:transparent; color:#dc2626; cursor:pointer; font-size:12px; font-weight:500; }
+        .mn-image-preview { margin-top:10px; width:100%; max-height:180px; object-fit:cover; border-radius:10px; border:1px solid var(--border); }
 
         /* priority picker */
         .mn-priority-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
@@ -505,7 +568,7 @@ export default function StudentMaintenancePage() {
 
       {/* ─── Modal ──────────────────────────────────────────────────── */}
       {showModal && (
-        <div className="mn-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}>
+        <div className="mn-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}>
           <div className="mn-modal">
             <div className="mn-modal-head">
               <div className="mn-modal-head-left">
@@ -515,7 +578,7 @@ export default function StudentMaintenancePage() {
                   <div className="mn-modal-sub">Mô tả rõ để kỹ thuật viên chuẩn bị đúng vật tư</div>
                 </div>
               </div>
-              <button className="mn-modal-close" type="button" onClick={() => setShowModal(false)}>
+              <button className="mn-modal-close" type="button" onClick={closeModal}>
                 {Icons.x}
               </button>
             </div>
@@ -563,10 +626,35 @@ export default function StudentMaintenancePage() {
                   </div>
                 </div>
 
+                <div className="mn-field">
+                  <label className="mn-field-label">Ảnh thực tế</label>
+                  <span className="mn-field-hint">Đính kèm ảnh rõ khu vực hư hỏng để ban quản lý đánh giá nhanh hơn</span>
+                  <div className="mn-file-control">
+                    <label className="mn-file-btn">
+                      {Icons.image} Đính kèm ảnh
+                      <input
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={(e) => handleImageChange(e.target.files?.[0])}
+                      />
+                    </label>
+                    <span className="mn-file-name">{imageFile ? imageFile.name : "Chưa chọn ảnh"}</span>
+                    {imageFile && (
+                      <button type="button" className="mn-file-clear" onClick={() => setImageFile(null)}>
+                        Xóa
+                      </button>
+                    )}
+                  </div>
+                  {imagePreview && (
+                    <img src={imagePreview} alt="Xem truoc anh su co" className="mn-image-preview" />
+                  )}
+                </div>
+
               </div>
 
               <div className="mn-modal-foot">
-                <button type="button" className="mn-btn-cancel" onClick={() => setShowModal(false)}>
+                <button type="button" className="mn-btn-cancel" onClick={closeModal}>
                   Hủy bỏ
                 </button>
                 <button type="submit" className="mn-btn-submit" disabled={submitting}>
