@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { apiClient } from "../utils/apiClient"; // Bổ sung import đúng quy định
 
 interface Profile {
   fullName: string;
@@ -148,10 +149,6 @@ const Icons = {
 };
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-// Lưu ý: Trang này KHÔNG còn tự vẽ sidebar/topbar/RoleGuard nữa.
-// Toàn bộ khung (sidebar, topbar, RoleGuard) đã được app/student/layout.tsx
-// đảm nhiệm. Trang chỉ trả về phần NỘI DUNG của tab "Tổng quan", tránh bị
-// lặp 2 thanh ngang (topbar) / 2 sidebar như trước đây.
 export default function StudentDashboard() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -159,10 +156,8 @@ export default function StudentDashboard() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:3001/api/users/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // Cập nhật lại cho đúng Constitution, gọi qua apiClient
+        const res = await apiClient.get("/users/profile");
         if (res.ok) setProfile(await res.json());
       } catch (e) {
         console.error(e);

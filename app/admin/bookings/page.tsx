@@ -33,7 +33,6 @@ export default function AdminBookingsPage() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBookings();
   }, []);
 
@@ -50,7 +49,7 @@ export default function AdminBookingsPage() {
       const data = await response.json();
       if (response.ok) {
         setActionMsg({ text: `Đã ${action === 'approve' ? 'duyệt' : 'từ chối'} đơn thành công!`, type: "success" });
-        fetchBookings(); // Tải lại danh sách
+        fetchBookings(); 
       } else {
         setActionMsg({ text: data.message, type: "error" });
       }
@@ -60,60 +59,66 @@ export default function AdminBookingsPage() {
   };
 
   return (
-    <div className="w-full space-y-6 text-slate-800 font-sans">
+    <div className="w-full space-y-8 text-slate-800 font-sans">
       {actionMsg.text && (
-        <div className={`p-4 rounded-lg font-medium ${actionMsg.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+        <div className={`p-5 rounded-2xl font-bold text-base ${actionMsg.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
           {actionMsg.text}
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      {/* ── Bọc vào container trắng, bo góc 3xl, padding siêu rộng (p-8 sm:p-10) ── */}
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 sm:p-10">
+        
+        <div className="flex items-center justify-between mb-8">
+           <h2 className="text-2xl font-bold text-slate-800">Danh sách Đơn đăng ký lưu trú</h2>
+        </div>
+
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-sm">
+          <table className="min-w-full divide-y divide-slate-200 text-base">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-6 py-4 text-left font-semibold text-slate-600">Sinh viên</th>
-                <th className="px-6 py-4 text-left font-semibold text-slate-600">Phòng đăng ký</th>
-                <th className="px-6 py-4 text-left font-semibold text-slate-600">Ngày gửi</th>
-                <th className="px-6 py-4 text-left font-semibold text-slate-600">Trạng thái</th>
-                <th className="px-6 py-4 text-center font-semibold text-slate-600">Hành động</th>
+                <th className="px-8 py-5 text-left font-bold text-slate-600 rounded-tl-2xl">Sinh viên</th>
+                <th className="px-8 py-5 text-left font-bold text-slate-600">Phòng đăng ký</th>
+                <th className="px-8 py-5 text-left font-bold text-slate-600">Ngày gửi</th>
+                <th className="px-8 py-5 text-left font-bold text-slate-600">Trạng thái</th>
+                <th className="px-8 py-5 text-center font-bold text-slate-600 rounded-tr-2xl">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-slate-100">
               {loading ? (
-                <tr><td colSpan={5} className="text-center py-8 text-slate-500">Đang tải dữ liệu...</td></tr>
+                <tr><td colSpan={5} className="text-center py-12 text-slate-500 text-lg">Đang tải dữ liệu...</td></tr>
               ) : bookings.length === 0 ? (
-                <tr><td colSpan={5} className="text-center py-8 text-slate-500">Chưa có đơn đăng ký nào.</td></tr>
+                <tr><td colSpan={5} className="text-center py-12 text-slate-500 text-lg">Chưa có đơn đăng ký nào.</td></tr>
               ) : (
                 bookings.map((b) => (
-                  <tr key={b._id} className="hover:bg-slate-50">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-slate-800">{b.user?.fullName}</div>
-                      <div className="text-slate-500 text-xs mt-1">MSSV: {b.user?.mssv || '—'}</div>
+                  <tr key={b._id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-8 py-6">
+                      <div className="font-bold text-slate-800 text-[17px]">{b.user?.fullName}</div>
+                      <div className="text-slate-500 text-sm mt-1">MSSV: {b.user?.mssv || '—'}</div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-blue-600">{b.room?.name}</div>
-                      <div className="text-slate-500 text-xs mt-1">Tòa {b.room?.building}</div>
+                    <td className="px-8 py-6">
+                      <div className="font-bold text-blue-600 text-[17px]">{b.room?.name}</div>
+                      <div className="text-slate-500 text-sm mt-1">Tòa {b.room?.building}</div>
                     </td>
-                    <td className="px-6 py-4 text-slate-600">
+                    <td className="px-8 py-6 text-slate-600 font-medium">
                       {new Date(b.createdAt).toLocaleDateString('vi-VN')}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    <td className="px-8 py-6">
+                      <span className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${
                         b.status === 'PENDING' ? 'bg-orange-100 text-orange-700' :
                         b.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                       }`}>
                         {b.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center space-x-2">
+                    <td className="px-8 py-6 text-center space-x-3">
                       {b.status === 'PENDING' ? (
                         <>
-                          <button onClick={() => handleAction(b._id, 'approve')} className="px-3 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700 font-medium transition-colors">Duyệt</button>
-                          <button onClick={() => handleAction(b._id, 'reject')} className="px-3 py-1.5 bg-rose-50 text-rose-700 rounded hover:bg-rose-100 font-medium border border-rose-200 transition-colors">Từ chối</button>
+                          <button onClick={() => handleAction(b._id, 'approve')} className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-bold transition-colors shadow-sm">Duyệt đơn</button>
+                          <button onClick={() => handleAction(b._id, 'reject')} className="px-5 py-2.5 bg-rose-50 text-rose-700 rounded-xl hover:bg-rose-100 font-bold border border-rose-200 transition-colors">Từ chối</button>
                         </>
                       ) : (
-                        <span className="text-slate-400 italic text-xs">Đã xử lý</span>
+                        <span className="text-slate-400 italic text-sm font-medium">Đã xử lý xong</span>
                       )}
                     </td>
                   </tr>

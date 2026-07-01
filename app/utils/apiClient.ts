@@ -1,8 +1,14 @@
 // app/utils/apiClient.ts
 
 const getBaseUrl = () => {
-  // Lấy đường dẫn từ file .env.local, nếu không có thì fallback tạm về localhost
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+  let url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+  
+  // Tự động chuẩn hóa: Nếu URL bị cấu hình thiếu /api, hệ thống sẽ tự thêm vào
+  // Xử lý triệt để lỗi "Cannot GET /rooms?status=AVAILABLE"
+  if (!url.endsWith('/api')) {
+    url = `${url}/api`;
+  }
+  return url;
 };
 
 const getHeaders = () => {

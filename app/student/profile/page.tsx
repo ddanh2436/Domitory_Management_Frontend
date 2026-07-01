@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import RoleGuard from "../../components/RoleGuard";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 interface StudentProfile {
   _id: string;
   fullName: string;
@@ -16,37 +13,13 @@ interface StudentProfile {
   room?: { name: string; building: string };
 }
 
-// ─── Icons & Logo (Rút gọn) ───────────────────────────────────────────────────
-function DormifyLogoMark({ size = 36 }: { size?: number }) {
-  return (
-    <img
-      src="/Dormify.png"
-      alt="Dormify Logo"
-      width={size}
-      height={size}
-      style={{ width: size, height: size, objectFit: "contain" }}
-    />
-  );
-}
+const CameraIcon = (
+  <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
 
-const Icons = {
-  home: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
-  user: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
-  invoice: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
-  logout: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>,
-  camera: <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-};
-
-function NavItem({ icon, label, active = false, href = "#" }: { icon: React.ReactNode; label: string; active?: boolean; href?: string; }) {
-  return (
-    <Link href={href} className={`nav-item ${active ? "nav-item--active" : ""}`}>
-      <span className="nav-item__icon">{icon}</span>
-      <span className="nav-item__label">{label}</span>
-    </Link>
-  );
-}
-
-// ─── Main Component ──────────────────────────────────────────────────────────
 export default function StudentProfilePage() {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [formData, setFormData] = useState({ phone: "", cccd: "", avatar: "" });
@@ -72,28 +45,25 @@ export default function StudentProfilePage() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadProfile();
   }, []);
 
-  // Xử lý khi sinh viên chọn file ảnh
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) { // Giới hạn ảnh 2MB
+    if (file.size > 2 * 1024 * 1024) {
       setAlertMsg({ text: "Kích thước ảnh quá lớn. Vui lòng chọn ảnh dưới 2MB.", type: "error" });
       return;
     }
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setFormData(prev => ({ ...prev, avatar: reader.result as string }));
+      setFormData((prev) => ({ ...prev, avatar: reader.result as string }));
     };
     reader.readAsDataURL(file);
   };
 
-  // Cập nhật lên server
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setAlertMsg({ text: "Đang lưu...", type: "info" });
@@ -107,7 +77,7 @@ export default function StudentProfilePage() {
 
       if (response.ok) {
         setAlertMsg({ text: "Cập nhật hồ sơ thành công!", type: "success" });
-        loadProfile(); // Refresh dữ liệu
+        loadProfile();
       } else {
         const err = await response.json();
         setAlertMsg({ text: err.message || "Lỗi cập nhật.", type: "error" });
@@ -117,47 +87,21 @@ export default function StudentProfilePage() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
-  };
-
-  if (loading) return <div className="admin-shell"><div className="m-auto text-slate-500">Đang tải hồ sơ...</div></div>;
+  if (loading) {
+    return <div className="py-20 text-center text-slate-500">Đang tải hồ sơ...</div>;
+  }
 
   return (
-    <RoleGuard allowedRoles={["STUDENT"]}>
+    <>
       <style>{`
-        /* CSS Sidebar dùng chung (Giữ nguyên style như Admin) */
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root { --navy: #0D1B2A; --gold: #C9A84C; --gold-dim: rgba(201,168,76,0.18); --gold-border: rgba(201,168,76,0.25); --white: #ffffff; --muted: #8A9BAD; --border: rgba(13,27,42,0.09); --row-hover: rgba(201,168,76,0.04); --sidebar-w: 240px; }
-        .admin-shell { display: flex; min-height: 100vh; background: #F0EDE8; font-family: 'DM Sans', sans-serif; }
-        .sidebar { width: var(--sidebar-w); min-height: 100vh; background: var(--navy); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; border-right: 1px solid var(--gold-border); z-index: 40; }
-        .sidebar__brand { padding: 24px 20px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); text-decoration: none; transition: opacity 0.2s; }
-        .sidebar__wordmark { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; color: var(--white); }
-        .sidebar__wordmark span { color: var(--gold); }
-        .sidebar__role-chip { margin: 16px 20px 4px; font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
-        .sidebar__nav { flex: 1; padding: 4px 12px 16px; display: flex; flex-direction: column; gap: 2px; }
-        .nav-item { width: 100%; display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: 8px; border: none; background: transparent; cursor: pointer; transition: background 0.15s, color 0.15s; text-align: left; text-decoration: none; }
-        .nav-item__icon { color: var(--muted); flex-shrink: 0; display: flex; }
-        .nav-item__label { font-size: 13.5px; font-weight: 400; color: rgba(255,255,255,0.55); flex: 1; }
-        .nav-item:hover { background: rgba(255,255,255,0.05); }
-        .nav-item:hover .nav-item__label { color: var(--white); }
-        .nav-item:hover .nav-item__icon { color: rgba(255,255,255,0.7); }
-        .nav-item--active { background: var(--gold-dim) !important; }
-        .nav-item--active .nav-item__label, .nav-item--active .nav-item__icon { color: var(--gold) !important; font-weight: 500; }
-        .admin-main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 30; }
-        .topbar__title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--navy); }
-        .page-body { padding: 28px 32px 48px; flex: 1; max-width: 900px; margin: 0 auto; width: 100%; }
-
-        /* Styles riêng cho trang Profile */
+        .profile-page-body { padding: 28px 0 48px; max-width: 900px; margin: 0 auto; width: 100%; }
+        .profile-page-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--navy); margin-bottom: 20px; }
         .profile-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: row; box-shadow: 0 4px 20px rgba(13,27,42,0.03); }
         .profile-left { width: 280px; background: #FAFAF9; border-right: 1px solid var(--border); padding: 40px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .avatar-wrapper { position: relative; width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--white); box-shadow: 0 8px 16px rgba(0,0,0,0.08); margin-bottom: 20px; overflow: hidden; background: var(--navy); display: flex; justify-content: center; align-items: center; }
+        .avatar-wrapper { position: relative; width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--white); box-shadow: 0 8px 16px rgba(0,0,0,0.08); margin-bottom: 20px; overflow: hidden; background: var(--navy); display: flex; justify-content: center; align-items: center; cursor: pointer; }
         .avatar-img { width: 100%; height: 100%; object-fit: cover; }
         .avatar-placeholder { font-family: 'Fraunces', serif; font-size: 56px; color: var(--gold); }
-        .avatar-overlay { position: absolute; inset: 0; background: rgba(13, 27, 42, 0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; cursor: pointer; color: white; font-size: 12px; font-weight: 500; }
+        .avatar-overlay { position: absolute; inset: 0; background: rgba(13, 27, 42, 0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; color: white; font-size: 12px; font-weight: 500; }
         .avatar-wrapper:hover .avatar-overlay { opacity: 1; }
         .hidden-input { display: none; }
         .profile-right { flex: 1; padding: 40px; }
@@ -169,111 +113,83 @@ export default function StudentProfilePage() {
         .form-input:read-only { background: #f1f0ee; color: var(--muted); cursor: not-allowed; }
         .btn-save { padding: 12px 24px; background: var(--navy); color: var(--gold); font-size: 14px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s; width: 100%; }
         .btn-save:hover { background: #162a3f; }
-        .room-badge { display: inline-block; padding: 6px 12px; background: var(--gold-dim); color: #9a7b2c; border: 1px solid var(--gold-border); border-radius: 6px; font-weight: 600; font-size: 13px; margin-top: 10px; }
+        .room-badge { display: inline-block; padding: 6px 12px; background: var(--gold-dim); color: #9a7b2c; border: 1px solid var(--gold-b); border-radius: 6px; font-weight: 600; font-size: 13px; margin-top: 10px; }
       `}</style>
 
-      <div className="admin-shell">
-        <aside className="sidebar">
-          <Link href="/student" className="sidebar__brand">
-            <DormifyLogoMark size={36} />
-            <span className="sidebar__wordmark">Dorm<span>ify</span></span>
-          </Link>
-          <div className="sidebar__role-chip">Sinh viên lưu trú</div>
-          <nav className="sidebar__nav">
-            <NavItem href="/student"         icon={Icons.home}    label="Trang chủ" />
-            <NavItem href="/student/rooms"   icon={Icons.home}    label="Phòng của tôi" />
-            <NavItem href="/student/invoices" icon={Icons.invoice} label="Hóa đơn" />
-            <NavItem href="/student/profile" icon={Icons.user}    label="Hồ sơ cá nhân" active />
-          </nav>
-          <div className="sidebar__footer" style={{ padding: '16px 12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-            <button onClick={handleLogout} className="nav-item" style={{ color: 'rgba(240,80,80,0.8)' }}>
-              <span className="nav-item__icon" style={{ color: 'inherit' }}>{Icons.logout}</span>
-              <span className="nav-item__label" style={{ color: 'inherit' }}>Đăng xuất</span>
-            </button>
+      <div className="profile-page-body">
+        <div className="profile-page-title">Hồ sơ cá nhân</div>
+
+        {alertMsg.text && (
+          <div className={`p-4 rounded-xl font-medium mb-6 ${alertMsg.type === "success" ? "bg-green-100 text-green-800" : alertMsg.type === "info" ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-800"}`}>
+            {alertMsg.text}
           </div>
-        </aside>
+        )}
 
-        <div className="admin-main">
-          <header className="topbar">
-            <div className="topbar__title">Hồ sơ cá nhân</div>
-          </header>
-
-          <main className="page-body">
-            {alertMsg.text && (
-              <div className={`p-4 rounded-xl font-medium mb-6 ${alertMsg.type === 'success' ? 'bg-green-100 text-green-800' : alertMsg.type === 'info' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
-                {alertMsg.text}
+        <div className="profile-card">
+          <div className="profile-left">
+            <label className="avatar-wrapper">
+              {formData.avatar ? (
+                <img src={formData.avatar} alt="Avatar" className="avatar-img" />
+              ) : (
+                <div className="avatar-placeholder">{profile?.fullName?.charAt(0).toUpperCase()}</div>
+              )}
+              <div className="avatar-overlay">
+                {CameraIcon}
+                <span style={{ marginTop: "4px" }}>Đổi ảnh</span>
               </div>
+              <input type="file" accept="image/*" className="hidden-input" onChange={handleImageUpload} />
+            </label>
+
+            <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "20px", color: "var(--navy)", marginBottom: "4px" }}>
+              {profile?.fullName}
+            </h2>
+            <p style={{ color: "var(--muted)", fontSize: "14px", marginBottom: "16px" }}>{profile?.email}</p>
+
+            {profile?.room ? (
+              <div className="room-badge">Phòng {profile.room.name} - Tòa {profile.room.building}</div>
+            ) : (
+              <div className="room-badge" style={{ background: "#f1f5f9", color: "#64748b", borderColor: "#e2e8f0" }}>Chưa xếp phòng</div>
             )}
+          </div>
 
-            <div className="profile-card">
-              {/* CỘT TRÁI: AVATAR VÀ THÔNG TIN CHUNG */}
-              <div className="profile-left">
-                <label className="avatar-wrapper">
-                  {formData.avatar ? (
-                    <img src={formData.avatar} alt="Avatar" className="avatar-img" />
-                  ) : (
-                    <div className="avatar-placeholder">{profile?.fullName?.charAt(0).toUpperCase()}</div>
-                  )}
-                  <div className="avatar-overlay">
-                    {Icons.camera}
-                    <span style={{ marginTop: '4px' }}>Đổi ảnh</span>
-                  </div>
-                  <input type="file" accept="image/*" className="hidden-input" onChange={handleImageUpload} />
-                </label>
-                
-                <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: '20px', color: 'var(--navy)', marginBottom: '4px' }}>
-                  {profile?.fullName}
-                </h2>
-                <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '16px' }}>{profile?.email}</p>
-                
-                {profile?.room ? (
-                  <div className="room-badge">Phòng {profile.room.name} - Tòa {profile.room.building}</div>
-                ) : (
-                  <div className="room-badge" style={{ background: '#f1f5f9', color: '#64748b', borderColor: '#e2e8f0' }}>Chưa xếp phòng</div>
-                )}
+          <form className="profile-right" onSubmit={handleSaveProfile}>
+            <h3 style={{ fontSize: "18px", fontWeight: 600, color: "var(--navy)", marginBottom: "24px" }}>Thông tin liên hệ</h3>
+
+            <div className="form-grid">
+              <div className="form-group">
+                <label className="form-label">Họ và Tên</label>
+                <input type="text" className="form-input" value={profile?.fullName || ""} readOnly />
               </div>
-
-              {/* CỘT PHẢI: FORM CẬP NHẬT */}
-              <form className="profile-right" onSubmit={handleSaveProfile}>
-                <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--navy)', marginBottom: '24px' }}>Thông tin liên hệ</h3>
-                
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label className="form-label">Họ và Tên</label>
-                    <input type="text" className="form-input" value={profile?.fullName || ""} readOnly />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Mã số sinh viên</label>
-                    <input type="text" className="form-input" value={profile?.mssv || "Chưa cập nhật"} readOnly />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Số điện thoại</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      placeholder="Nhập số điện thoại..."
-                      value={formData.phone} 
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})} 
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Căn cước công dân</label>
-                    <input 
-                      type="text" 
-                      className="form-input" 
-                      placeholder="Nhập số CCCD..."
-                      value={formData.cccd} 
-                      onChange={(e) => setFormData({...formData, cccd: e.target.value})} 
-                    />
-                  </div>
-                </div>
-
-                <button type="submit" className="btn-save">Cập nhật thay đổi</button>
-              </form>
+              <div className="form-group">
+                <label className="form-label">Mã số sinh viên</label>
+                <input type="text" className="form-input" value={profile?.mssv || "Chưa cập nhật"} readOnly />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Số điện thoại</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Nhập số điện thoại..."
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Căn cước công dân</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Nhập số CCCD..."
+                  value={formData.cccd}
+                  onChange={(e) => setFormData({ ...formData, cccd: e.target.value })}
+                />
+              </div>
             </div>
-          </main>
+
+            <button type="submit" className="btn-save">Cập nhật thay đổi</button>
+          </form>
         </div>
       </div>
-    </RoleGuard>
+    </>
   );
 }
