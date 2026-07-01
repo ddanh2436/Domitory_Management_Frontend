@@ -380,7 +380,7 @@ export default function StudentContractPage() {
         ) : contract ? (
           <div className="space-y-8 w-full">
             {/* ── TỜ GIẤY HỢP ĐỒNG ── */}
-            <div className="relative bg-white rounded-[2rem] border border-slate-200/80 shadow-[0_30px_80px_-20px_rgba(13,27,42,0.1)] overflow-hidden print:border-none print:shadow-none print:rounded-none w-full">
+            <div id="printable-contract" className="relative bg-white rounded-[2rem] border border-slate-200/80 shadow-[0_30px_80px_-20px_rgba(13,27,42,0.1)] overflow-hidden print:border-none print:shadow-none print:rounded-none w-full">
               <div className="h-[8px] bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 print:hidden" />
 
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.025] print:opacity-[0.05]">

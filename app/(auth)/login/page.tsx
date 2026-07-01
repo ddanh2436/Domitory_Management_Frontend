@@ -113,7 +113,7 @@ export default function AuthPage() {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await fetch("http://localhost:3001/api/auth/register", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -135,7 +135,7 @@ export default function AuthPage() {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await fetch("http://localhost:3001/api/auth/login", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
@@ -161,7 +161,7 @@ export default function AuthPage() {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await fetch("http://localhost:3001/api/auth/google", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: credentialResponse.credential }),
@@ -561,7 +561,8 @@ export default function AuthPage() {
                 </span>
               </Field>
 
-              <a href="#" className="ap-forgot">Quên mật khẩu?</a>
+              {/* TÍNH NĂNG MỚI: Đã đổi thẻ a href="#" thành thẻ Link */}
+              <Link href="/forgot-password" className="ap-forgot">Quên mật khẩu?</Link>
 
               <button type="submit" className="ap-btn" disabled={loading}>
                 {loading ? "Đang xử lý…" : "Đăng nhập"}
