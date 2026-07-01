@@ -19,6 +19,11 @@ const getHeaders = () => {
   };
 };
 
+const getAuthHeaders = (): Record<string, string> => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 export const apiClient = {
   get: async (endpoint: string) => {
     return fetch(`${getBaseUrl()}${endpoint}`, {
@@ -32,6 +37,14 @@ export const apiClient = {
       method: "POST",
       headers: getHeaders(),
       body: JSON.stringify(body),
+    });
+  },
+
+  postForm: async (endpoint: string, body: FormData) => {
+    return fetch(`${getBaseUrl()}${endpoint}`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body,
     });
   },
 

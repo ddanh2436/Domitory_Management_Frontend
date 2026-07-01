@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { useRouter } from "next/navigation";
 
 interface NotificationItem {
@@ -21,6 +21,16 @@ const Icons = {
         strokeLinejoin="round"
         strokeWidth={1.8}
         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+      />
+    </svg>
+  ),
+  trash: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d="M3 6h18m-2 0l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m4 0V4a2 2 0 012-2h2a2 2 0 012 2v2m-6 5v6m4-6v6"
       />
     </svg>
   ),
@@ -76,6 +86,30 @@ export default function StudentNotificationsPage() {
 
     if (notification.link) {
       router.push(notification.link);
+    }
+  };
+
+  const handleDeleteNotification = async (
+    event: ReactMouseEvent<HTMLButtonElement>,
+    notificationId: string,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:3001/api/notifications/${notificationId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        throw new Error("Delete notification failed");
+      }
+
+      setNotifications((prev) => prev.filter((item) => item._id !== notificationId));
+    } catch (error) {
+      console.error("Loi xoa thong bao:", error);
     }
   };
 
@@ -189,6 +223,33 @@ export default function StudentNotificationsPage() {
           white-space: nowrap;
         }
 
+        .nf-card-actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-shrink: 0;
+        }
+
+        .nf-delete-btn {
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
+          border: 1px solid transparent;
+          background: transparent;
+          color: #94a3b8;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .nf-delete-btn:hover {
+          background: rgba(239,68,68,0.08);
+          border-color: rgba(239,68,68,0.16);
+          color: #dc2626;
+        }
+
         .nf-card-message {
           margin-top: 10px;
           color: #334155;
@@ -245,9 +306,20 @@ export default function StudentNotificationsPage() {
                   {!notification.isRead && <span className="nf-card-dot" />}
                   <span>{notification.title}</span>
                 </div>
-                <span className="nf-card-time">
-                  {new Date(notification.createdAt).toLocaleString("vi-VN")}
-                </span>
+                <div className="nf-card-actions">
+                  <span className="nf-card-time">
+                    {new Date(notification.createdAt).toLocaleString("vi-VN")}
+                  </span>
+                  <button
+                    className="nf-delete-btn"
+                    type="button"
+                    title="Xoa thong bao"
+                    aria-label="Xoa thong bao"
+                    onClick={(event) => void handleDeleteNotification(event, notification._id)}
+                  >
+                    {Icons.trash}
+                  </button>
+                </div>
               </div>
 
               <div className="nf-card-message">{notification.message}</div>

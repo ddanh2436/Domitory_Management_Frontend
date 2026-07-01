@@ -13,6 +13,7 @@ interface Invoice {
   waterFee: number;
   totalAmount: number;
   status: "PENDING" | "PAID" | "OVERDUE";
+  dueDate?: string;
   createdAt: string;
 }
 
@@ -23,6 +24,7 @@ const I = {
   bolt:    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
   water:   <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16a4 4 0 100-8 4 4 0 000 8z" /></svg>,
   building:<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>,
+  calendar:<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" /></svg>,
 };
 
 // ─── Status config ────────────────────────────────────────────────────────────
@@ -35,6 +37,14 @@ const STATUS_CFG: Record<Invoice["status"], { label: string; color: string; bg: 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+}
+
+function formatDateTime(value?: string) {
+  if (!value) return "Chưa đặt";
+  return new Intl.DateTimeFormat("vi-VN", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
 }
 
 const MONTH_NAMES_SHORT = ["", "Th1", "Th2", "Th3", "Th4", "Th5", "Th6", "Th7", "Th8", "Th9", "Th10", "Th11", "Th12"];
@@ -76,6 +86,13 @@ function InvoiceCard({ inv, onPay }: { inv: Invoice; onPay: (id: string) => void
       </div>
 
       <div className="iv-details">
+        <div className="iv-row">
+          <span className="iv-row-label">
+            <span className="iv-row-icon iv-row-icon--date">{I.calendar}</span>
+            Hạn đóng tiền
+          </span>
+          <span className="iv-row-val">{formatDateTime(inv.dueDate)}</span>
+        </div>
         <div className="iv-row">
           <span className="iv-row-label">
             <span className="iv-row-icon iv-row-icon--room">{I.building}</span>
@@ -217,6 +234,7 @@ export default function StudentInvoicesPage() {
         .iv-row { display:flex; justify-content:space-between; align-items:center; font-size:14px; color:#4A6580; }
         .iv-row-label { display:flex; align-items:center; gap:9px; }
         .iv-row-icon { width:22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .iv-row-icon--date { background:rgba(99,102,241,.1); color:#4f46e5; }
         .iv-row-icon--room { background:rgba(13,27,42,.06); color:var(--navy); }
         .iv-row-icon--bolt { background:rgba(217,119,6,.1); color:#d97706; }
         .iv-row-icon--water{ background:rgba(2,132,199,.1); color:#0284c7; }

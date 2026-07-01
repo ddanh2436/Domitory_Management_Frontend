@@ -13,6 +13,7 @@ interface MaintenanceRequest {
   room: { _id: string; name: string; building: string };
   title: string;
   description: string;
+  imageUrl?: string;
   priority: Priority;
   status: Status;
   createdAt: string;
@@ -87,6 +88,9 @@ const I = {
   ),
   building: (
     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+  ),
+  image: (
+    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" /></svg>
   ),
   refresh: (
     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
@@ -175,6 +179,13 @@ function RequestCard({ req, onAction }: { req: MaintenanceRequest; onAction: (pa
 
       <div className="am-card-title">{req.title}</div>
       <div className="am-card-desc">{req.description}</div>
+
+      {req.imageUrl && (
+        <a className="am-card-image-link" href={req.imageUrl} target="_blank" rel="noreferrer">
+          <img src={req.imageUrl} alt={`Anh su co ${req.title}`} className="am-card-image" />
+          <span>{I.image} Xem ảnh hiện trường</span>
+        </a>
+      )}
 
       <div className="am-card-foot">
         <div className="am-card-foot-left">
@@ -359,6 +370,9 @@ export default function AdminMaintenancePage() {
         .am-sender-mssv { font-size:11.5px; font-weight:500; color:var(--gold); background:var(--gold-dim); border:1px solid var(--gold-b); border-radius:4px; padding:1px 7px; font-variant-numeric:tabular-nums; }
         .am-card-title { font-family:'Fraunces',serif; font-size:16px; font-weight:600; color:var(--navy); margin-bottom:8px; line-height:1.3; }
         .am-card-desc { font-size:13px; color:#4A6580; line-height:1.7; padding:11px 14px; background:#F9F8F6; border-radius:8px; border:1px solid rgba(13,27,42,.05); margin-bottom:16px; }
+        .am-card-image-link { display:flex; align-items:center; gap:12px; margin-bottom:16px; padding:10px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--navy); text-decoration:none; font-size:12.5px; font-weight:500; }
+        .am-card-image-link:hover { border-color:var(--gold-b); color:#9a7b2c; }
+        .am-card-image { width:82px; height:62px; object-fit:cover; border-radius:8px; border:1px solid var(--border); flex-shrink:0; }
         .am-card-foot { display:flex; align-items:center; justify-content:space-between; padding-top:14px; border-top:1px solid var(--border); gap:10px; flex-wrap:wrap; }
         .am-card-foot-left { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
         .am-priority-pill { display:inline-flex; align-items:center; gap:5px; padding:4px 11px; border-radius:100px; font-size:12px; font-weight:500; }
