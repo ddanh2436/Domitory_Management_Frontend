@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react"; // Đã thêm useRef
 import Link from "next/link";
 import { getDashboardPath, getLoggedInUser, JwtPayload } from "./utils/auth";
 
@@ -81,38 +81,50 @@ export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
 
+  // States & Ref cho hiệu ứng Brand Logo ở giữa trang
+  const brandRef = useRef<HTMLDivElement>(null);
+  const [isBrandVisible, setIsBrandVisible] = useState(false);
+
   useEffect(() => {
     setUser(getLoggedInUser());
     setIsMounted(true);
 
-    // Hàm xử lý logic cuộn trang
+    // 1. Logic cuộn trang (Navbar)
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
-      // Xử lý background: Khi cuộn qua 50px thì kích hoạt background mờ
       if (currentScrollY > 50) {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
       }
-
-      // Xử lý ẩn/hiện: 
-      // Ẩn khi cuộn xuống (và đã qua một khoảng header > 100px)
-      // Hiện khi cuộn ngược lên
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsHeaderVisible(false);
-      } else {
-        setIsHeaderVisible(true);
-      }
-
+      setIsHeaderVisible(true);
       setLastScrollY(currentScrollY);
     };
 
-    // Đăng ký event listener
     window.addEventListener("scroll", handleScroll, { passive: true });
     
-    // Dọn dẹp sự kiện khi component unmount
-    return () => window.removeEventListener("scroll", handleScroll);
+    // 2. Logic theo dõi khu vực Brand Display
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Nếu phần tử lọt vào màn hình thì true, ngược lại thì false
+        setIsBrandVisible(entry.isIntersecting);
+      },
+      { 
+        // Kích hoạt khi ít nhất 30% khu vực này xuất hiện
+        threshold: 0.3 
+      }
+    );
+
+    if (brandRef.current) {
+      observer.observe(brandRef.current);
+    }
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (brandRef.current) {
+        observer.unobserve(brandRef.current);
+      }
+    };
   }, [lastScrollY]);
 
   if (!isMounted) return null;
@@ -149,17 +161,34 @@ export default function LandingPage() {
         }
 
         /* ── NAVBAR (TOGGLE & SCROLL EFFECTS) ── */
+        .logo-text-wrapper {
+          display: inline-block;
+          overflow: hidden;
+          white-space: nowrap;
+          max-width: 200px;
+          opacity: 1;
+          margin-left: 8px;
+          transition: max-width 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.4s ease,
+              margin-left 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+              transform 0.5s ease;
+          transform-origin: left center;
+        }
+
+        .dormify-nav.scrolled .logo-text-wrapper {
+          max-width: 0;
+          opacity: 0;
+          margin-left: 0;
+          transform: translateX(-10px);
+        }
+
         .dormify-nav {
           position: fixed; top: 0; left: 0; right: 0; z-index: 100;
           height: 100px;
           display: flex; align-items: center; justify-content: space-between;
           padding: 0 5vw;
-          
-          /* Trạng thái mặc định ở đỉnh trang: trong suốt, không viền */
           background: transparent;
           border-bottom: 1px solid transparent;
-          
-          /* Transitions cho hiệu ứng mượt mà */
           transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
                       background-color 0.4s ease, 
                       backdrop-filter 0.4s ease, 
@@ -168,7 +197,6 @@ export default function LandingPage() {
           animation: slideDown 0.6s ease both;
         }
 
-        /* Khi cuộn xuống: thu nhỏ nhẹ, hiện nền mờ và viền */
         .dormify-nav.scrolled {
           background: rgba(13, 27, 42, 0.92);
           backdrop-filter: blur(12px);
@@ -178,7 +206,6 @@ export default function LandingPage() {
           box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
 
-        /* Khi cộn xuống sâu: Trượt lên trên để giấu header */
         .dormify-nav.hidden {
           transform: translateY(-100%);
         }
@@ -191,7 +218,7 @@ export default function LandingPage() {
         .nav-links { display: flex; align-items: center; gap: 32px; }
         .nav-link {
           font-size: 14px; font-weight: 400;
-          color: rgba(255,255,255,0.85); /* Tăng độ sáng để dễ đọc khi trong suốt */
+          color: rgba(255,255,255,0.85); 
           text-decoration: none; letter-spacing: 0.02em; transition: color 0.2s;
         }
         .nav-link:hover { color: var(--gold-light); }
@@ -323,6 +350,30 @@ export default function LandingPage() {
           text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px;
         }
         .brand-tagline { font-size: 15px; font-weight: 300; color: var(--text-muted); letter-spacing: 0.05em; }
+
+        /* CSS MỚI CHO HIỆU ỨNG BRAND LOGO Ở GIỮA TRANG */
+        .brand-text-wrapper {
+          display: inline-block;
+          overflow: hidden;
+          white-space: nowrap;
+          max-width: 0; /* Ẩn mặc định */
+          opacity: 0;
+          margin-left: 0;
+          transform: translateX(-20px);
+          transition: max-width 0.8s cubic-bezier(0.25, 1, 0.5, 1),
+                      opacity 0.6s ease,
+                      margin-left 0.8s cubic-bezier(0.25, 1, 0.5, 1),
+                      transform 0.8s ease;
+          transform-origin: left center;
+        }
+
+        /* Hiển thị khi khối nằm trong khung hình */
+        .brand-text-wrapper.is-visible {
+          max-width: 300px;
+          opacity: 1;
+          margin-left: 12px;
+          transform: translateX(0);
+        }
 
         /* ── FEATURES ── */
         .features-section { background: var(--navy); padding: 100px 5vw; }
@@ -473,11 +524,23 @@ export default function LandingPage() {
 
       {/* ─── Navbar ─────────────────────────────────────────────────────────── */}
       <header className={`dormify-nav ${isScrolled ? 'scrolled' : ''} ${!isHeaderVisible ? 'hidden' : ''}`}>
-        <Link href="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity no-underline">
-          <DormifyLogoMark size={75} className="-translate-y-2" />
-          <span className="font-serif text-4xl font-bold text-white tracking-tight translate-y-1">
-            Dorm<span className="text-[#C9A84C]">ify</span>
-          </span>
+        <Link 
+          href="/" 
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="flex items-center cursor-pointer hover:opacity-80 transition-opacity no-underline"
+        >
+          <DormifyLogoMark size={75} className="-translate-y-2 shrink-0" />
+          
+          <div className="logo-text-wrapper">
+            {/* Đổi translate-y-1 thành -translate-y-1 để nâng chữ lên.
+                Thêm py-2 để tạo không gian trống phía trên và dưới, giúp đuôi chữ 'y' không bị cắt xén */}
+            <span className="font-serif text-4xl font-bold text-white tracking-tight -translate-y-1 block py-2">
+              Dorm<span className="text-[#C9A84C]">ify</span>
+            </span>
+          </div>
         </Link>
 
         <div className="nav-links">
@@ -548,12 +611,21 @@ export default function LandingPage() {
         {/* ─── Brand Display ────────────────────────────────────────────────── */}
         <section className="brand-section">
           <div className="brand-section-label">Thương hiệu</div>
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <DormifyLogoMark size={90} className="-translate-y-2" />
-            <div className="font-serif text-6xl font-bold text-[#0D1B2A] tracking-tight translate-y-1">
-              Dorm<span className="text-[#C9A84C]">ify</span>
+          
+          {/* Cập nhật ref và style cho khối Logo */}
+          <div ref={brandRef} className="flex items-center justify-center mb-6">
+            {/* Đổi thành -translate-y-3 để nâng logo lên thêm 1 xíu */}
+            <DormifyLogoMark size={90} className="-translate-y-3 shrink-0" />
+            
+            <div className={`brand-text-wrapper ${isBrandVisible ? 'is-visible' : ''}`}>
+              {/* Đổi translate-y-1 thành -translate-y-1 để chữ được nâng cao lên cân bằng với logo. 
+                  Đồng thời THÊM py-4 để mở rộng không gian chiều dọc, giúp đuôi chữ 'y' KHÔNG BỊ CẮT MẤT */}
+              <div className="font-serif text-6xl font-bold text-[#0D1B2A] tracking-tight -translate-y-1 block py-4">
+                Dorm<span className="text-[#C9A84C]">ify</span>
+              </div>
             </div>
           </div>
+          
           <div className="brand-tagline">Smart Dormitory Management Platform · HCMUS</div>
         </section>
 
