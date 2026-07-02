@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiClient } from '@/app/utils/apiClient';
 
 export default function ForgotPasswordSandbox() {
   const router = useRouter();
@@ -32,12 +33,10 @@ export default function ForgotPasswordSandbox() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/sandbox-reset-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, newPassword }),
+      // Sử dụng apiClient.post thay vì fetch thủ công
+      const response = await apiClient.post('/auth/sandbox-reset-password', { 
+        email, 
+        newPassword 
       });
 
       const data = await response.json();
@@ -51,7 +50,7 @@ export default function ForgotPasswordSandbox() {
         router.push('/login');
       }, 2000);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Lỗi kết nối đến máy chủ.');
     } finally {
       setIsLoading(false);
     }
@@ -141,6 +140,7 @@ export default function ForgotPasswordSandbox() {
         
         <div className="mt-6 text-center">
           <button 
+            type="button"
             onClick={() => router.push('/login')} 
             className="text-blue-600 hover:text-blue-800 font-medium"
           >
