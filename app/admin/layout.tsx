@@ -265,7 +265,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </header>
 
-          <main className="page-body">
+          {/* Thêm các class p-6 (padding trên mobile) và md:p-8 lg:p-10 (padding lớn hơn trên màn hình máy tính) 
+              cùng max-w-screen-2xl để giới hạn chiều rộng tối đa, tránh nội dung bị dàn trải quá mức trên màn hình cực to */}
+          <main className="page-body p-6 md:p-8 lg:p-10 max-w-screen-2xl mx-auto w-full">
             {children}
           </main>
         </div>

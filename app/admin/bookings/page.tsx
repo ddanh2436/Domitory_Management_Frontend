@@ -59,25 +59,28 @@ export default function AdminBookingsPage() {
   };
 
   return (
-    <div className="w-full space-y-8 text-slate-800 font-sans">
+    <div className="w-full space-y-8 text-slate-800 font-sans p-6 md:p-8">
       {actionMsg.text && (
         <div className={`p-5 rounded-2xl font-bold text-base ${actionMsg.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
           {actionMsg.text}
         </div>
       )}
 
-      {/* ── Bọc vào container trắng, bo góc 3xl, padding siêu rộng (p-8 sm:p-10) ── */}
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 sm:p-10">
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 py-6 sm:py-10">
         
         <div className="flex items-center justify-between mb-8">
-           <h2 className="text-2xl font-bold text-slate-800">Danh sách Đơn đăng ký lưu trú</h2>
+           {/* Ép thụt lề tiêu đề sang phải */}
+           <h2 className="text-2xl font-bold text-slate-800" style={{ paddingLeft: '32px' }}>
+             Danh sách Đơn đăng ký lưu trú
+           </h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200 text-base">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-8 py-5 text-left font-bold text-slate-600 rounded-tl-2xl">Sinh viên</th>
+                {/* Ép thụt lề tên cột đầu tiên sang phải */}
+                <th className="py-5 text-left font-bold text-slate-600 rounded-tl-2xl" style={{ paddingLeft: '32px', paddingRight: '32px' }}>Sinh viên</th>
                 <th className="px-8 py-5 text-left font-bold text-slate-600">Phòng đăng ký</th>
                 <th className="px-8 py-5 text-left font-bold text-slate-600">Ngày gửi</th>
                 <th className="px-8 py-5 text-left font-bold text-slate-600">Trạng thái</th>
@@ -92,7 +95,8 @@ export default function AdminBookingsPage() {
               ) : (
                 bookings.map((b) => (
                   <tr key={b._id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-8 py-6">
+                    {/* Ép thụt lề dữ liệu cột đầu tiên sang phải */}
+                    <td className="py-6" style={{ paddingLeft: '32px', paddingRight: '32px' }}>
                       <div className="font-bold text-slate-800 text-[17px]">{b.user?.fullName}</div>
                       <div className="text-slate-500 text-sm mt-1">MSSV: {b.user?.mssv || '—'}</div>
                     </td>
