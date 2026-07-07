@@ -148,85 +148,19 @@ function ConfirmDialog({ state, busy, onCancel }: { state: ConfirmState | null; 
   );
 }
 
-// ─── Component Con Dấu ────────────────────────────────────────────────────────
-function Seal({ label, type }: { label: string; type: "success" | "gold" }) {
-  const color = type === "success" ? "#0D6E4E" : "#A9812E";
+// ─── Component Con Dấu Mộc Điển Tử ─────────────────────────────────────────────
+function Seal({ label, type }: { label: string; type: "red" | "blue" }) {
+  const color = type === "red" ? "#dc2626" : "#2563eb"; // Đỏ đô hoặc Xanh dương đậm
   return (
-    <div className="inline-flex flex-col items-center -rotate-6 select-none">
-      <svg width="90" height="90" viewBox="0 0 80 80" fill="none" style={{ filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.08))" }}>
-        <circle cx="40" cy="40" r="36" stroke={color} strokeWidth="1.5" />
-        <circle cx="40" cy="40" r="31" stroke={color} strokeWidth="1" strokeDasharray="3 3" />
-        <path d="M26 40.5L35 49L52 30" stroke={color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+    <div className="inline-flex flex-col items-center -rotate-12 select-none opacity-90 mix-blend-multiply">
+      <svg width="100" height="100" viewBox="0 0 80 80" fill="none">
+        <circle cx="40" cy="40" r="36" stroke={color} strokeWidth="2" />
+        <circle cx="40" cy="40" r="32" stroke={color} strokeWidth="1" strokeDasharray="2 2" />
+        <path d="M25 40L35 50L55 30" stroke={color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-center max-w-[110px] leading-tight" style={{ color }}>
+      <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-center max-w-[120px] leading-tight" style={{ color }}>
         {label}
       </p>
-    </div>
-  );
-}
-
-// ─── Component Ô Thông Tin ───────────────────────────────────────────────────
-function Field({ caption, value, highlight = false }: { caption: string; value: React.ReactNode; highlight?: boolean }) {
-  return (
-    <div
-      className={`rounded-2xl px-5 py-4 border transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${
-        highlight ? "bg-amber-50/80 border-amber-200 shadow-sm" : "bg-slate-50/60 border-slate-100 shadow-sm"
-      }`}
-    >
-      <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">{caption}</p>
-      <p className={`text-[15px] break-words leading-relaxed ${highlight ? "text-amber-900 font-bold text-lg" : "text-slate-800 font-semibold"}`}>
-        {value}
-      </p>
-    </div>
-  );
-}
-
-// ─── Component Tiêu Đề Mục ────────────────────────────────────────────────────
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-4 mt-10 mb-6">
-      <h4 className={`${display.className} text-slate-900 text-[18px] font-bold tracking-tight whitespace-nowrap flex items-center gap-2.5`}>
-        <span className="w-2 h-5 bg-amber-500 rounded-full inline-block" />
-        {children}
-      </h4>
-      <div className="flex-1 border-b-2 border-dashed border-slate-200/80"></div>
-    </div>
-  );
-}
-
-// ─── Dòng thời hạn hợp đồng với thanh tiến trình ─────────────────────────────
-function ContractTimeline({ startDate, endDate, active }: { startDate: string; endDate: string; active: boolean }) {
-  const start = new Date(startDate).getTime();
-  const end = new Date(endDate).getTime();
-  const now = Date.now();
-  const totalMs = Math.max(end - start, 1);
-  const elapsedMs = Math.min(Math.max(now - start, 0), totalMs);
-  const percent = Math.round((elapsedMs / totalMs) * 100);
-  const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
-
-  const fmt = (d: string) => new Date(d).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
-
-  return (
-    <div className="rounded-2xl px-5 py-4 border bg-slate-50/60 border-slate-100 shadow-sm sm:col-span-3">
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Thời hạn hiệu lực</p>
-        {active && (
-          <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${daysLeft <= 30 ? "bg-rose-50 text-rose-600" : "bg-emerald-50 text-emerald-700"}`}>
-            {daysLeft > 0 ? `Còn ${daysLeft} ngày` : "Đã hết hạn"}
-          </span>
-        )}
-      </div>
-      <div className="flex items-center justify-between text-[15px] font-semibold text-slate-800 mb-3">
-        <span>{fmt(startDate)}</span>
-        <span className="text-slate-300">→</span>
-        <span>{fmt(endDate)}</span>
-      </div>
-      <div className="h-2 w-full rounded-full bg-slate-200/70 overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-700 ${active ? "bg-amber-500" : "bg-slate-300"}`}
-          style={{ width: `${Math.min(Math.max(percent, 2), 100)}%` }}
-        />
-      </div>
     </div>
   );
 }
@@ -234,24 +168,32 @@ function ContractTimeline({ startDate, endDate, active }: { startDate: string; e
 // ─── Trạng thái tải trang (skeleton) ─────────────────────────────────────────
 function DocumentSkeleton() {
   return (
-    <div className="w-full max-w-[900px] animate-pulse space-y-8">
+    <div className="w-full max-w-[850px] animate-pulse space-y-8">
       <div className="h-5 w-32 bg-slate-200/70 rounded-full" />
-      <div className="bg-white rounded-[2rem] border border-slate-200/80 p-8 sm:p-14 md:p-16 space-y-8">
-        <div className="space-y-3 flex flex-col items-center">
-          <div className="h-4 w-72 bg-slate-200/70 rounded-full" />
-          <div className="h-4 w-56 bg-slate-200/70 rounded-full" />
-          <div className="h-9 w-96 max-w-full bg-slate-200/70 rounded-xl mt-6" />
+      <div className="bg-white rounded border border-slate-200 p-8 sm:p-16 space-y-8 min-h-[600px]">
+        <div className="space-y-4 flex flex-col items-center">
+          <div className="h-4 w-64 bg-slate-200/70 rounded-full" />
+          <div className="h-4 w-48 bg-slate-200/70 rounded-full" />
+          <div className="h-8 w-80 bg-slate-200/70 rounded-md mt-8" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-8">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-16 bg-slate-100 rounded-2xl" />
+        <div className="space-y-4 pt-12">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-4 bg-slate-100 rounded-full w-full" />
           ))}
         </div>
-        <div className="h-32 bg-slate-100 rounded-2xl" />
       </div>
     </div>
   );
 }
+
+// ─── Formatter ────────────────────────────────────────────────────────────────
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function StudentContractPage() {
@@ -342,14 +284,14 @@ export default function StudentContractPage() {
   };
 
   return (
-    <div className={`${body.className} w-full min-h-screen bg-slate-50/60 py-10 px-4 print:p-0 print:bg-white flex flex-col items-center`}>
+    <div className={`${body.className} w-full min-h-screen bg-slate-100 py-10 px-4 print:p-0 print:bg-white flex flex-col items-center`}>
       <ToastStack toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
       <ConfirmDialog state={confirmState} busy={actionBusy} onCancel={closeConfirm} />
 
-      <div className="w-full max-w-[900px] flex flex-col">
+      <div className="w-full max-w-[850px] flex flex-col">
         <Link
           href="/student"
-          className="text-slate-500 no-underline text-sm font-semibold inline-flex items-center gap-2 mb-8 print:hidden hover:text-slate-900 transition-colors group self-start"
+          className="text-slate-500 no-underline text-sm font-semibold inline-flex items-center gap-2 mb-6 print:hidden hover:text-slate-900 transition-colors group self-start"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="transform group-hover:-translate-x-1 transition-transform">
             <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -360,7 +302,7 @@ export default function StudentContractPage() {
         {loading ? (
           <DocumentSkeleton />
         ) : loadError ? (
-          <div className="bg-white border border-slate-200 rounded-[2rem] p-16 text-center shadow-sm max-w-2xl mx-auto mt-4 w-full">
+          <div className="bg-white border border-slate-200 p-16 text-center shadow-sm w-full">
             <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6 text-rose-500">
               <svg width="30" height="30" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-2.99L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L3.34 16.01C2.57 17.33 3.53 19 5.07 19z" />
@@ -372,157 +314,152 @@ export default function StudentContractPage() {
             </p>
             <button
               onClick={() => { setLoading(true); fetchContract(); }}
-              className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors"
+              className="px-6 py-3 bg-slate-900 text-white rounded font-bold text-sm hover:bg-slate-800 transition-colors"
             >
               Thử lại
             </button>
           </div>
         ) : contract ? (
-          <div className="space-y-8 w-full">
-            {/* ── TỜ GIẤY HỢP ĐỒNG ── */}
-            <div id="printable-contract" className="relative bg-white rounded-[2rem] border border-slate-200/80 shadow-[0_30px_80px_-20px_rgba(13,27,42,0.1)] overflow-hidden print:border-none print:shadow-none print:rounded-none w-full">
-              <div className="h-[8px] bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 print:hidden" />
+          <div className="space-y-6 w-full">
+            
+            {/* ── TỜ GIẤY HỢP ĐỒNG (KHỔ A4) ── */}
+            <div 
+              id="printable-contract" 
+              className="bg-white p-10 md:p-16 lg:p-20 shadow-xl border border-slate-300 text-black mx-auto print:shadow-none print:border-none print:m-0 print:p-0 print:w-full"
+              style={{ minHeight: "297mm", maxWidth: "210mm" }}
+            >
+              {contract.status === "TERMINATED" && (
+                <div className="flex items-center justify-center gap-2 bg-red-50 text-red-700 border border-red-200 p-3 mb-8 text-center font-bold text-sm tracking-widest uppercase print:hidden">
+                  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  Hợp đồng này đã được thanh lý
+                </div>
+              )}
 
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.025] print:opacity-[0.05]">
-                <span className={`${display.className} text-[150px] font-black -rotate-12 text-slate-900 tracking-tighter`}>
-                  DORMIFY
-                </span>
+              {/* Header Quốc hiệu */}
+              <div className="text-center mb-12">
+                <h3 className="uppercase text-[15px] font-bold">
+                  Cộng hòa xã hội chủ nghĩa Việt Nam
+                </h3>
+                <p className="text-[14px] font-bold underline underline-offset-4 mt-1 mb-8">
+                  Độc lập - Tự do - Hạnh phúc
+                </p>
+
+                <h2 className={`${display.className} text-2xl md:text-3xl font-bold uppercase mt-12 mb-2`}>
+                  Hợp đồng thuê phòng ký túc xá
+                </h2>
+                <p className="italic text-sm text-gray-600">
+                  Số: {contract.contractNumber} / HĐ-DORMIFY
+                </p>
+                <div className="mt-2 text-sm italic">
+                  Hôm nay, ngày {new Date().getDate()} tháng {new Date().getMonth() + 1} năm {new Date().getFullYear()}, chúng tôi gồm có:
+                </div>
               </div>
 
-              <div className="relative z-10 p-8 sm:p-14 md:p-16 space-y-10">
-                {contract.status === "TERMINATED" && (
-                  <div className="flex items-center justify-center gap-3 bg-red-50 text-red-700 border border-red-100 p-4 rounded-2xl text-center font-bold text-sm tracking-wider mb-4">
-                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
-                    HỢP ĐỒNG NÀY ĐÃ ĐƯỢC THANH LÝ HỦY BỎ
-                  </div>
-                )}
-
-                <div className="text-center space-y-2">
-                  <h3 className="uppercase text-[15px] sm:text-[17px] font-extrabold tracking-wider text-slate-900">
-                    Cộng hòa xã hội chủ nghĩa Việt Nam
-                  </h3>
-                  <p className="text-[13px] font-bold uppercase text-slate-700 tracking-widest inline-block px-4 border-t border-b border-slate-200 py-1">
-                    Độc lập - Tự do - Hạnh phúc
-                  </p>
-
-                  <div className="pt-8">
-                    <h2 className={`${display.className} text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-snug`}>
-                      Hợp đồng điện tử thuê phòng ký túc xá
-                    </h2>
-                    <div className="flex justify-center gap-4 mt-6 text-[12px] font-bold flex-wrap">
-                      <span className="font-mono text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-1.5 shadow-sm">
-                        Số định danh: {contract.contractNumber}
-                      </span>
-                      <span
-                        className={`px-3.5 py-1.5 rounded-lg uppercase tracking-wider border shadow-sm ${
-                          contract.status === "ACTIVE" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-600 border-slate-200"
-                        }`}
-                      >
-                        {contract.status === "ACTIVE" ? "● Đang hiệu lực" : "● Đã thanh lý"}
-                      </span>
-                    </div>
-                  </div>
+              {/* Phần thông tin các bên */}
+              <div className="space-y-6 text-[15px] leading-relaxed text-justify">
+                <div>
+                  <h4 className="font-bold text-base uppercase mb-2">Bên Cho Thuê (Bên A): Ban Quản Lý KTX Dormify</h4>
+                  <p>- Đại diện ban điều hành và quản lý hạ tầng nội trú sinh viên thông minh.</p>
+                  <p>- Địa chỉ: Khu đô thị Đại học Quốc gia TP.HCM.</p>
                 </div>
 
                 <div>
-                  <SectionTitle>Bên A: Ban quản lý ký túc xá Dormify</SectionTitle>
-                  <div className="bg-slate-50/60 border border-slate-100 rounded-2xl p-5 text-[15px] text-slate-600 font-medium leading-relaxed">
-                    Đại diện ban điều hành và quản lý hạ tầng nội trú sinh viên thông minh.
+                  <h4 className="font-bold text-base uppercase mb-2">Bên Thuê (Bên B): Sinh Viên Đăng Ký Lưu Trú</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2">
+                    <p>- <strong>Họ và tên:</strong> {contract.user?.fullName}</p>
+                    <p>- <strong>Mã số sinh viên:</strong> {contract.user?.mssv || "Không có"}</p>
+                    <p>- <strong>Số CCCD/CMND:</strong> {contract.user?.cccd || "Không có"}</p>
+                    <p>- <strong>Số điện thoại:</strong> {contract.user?.phone || "Không có"}</p>
+                    <p className="md:col-span-2">- <strong>Email:</strong> {contract.user?.email}</p>
                   </div>
                 </div>
 
-                <div>
-                  <SectionTitle>Bên B: Sinh viên đăng ký lưu trú</SectionTitle>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <Field caption="Họ và tên" value={contract.user?.fullName} />
-                    <Field caption="Mã số sinh viên" value={contract.user?.mssv || "—"} />
-                    <Field caption="Số CCCD/CMND" value={contract.user?.cccd || "—"} />
-                    <Field caption="Số điện thoại" value={contract.user?.phone || "—"} />
-                    <div className="sm:col-span-2">
-                      <Field caption="Email liên hệ" value={contract.user?.email} />
-                    </div>
-                  </div>
+                <div className="mt-4">
+                  <p className="italic">Hai bên cùng thống nhất ký kết Hợp đồng thuê phòng với các điều khoản sau đây:</p>
                 </div>
 
-                <div>
-                  <SectionTitle>Nội dung thỏa thuận chỗ ở</SectionTitle>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                    <div className="sm:col-span-2">
-                      <Field caption="Phòng được phân bổ" value={`Phòng ${contract.room?.name} · Tòa ${contract.room?.building} (Tầng ${contract.room?.floor})`} />
-                    </div>
-                    <Field caption="Phí nội trú hàng tháng" value={`${contract.rentalFee?.toLocaleString("vi-VN")} ₫`} highlight />
-                    <ContractTimeline startDate={contract.startDate} endDate={contract.endDate} active={contract.status === "ACTIVE"} />
-                  </div>
-                </div>
+                {/* Các Điều khoản */}
+                <div className="space-y-4 pt-4">
+                  <h4 className="font-bold text-base uppercase">Điều 1: Nội dung thỏa thuận và Chi phí</h4>
+                  <ul className="list-disc list-inside space-y-2 pl-2">
+                    <li>
+                      <strong>Tài sản cho thuê:</strong> Bên A đồng ý cho Bên B thuê một vị trí giường tại Phòng {contract.room?.name}, Tòa nhà {contract.room?.building} (Tầng {contract.room?.floor}).
+                    </li>
+                    <li>
+                      <strong>Phí nội trú:</strong> {contract.rentalFee?.toLocaleString("vi-VN")} VNĐ/tháng.
+                    </li>
+                    <li>
+                      <strong>Thời hạn hợp đồng:</strong> Có hiệu lực kể từ ngày {formatDate(contract.startDate)} đến hết ngày {formatDate(contract.endDate)}.
+                    </li>
+                  </ul>
 
-                <div>
-                  <SectionTitle>Điều khoản trách nhiệm &amp; nghĩa vụ</SectionTitle>
-                  <div className="bg-slate-50/60 border border-slate-100 p-6 rounded-2xl text-[14px] whitespace-pre-line leading-loose text-slate-700 font-medium">
+                  <h4 className="font-bold text-base uppercase pt-4">Điều 2: Điều khoản trách nhiệm & nghĩa vụ</h4>
+                  <div className="pl-2 whitespace-pre-line">
                     {contract.terms}
                   </div>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 pt-12 border-t-2 border-dashed border-slate-100 text-center gap-4 mt-8">
-                  <div className="flex flex-col items-center space-y-5">
-                    <strong className="text-slate-800 text-[15px] block font-extrabold tracking-wide uppercase">Đại diện Ban Quản Lý</strong>
-                    <Seal label="Đã ký số hệ thống" type="gold" />
-                  </div>
-                  <div className="flex flex-col items-center space-y-5">
-                    <strong className="text-slate-800 text-[15px] block font-extrabold tracking-wide uppercase">Sinh viên xác nhận</strong>
-                    <Seal label="Xác thực sinh viên" type="success" />
-                  </div>
+              {/* Chữ ký */}
+              <div className="grid grid-cols-2 text-center mt-16 pt-8 break-inside-avoid">
+                <div className="flex flex-col items-center">
+                  <strong className="block uppercase text-[15px] mb-1">Đại Diện Bên A</strong>
+                  <p className="italic text-sm text-gray-500 mb-6">(Ký, ghi rõ họ tên và đóng dấu)</p>
+                  <Seal label="Dormify Verified" type="red" />
+                  <p className="mt-8 font-bold">Ban Quản Lý</p>
+                </div>
+                <div className="flex flex-col items-center">
+                  <strong className="block uppercase text-[15px] mb-1">Đại Diện Bên B</strong>
+                  <p className="italic text-sm text-gray-500 mb-6">(Ký, ghi rõ họ tên)</p>
+                  <Seal label="Digital Signature" type="blue" />
+                  <p className="mt-8 font-bold">{contract.user?.fullName}</p>
                 </div>
               </div>
             </div>
 
-            {/* ── KHỐI CÁC NÚT BUTTON ── */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col sm:flex-row gap-5 print:hidden w-full">
+            {/* ── KHỐI CÁC NÚT BUTTON (Nằm ngoài khung giấy A4) ── */}
+            <div className="bg-white border border-slate-200 rounded p-4 shadow-sm flex flex-col sm:flex-row gap-4 print:hidden w-full max-w-[850px] mx-auto">
               <button
                 onClick={() => window.print()}
-                className="flex-1 py-4 px-6 flex items-center justify-center gap-3 bg-slate-900 text-amber-400 rounded-2xl font-bold text-[15px] hover:bg-slate-800 transition-all duration-300 active:scale-[0.98] hover:-translate-y-1 shadow-lg shadow-slate-900/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+                className="flex-1 py-3 px-6 flex items-center justify-center gap-2 bg-slate-100 text-slate-800 border border-slate-300 rounded font-bold text-[14px] hover:bg-slate-200 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
               >
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H9v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H7a2 2 0 00-2 2v4h12z" />
                 </svg>
-                In / Xuất file hợp đồng (PDF)
+                In PDF / Tải xuống
               </button>
 
               {contract.status === "ACTIVE" && (
                 <div className="flex flex-1 gap-4">
                   <button
                     onClick={handleExtend}
-                    className="flex-1 py-4 px-5 flex items-center justify-center gap-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl text-[15px] transition-all duration-300 active:scale-[0.98] hover:-translate-y-1 shadow-lg shadow-blue-600/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                    className="flex-1 py-3 px-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded text-[14px] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                   >
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Gia hạn
+                    Gia hạn hợp đồng
                   </button>
                   <button
                     onClick={handleTerminate}
-                    className="flex-1 py-4 px-5 flex items-center justify-center gap-2.5 bg-rose-50 hover:bg-red-50 text-rose-600 border-2 border-rose-200 hover:border-rose-300 font-bold rounded-2xl text-[15px] transition-all duration-300 active:scale-[0.98] hover:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
+                    className="flex-1 py-3 px-4 flex items-center justify-center gap-2 bg-white hover:bg-rose-50 text-rose-600 border border-rose-300 font-bold rounded text-[14px] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
                   >
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
                     Thanh lý
                   </button>
                 </div>
               )}
             </div>
+            
           </div>
         ) : (
-          <div className="bg-white border border-slate-200 rounded-[2rem] p-20 text-center shadow-sm max-w-2xl mx-auto mt-12 w-full">
-            <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-8 text-amber-500">
-              <svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8">
+          <div className="bg-white border border-slate-200 p-20 text-center shadow-sm w-full">
+            <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6 text-amber-500">
+              <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
               </svg>
             </div>
-            <h2 className={`${display.className} text-2xl font-bold text-slate-900 mb-3`}>Chưa ghi nhận hợp đồng điện tử</h2>
+            <h2 className={`${display.className} text-xl font-bold text-slate-900 mb-2`}>Chưa ghi nhận hợp đồng điện tử</h2>
             <p className="text-slate-500 text-[15px] leading-relaxed">
-              Hợp đồng pháp lý số sẽ được tự động đồng bộ và xuất bản tại không gian này ngay khi đơn đăng ký phòng của bạn được phê duyệt hoàn tất.
+              Hợp đồng pháp lý sẽ được tự động tạo và xuất bản tại không gian này ngay khi đơn đăng ký phòng của bạn được ban quản lý phê duyệt.
             </p>
           </div>
         )}
