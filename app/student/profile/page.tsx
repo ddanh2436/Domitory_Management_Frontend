@@ -114,13 +114,25 @@ export default function StudentProfilePage() {
         .btn-save { padding: 12px 24px; background: var(--navy); color: var(--gold); font-size: 14px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s; width: 100%; }
         .btn-save:hover { background: #162a3f; }
         .room-badge { display: inline-block; padding: 6px 12px; background: var(--gold-dim); color: #9a7b2c; border: 1px solid var(--gold-b); border-radius: 6px; font-weight: 600; font-size: 13px; margin-top: 10px; }
+
+        .profile-alert { padding: 14px 18px; border-radius: 12px; font-size: 13.5px; font-weight: 500; margin-bottom: 24px; border: 1px solid; }
+        .profile-alert--success { background: rgba(34,197,94,.08); color: #16a34a; border-color: rgba(34,197,94,.22); }
+        .profile-alert--info    { background: var(--gold-dim); color: #7A5E1A; border-color: var(--gold-b); }
+        .profile-alert--error   { background: rgba(239,68,68,.08); color: #b91c1c; border-color: rgba(239,68,68,.22); }
+
+        @media (max-width: 760px) {
+          .profile-card { flex-direction: column; }
+          .profile-left { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 32px 24px; }
+          .profile-right { padding: 28px 24px; }
+          .form-grid { grid-template-columns: 1fr; gap: 18px; }
+        }
       `}</style>
 
       <div className="profile-page-body">
         <div className="profile-page-title">Hồ sơ cá nhân</div>
 
         {alertMsg.text && (
-          <div className={`p-4 rounded-xl font-medium mb-6 ${alertMsg.type === "success" ? "bg-green-100 text-green-800" : alertMsg.type === "info" ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-800"}`}>
+          <div className={`profile-alert profile-alert--${alertMsg.type === "success" ? "success" : alertMsg.type === "info" ? "info" : "error"}`}>
             {alertMsg.text}
           </div>
         )}
