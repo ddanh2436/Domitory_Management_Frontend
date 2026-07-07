@@ -189,7 +189,8 @@ export default function StudentNotificationsPage() {
         }
 
         .nf-card--unread {
-          background: linear-gradient(180deg, rgba(2,132,199,0.05) 0%, #ffffff 100%);
+          background: linear-gradient(180deg, rgba(201,168,76,0.07) 0%, #ffffff 100%);
+          border-color: rgba(201,168,76,0.28);
         }
 
         .nf-card-top {
@@ -212,7 +213,7 @@ export default function StudentNotificationsPage() {
           width: 8px;
           height: 8px;
           border-radius: 50%;
-          background: #0284c7;
+          background: var(--gold);
           display: inline-block;
           flex-shrink: 0;
         }
@@ -290,9 +291,9 @@ export default function StudentNotificationsPage() {
       </section>
 
       {loading ? (
-        <div className="nf-loading">Dang tai danh sach thong bao...</div>
+        <div className="nf-loading">Đang tải danh sách thông báo...</div>
       ) : notifications.length === 0 ? (
-        <div className="nf-empty">Ban chua co thong bao nao.</div>
+        <div className="nf-empty">Bạn chưa có thông báo nào.</div>
       ) : (
         <div className="nf-list">
           {notifications.map((notification) => (
@@ -313,8 +314,8 @@ export default function StudentNotificationsPage() {
                   <button
                     className="nf-delete-btn"
                     type="button"
-                    title="Xoa thong bao"
-                    aria-label="Xoa thong bao"
+                    title="Xóa thông báo"
+                    aria-label="Xóa thông báo"
                     onClick={(event) => void handleDeleteNotification(event, notification._id)}
                   >
                     {Icons.trash}
@@ -324,7 +325,7 @@ export default function StudentNotificationsPage() {
 
               <div className="nf-card-message">{notification.message}</div>
 
-              {notification.link && <div className="nf-card-link">Mo chi tiet</div>}
+              {notification.link && <div className="nf-card-link">Mở chi tiết →</div>}
             </article>
           ))}
         </div>
