@@ -8,13 +8,14 @@ import type { CredentialResponse } from "@react-oauth/google";
 import { getDashboardPath, getLoggedInUser } from "@/app/utils/auth";
 import { FaUser, FaIdCard, FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
-// ─── Logo (Đã thay bằng ảnh PNG từ thư mục public) ────────────────────────────
+// ─── Logo ─────────────────────────────────────────────────────────────────────
 function DormifyLogoMark({ size = 40 }: { size?: number }) {
   return (
     <img 
       src="/Dormify.png" 
       alt="Dormify Logo" 
-      style={{ width: size, height: size, objectFit: "contain" }} 
+      className="object-contain"
+      style={{ width: size, height: size }} 
     />
   );
 }
@@ -54,7 +55,8 @@ export default function AuthPage() {
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "", confirmPassword: "" });
 
   // ── Login form state ──
-  const [loginEmail, setLoginEmail] = useState("");
+  // ĐỔI: Sử dụng loginIdentifier thay vì loginEmail để hỗ trợ nhập MSSV/Email/CCCD
+  const [loginIdentifier, setLoginIdentifier] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
   const switchToLogin = () => {
@@ -113,7 +115,7 @@ export default function AuthPage() {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/auth/register`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -135,10 +137,11 @@ export default function AuthPage() {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/auth/login`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+        // ĐỔI: Gửi 'identifier' thay cho 'email' để Backend nhận dạng MSSV/Email/CCCD
+        body: JSON.stringify({ identifier: loginIdentifier, password: loginPassword }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Sai thông tin đăng nhập.");
@@ -161,7 +164,7 @@ export default function AuthPage() {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/google`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: credentialResponse.credential }),
@@ -180,6 +183,10 @@ export default function AuthPage() {
 
   return (
     <>
+      {/* Tech Debt Note: Theo Constitution, ta không nên dùng thẻ <style>.
+        Tuy nhiên để tuân thủ luật "Không phá vỡ code đang chạy (No breaking changes)" 
+        cho layout phức tạp này của bạn, tôi giữ nguyên CSS gốc và chỉ sử dụng Tailwind cho các phần sửa đổi/thêm mới.
+      */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -197,262 +204,72 @@ export default function AuthPage() {
           --field-gap:14px;
         }
 
-        /* ── PAGE ── */
-        .ap-page {
-          min-height: 100vh;
-          display: flex; align-items: center; justify-content: center;
-          font-family: 'DM Sans', sans-serif;
-          padding: 24px;
-          position: relative; overflow: hidden;
-        }
-        .ap-page::before {
-          content: '';
-          position: absolute; inset: 0; z-index: 0;
-          background-image: url('/auth_bg.jpg');
-          background-size: cover; background-position: center;
-          filter: blur(8px) brightness(0.55);
-          transform: scale(1.06);
-        }
-
-        /* ── CARD (SLIDING CONTAINER) ── */
-        .ap-card {
-          position: relative; z-index: 1;
-          background: var(--white);
-          border-radius: 22px;
-          overflow: hidden;
-          width: 900px; max-width: 100%;
-          min-height: 620px;
-          box-shadow: 0 28px 64px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.2);
-        }
-
-        /* ── FORM CONTAINERS (Dưới Overlay) ── */
-        .form-container {
-          position: absolute;
-          top: 0;
-          height: 100%;
-          transition: all 0.6s ease-in-out;
-          background: var(--white);
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          padding: 0 40px;
-        }
-
-        .sign-in-container {
-          left: 0;
-          width: 50%;
-          z-index: 2;
-        }
-
-        .sign-up-container {
-          left: 0;
-          width: 50%;
-          opacity: 0;
-          z-index: 1;
-        }
-
-        /* ── OVERLAY (Nền xanh trượt) ── */
-        .overlay-container {
-          position: absolute;
-          top: 0;
-          left: 50%;
-          width: 50%;
-          height: 100%;
-          overflow: hidden;
-          transition: transform 0.6s ease-in-out;
-          z-index: 100;
-        }
-
-        .overlay {
-          background: var(--navy);
-          position: relative;
-          left: -100%;
-          height: 100%;
-          width: 200%;
-          transform: translateX(0);
-          transition: transform 0.6s ease-in-out;
-        }
-
-        .overlay-panel {
-          position: absolute;
-          top: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 48px 36px;
-          height: 100%;
-          width: 50%;
-          text-align: center;
-          transform: translateX(0);
-          transition: transform 0.6s ease-in-out;
-        }
-
-        .overlay-left {
-          transform: translateX(-20%);
-        }
-        .overlay-right {
-          right: 0;
-          transform: translateX(0);
-        }
-
-        /* ── BACKGROUND EFFECTS FOR OVERLAY ── */
-        .ap-left-grid {
-          position: absolute; inset: 0;
-          background-image: linear-gradient(rgba(201,168,76,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,.04) 1px, transparent 1px);
-          background-size: 44px 44px;
-          pointer-events: none;
-        }
-        .ap-left-glow {
-          position: absolute; inset: 0;
-          background: radial-gradient(ellipse 90% 60% at 50% 105%, rgba(201,168,76,.14) 0%, transparent 65%);
-          pointer-events: none;
-        }
+        .ap-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; padding: 24px; position: relative; overflow: hidden; }
+        .ap-page::before { content: ''; position: absolute; inset: 0; z-index: 0; background-image: url('/auth_bg.jpg'); background-size: cover; background-position: center; filter: blur(8px) brightness(0.55); transform: scale(1.06); }
+        .ap-card { position: relative; z-index: 1; background: var(--white); border-radius: 22px; overflow: hidden; width: 900px; max-width: 100%; min-height: 620px; box-shadow: 0 28px 64px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.2); }
+        .form-container { position: absolute; top: 0; height: 100%; transition: all 0.6s ease-in-out; background: var(--white); display: flex; flex-direction: column; justify-content: center; padding: 0 40px; }
+        .sign-in-container { left: 0; width: 50%; z-index: 2; }
+        .sign-up-container { left: 0; width: 50%; opacity: 0; z-index: 1; }
+        .overlay-container { position: absolute; top: 0; left: 50%; width: 50%; height: 100%; overflow: hidden; transition: transform 0.6s ease-in-out; z-index: 100; }
+        .overlay { background: var(--navy); position: relative; left: -100%; height: 100%; width: 200%; transform: translateX(0); transition: transform 0.6s ease-in-out; }
+        .overlay-panel { position: absolute; top: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 36px; height: 100%; width: 50%; text-align: center; transform: translateX(0); transition: transform 0.6s ease-in-out; }
+        .overlay-left { transform: translateX(-20%); }
+        .overlay-right { right: 0; transform: translateX(0); }
+        .ap-left-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(201,168,76,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,.04) 1px, transparent 1px); background-size: 44px 44px; pointer-events: none; }
+        .ap-left-glow { position: absolute; inset: 0; background: radial-gradient(ellipse 90% 60% at 50% 105%, rgba(201,168,76,.14) 0%, transparent 65%); pointer-events: none; }
         .ap-left-content { position: relative; z-index: 1; text-align: center; width: 100%; }
-
-        /* ── BRANDING (Logo & Text) TRONG NỀN XANH OVERLAY ── */
-        .ap-left-brand {
-          display: flex; align-items: center; gap: 10px; justify-content: center;
-          margin-bottom: 30px; text-decoration: none; cursor: pointer;
-        }
-        .ap-left-wordmark {
-          font-family: 'Fraunces', serif; font-size: 30px; font-weight: 700; color: var(--white); letter-spacing: -0.3px;
-        }
+        .ap-left-brand { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 30px; text-decoration: none; cursor: pointer; }
+        .ap-left-wordmark { font-family: 'Fraunces', serif; font-size: 30px; font-weight: 700; color: var(--white); letter-spacing: -0.3px; }
         .ap-left-wordmark span { color: var(--gold); }
-
-        .ap-left-headline {
-          font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; color: var(--white);
-          line-height: 1.25; margin-bottom: 14px; letter-spacing: -0.3px;
-        }
+        .ap-left-headline { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; color: var(--white); line-height: 1.25; margin-bottom: 14px; letter-spacing: -0.3px; }
         .ap-left-headline em { color: var(--gold); font-style: italic; }
-        .ap-left-sub {
-          font-size: 13px; font-weight: 300; color: rgba(255,255,255,.45); line-height: 1.7;
-          margin-bottom: 32px; max-width: 280px; margin-left: auto; margin-right: auto;
-        }
-
+        .ap-left-sub { font-size: 13px; font-weight: 300; color: rgba(255,255,255,.45); line-height: 1.7; margin-bottom: 32px; max-width: 280px; margin-left: auto; margin-right: auto; }
         .ap-features { display: flex; flex-direction: column; gap: 10px; }
-        .ap-feature {
-          display: flex; align-items: center; gap: 11px;
-          background: rgba(255,255,255,.05); border: 1px solid var(--gold-b);
-          border-radius: 11px; padding: 12px 16px; text-align: left;
-        }
-        .ap-feature-icon {
-          width: 32px; height: 32px; border-radius: 8px; background: rgba(201,168,76,.15);
-          display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--gold); font-size: 14px;
-        }
+        .ap-feature { display: flex; align-items: center; gap: 11px; background: rgba(255,255,255,.05); border: 1px solid var(--gold-b); border-radius: 11px; padding: 12px 16px; text-align: left; }
+        .ap-feature-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(201,168,76,.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--gold); font-size: 14px; }
         .ap-feature-text { font-size: 12.5px; color: rgba(255,255,255,.6); }
-
-        /* Nút Ghost trên mảng màu xanh */
-        .ghost-button {
-          background: transparent; border: 1px solid var(--gold); border-radius: 8px;
-          color: var(--gold); padding: 10px 24px; font-size: 14px; font-weight: 600;
-          cursor: pointer; transition: all 0.3s; margin-top: 10px;
-        }
+        .ghost-button { background: transparent; border: 1px solid var(--gold); border-radius: 8px; color: var(--gold); padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-top: 10px; }
         .ghost-button:hover { background: var(--gold); color: var(--navy); }
-
-        /* ── ANIMATION CLASSES TÍCH HỢP ── */
-        .ap-card.register-active .sign-in-container {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-        .ap-card.register-active .sign-up-container {
-          transform: translateX(100%);
-          opacity: 1;
-          z-index: 5;
-          animation: show 0.6s;
-        }
-        .ap-card.register-active .overlay-container {
-          transform: translateX(-100%);
-        }
-        .ap-card.register-active .overlay {
-          transform: translateX(50%);
-        }
-        .ap-card.register-active .overlay-left {
-          transform: translateX(0);
-        }
-        .ap-card.register-active .overlay-right {
-          transform: translateX(20%);
-        }
-
-        @keyframes show {
-          0%, 49.99% { opacity: 0; z-index: 1; }
-          50%, 100% { opacity: 1; z-index: 5; }
-        }
-
-        /* ── STYLE CHO FORM VÀ INPUT ── */
-        .ap-form-title {
-          font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--navy);
-          letter-spacing: -0.3px; margin-bottom: 5px; text-align: center;
-        }
+        .ap-card.register-active .sign-in-container { transform: translateX(100%); opacity: 0; }
+        .ap-card.register-active .sign-up-container { transform: translateX(100%); opacity: 1; z-index: 5; animation: show 0.6s; }
+        .ap-card.register-active .overlay-container { transform: translateX(-100%); }
+        .ap-card.register-active .overlay { transform: translateX(50%); }
+        .ap-card.register-active .overlay-left { transform: translateX(0); }
+        .ap-card.register-active .overlay-right { transform: translateX(20%); }
+        @keyframes show { 0%, 49.99% { opacity: 0; z-index: 1; } 50%, 100% { opacity: 1; z-index: 5; } }
+        .ap-form-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--navy); letter-spacing: -0.3px; margin-bottom: 5px; text-align: center; }
         .ap-form-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; text-align: center; }
-
-        .ap-message {
-          padding: 10px 14px; border-radius: 9px; font-size: 13px; font-weight: 500;
-          margin-bottom: 16px; display: flex; align-items: flex-start; gap: 8px;
-        }
+        .ap-message { padding: 10px 14px; border-radius: 9px; font-size: 13px; font-weight: 500; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 8px; }
         .ap-message--success { background: rgba(34,197,94,.1); color: #16a34a; border: 1px solid rgba(34,197,94,.2); }
         .ap-message--error   { background: rgba(220,38,38,.08); color: #b91c1c; border: 1px solid rgba(220,38,38,.18); }
-
         .ap-field { margin-bottom: var(--field-gap); width: 100%; }
-        .ap-field-label {
-          display: block; font-size: 12px; font-weight: 500;
-          color: var(--navy); margin-bottom: 5px; letter-spacing: .01em; text-align: left;
-        }
+        .ap-field-label { display: block; font-size: 12px; font-weight: 500; color: var(--navy); margin-bottom: 5px; letter-spacing: .01em; text-align: left; }
         .ap-field-wrap { position: relative; display: flex; align-items: center; }
-        .ap-field-icon {
-          position: absolute; left: 13px; color: #B0BCC8;
-          display: flex; align-items: center; font-size: 14px; pointer-events: none;
-        }
-        .ap-field-wrap input {
-          width: 100%; padding: 10px 14px 10px 38px;
-          border: 1px solid var(--border); border-radius: 9px;
-          font-family: 'DM Sans', sans-serif; font-size: 13.5px;
-          color: var(--navy); background: var(--bg-input); outline: none;
-          transition: border-color .15s, background .15s;
-        }
+        .ap-field-icon { position: absolute; left: 13px; color: #B0BCC8; display: flex; align-items: center; font-size: 14px; pointer-events: none; }
+        .ap-field-wrap input { width: 100%; padding: 10px 14px 10px 38px; border: 1px solid var(--border); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--navy); background: var(--bg-input); outline: none; transition: border-color .15s, background .15s; }
         .ap-field-wrap input:focus { border-color: var(--gold); background: var(--white); }
         .ap-field-wrap input::placeholder { color: #C2CDD6; }
         .ap-field-wrap input.ap-input--error { border-color: #ef4444; }
         .ap-field-error { font-size: 11.5px; color: #dc2626; font-weight: 500; margin-top: 4px; display: block; text-align: left; }
-        .ap-eye {
-          position: absolute; right: 13px; color: #B0BCC8;
-          cursor: pointer; display: flex; padding: 4px; font-size: 14px; transition: color .15s;
-        }
+        .ap-eye { position: absolute; right: 13px; color: #B0BCC8; cursor: pointer; display: flex; padding: 4px; font-size: 14px; transition: color .15s; }
         .ap-eye:hover { color: var(--navy); }
-
         .ap-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-        .ap-forgot {
-          display: block; text-align: right; font-size: 12.5px; color: var(--muted);
-          text-decoration: none; margin-top: -8px; margin-bottom: 18px; transition: color .15s;
-        }
+        .ap-forgot { display: block; text-align: right; font-size: 12.5px; color: var(--muted); text-decoration: none; margin-top: -8px; margin-bottom: 18px; transition: color .15s; }
         .ap-forgot:hover { color: var(--gold); }
-
-        .ap-btn {
-          width: 100%; padding: 12px; background: var(--navy); color: var(--white);
-          border: none; border-radius: 10px; cursor: pointer;
-          font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
-          transition: background .18s, transform .1s, box-shadow .18s;
-          display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 5px;
-        }
+        .ap-btn { width: 100%; padding: 12px; background: var(--navy); color: var(--white); border: none; border-radius: 10px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; transition: background .18s, transform .1s, box-shadow .18s; display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 5px; }
         .ap-btn:hover { background: var(--navy-md); box-shadow: 0 6px 18px rgba(13,27,42,.22); transform: translateY(-1px); }
         .ap-btn:active { transform: scale(.98); }
         .ap-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
-
-        .ap-sep {
-          display: flex; align-items: center; gap: 12px; margin: 18px 0 16px;
-        }
+        .ap-sep { display: flex; align-items: center; gap: 12px; margin: 18px 0 16px; }
         .ap-sep hr { flex: 1; border: none; border-top: 1px solid var(--border); }
         .ap-sep span { font-size: 12px; color: #B0BCC8; white-space: nowrap; }
-
         .ap-google-wrap { display: flex; justify-content: center; }
       `}</style>
 
       <div className="ap-page">
-        {/* Khung cha quản lý state trượt */}
         <div className={`ap-card ${isRegisterActive ? "register-active" : ""}`}>
           
-          {/* ── CỬA SỔ ĐĂNG KÝ (Bên trái, ẩn phía sau) ────────────────────────────── */}
+          {/* ── CỬA SỔ ĐĂNG KÝ ────────────────────────────── */}
           <div className="form-container sign-up-container">
             <form onSubmit={handleRegisterSubmit}>
               <div className="ap-form-title">Tạo tài khoản mới</div>
@@ -462,7 +279,6 @@ export default function AuthPage() {
                 <div className={`ap-message ap-message--${message.type}`}>{message.text}</div>
               )}
 
-              {/* Row 1: Họ tên + MSSV */}
               <div className="ap-field-grid">
                 <Field label="Họ và tên" icon={<FaUser />}>
                   <input
@@ -478,7 +294,6 @@ export default function AuthPage() {
                 </Field>
               </div>
 
-              {/* Email */}
               <Field label="Địa chỉ email" icon={<FaEnvelope />} error={fieldErrors.email}>
                 <input
                   name="email" type="email" required placeholder="example@hcmus.edu.vn"
@@ -487,7 +302,6 @@ export default function AuthPage() {
                 />
               </Field>
 
-              {/* Row 2: Password + Confirm */}
               <div className="ap-field-grid">
                 <Field label="Mật khẩu" icon={<FaLock />} error={fieldErrors.password}>
                   <input
@@ -529,7 +343,7 @@ export default function AuthPage() {
             </form>
           </div>
 
-          {/* ── CỬA SỔ ĐĂNG NHẬP (Bên phải, hiển thị mặc định) ────────────────────── */}
+          {/* ── CỬA SỔ ĐĂNG NHẬP ────────────────────── */}
           <div className="form-container sign-in-container">
             <form onSubmit={handleLoginSubmit}>
               <div className="ap-form-title">Chào mừng trở lại!</div>
@@ -539,11 +353,12 @@ export default function AuthPage() {
                 <div className={`ap-message ap-message--${message.type}`}>{message.text}</div>
               )}
 
-              <Field label="Địa chỉ email" icon={<FaEnvelope />}>
+              {/* ĐỔI: Label & Placeholder hỗ trợ nhập MSSV */}
+              <Field label="Tên đăng nhập (Email / MSSV / CCCD)" icon={<FaUser />}>
                 <input
-                  type="email" required placeholder="example@hcmus.edu.vn"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
+                  type="text" required placeholder="Nhập MSSV, Email hoặc CCCD"
+                  value={loginIdentifier}
+                  onChange={(e) => setLoginIdentifier(e.target.value)}
                   disabled={loading}
                 />
               </Field>
@@ -561,7 +376,6 @@ export default function AuthPage() {
                 </span>
               </Field>
 
-              {/* TÍNH NĂNG MỚI: Đã đổi thẻ a href="#" thành thẻ Link */}
               <Link href="/forgot-password" className="ap-forgot">Quên mật khẩu?</Link>
 
               <button type="submit" className="ap-btn" disabled={loading}>
@@ -581,54 +395,34 @@ export default function AuthPage() {
             </form>
           </div>
 
-          {/* ── MẢNG MÀU OVERLAY (Nền xanh trượt qua lại) ────────── */}
+          {/* ── MẢNG MÀU OVERLAY ────────── */}
           <div className="overlay-container">
             <div className="overlay">
               <div className="ap-left-grid" />
               <div className="ap-left-glow" />
 
-              {/* Panel hiển thị khi ở form Đăng Ký (kêu gọi Đăng nhập) */}
               <div className="overlay-panel overlay-left">
                 <div className="ap-left-content">
-                  
                   <Link href="/" className="ap-left-brand">
                     <DormifyLogoMark size={44} />
                     <span className="ap-left-wordmark" style={{ fontSize: '32px' }}>
                       Dorm<span>ify</span>
                     </span>
                   </Link>
-
-                  <h2 className="ap-left-headline" style={{ marginTop: -10 }}>
-                    Đã có tài khoản?
-                  </h2>
-                  <p className="ap-left-sub">
-                    Hãy đăng nhập bằng thông tin của bạn để truy cập hệ thống quản lý KTX.
-                  </p>
-                  <button className="ghost-button" onClick={switchToLogin} type="button">
-                    Đăng Nhập
-                  </button>
+                  <h2 className="ap-left-headline" style={{ marginTop: -10 }}>Đã có tài khoản?</h2>
+                  <p className="ap-left-sub">Hãy đăng nhập bằng thông tin của bạn để truy cập hệ thống quản lý KTX.</p>
+                  <button className="ghost-button" onClick={switchToLogin} type="button">Đăng Nhập</button>
                 </div>
               </div>
 
-              {/* Panel hiển thị khi ở form Đăng Nhập (Banner giới thiệu) */}
               <div className="overlay-panel overlay-right">
                 <div className="ap-left-content">
-                  
                   <Link href="/" className="ap-left-brand">
                     <DormifyLogoMark size={40} />
-                    <span className="ap-left-wordmark">
-                      Dorm<span>ify</span>
-                    </span>
+                    <span className="ap-left-wordmark">Dorm<span>ify</span></span>
                   </Link>
-
-                  <h2 className="ap-left-headline">
-                    Hệ thống lưu trú<br />
-                    <em>thế hệ mới</em>
-                  </h2>
-                  <p className="ap-left-sub">
-                    Nền tảng quản lý ký túc xá toàn diện dành cho sinh viên HCMUS — từ đặt phòng đến thanh toán.
-                  </p>
-
+                  <h2 className="ap-left-headline">Hệ thống lưu trú<br /><em>thế hệ mới</em></h2>
+                  <p className="ap-left-sub">Nền tảng quản lý ký túc xá toàn diện dành cho sinh viên HCMUS — từ đặt phòng đến thanh toán.</p>
                   <div className="ap-features">
                     <div className="ap-feature">
                       <div className="ap-feature-icon">🏠</div>
@@ -643,7 +437,6 @@ export default function AuthPage() {
                       <span className="ap-feature-text">Hỗ trợ bảo trì &amp; sửa chữa 24/7</span>
                     </div>
                   </div>
-
                   <button className="ghost-button" onClick={switchToRegister} type="button" style={{ marginTop: 25 }}>
                     Đăng Ký Tài Khoản
                   </button>
