@@ -182,7 +182,7 @@ export default function AdminDashboard() {
         
         /* Chỉnh lại Grid hiển thị biểu đồ hàng trên */
         .db-charts-section { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin-bottom: 28px; }
-        .chart-box { background: white; border: 1px solid rgba(13,27,42,0.09); border-radius: 14px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
+        .chart-box { background: white; border: 1px solid rgba(13,27,42,0.09); border-radius: 14px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.01); min-width: 0; }
         .chart-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
         
         @media (max-width: 1024px) { 
@@ -228,7 +228,7 @@ export default function AdminDashboard() {
               <div className="chart-box">
                 <h2 className="chart-title">Phân tích doanh thu phát sinh (6 tháng gần nhất)</h2>
                 <div className="w-full h-[300px] min-w-0">
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={300} minWidth={0}>
                     <BarChart data={revenueData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                       <XAxis dataKey="name" tick={{ fill: "#8A9BAD", fontSize: 12 }} axisLine={false} tickLine={false} />
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
                   {maintenanceData.length === 0 ? (
                     <div className="text-slate-400 text-sm">Chưa có dữ liệu báo cáo sự cố</div>
                   ) : (
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={300} minWidth={0}>
                       <PieChart>
                         <Pie
                           data={maintenanceData}
@@ -286,9 +286,9 @@ export default function AdminDashboard() {
                     Chưa có dữ liệu phòng hoặc các phòng chưa thiết lập sức chứa.
                   </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart 
-                      data={roomStatusData} 
+                  <ResponsiveContainer width="100%" height={350} minWidth={0}>
+                    <BarChart
+                      data={roomStatusData}
                       margin={{ top: 20, right: 20, left: -20, bottom: 0 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
