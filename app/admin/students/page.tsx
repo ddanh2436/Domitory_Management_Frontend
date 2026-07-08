@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiClient } from "../../utils/apiClient"; // TÍCH HỢP APICLIENT VÀO ĐÂY
+import AvatarLightbox from "../../components/AvatarLightbox";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Student {
@@ -346,13 +347,7 @@ export default function AdminStudentsPage() {
                     <td className="cell-index">{index + 1}</td>
                     <td className="px-4 py-3">
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        {student.avatar ? (
-                          <img src={student.avatar} alt="Avt" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", border: "1px solid var(--border)" }} />
-                        ) : (
-                          <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "var(--navy)", color: "var(--gold)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: "bold", fontFamily: "'Fraunces', serif" }}>
-                            {student.fullName ? student.fullName.charAt(0).toUpperCase() : "S"}
-                          </div>
-                        )}
+                        <AvatarLightbox name={student.fullName} avatar={student.avatar} size={36} />
                         <span className="cell-name">{student.fullName || "Chưa cập nhật tên"}</span>
                       </div>
                     </td>
