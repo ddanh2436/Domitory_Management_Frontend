@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiClient } from "../../utils/apiClient";
+import AvatarLightbox from "../../components/AvatarLightbox";
 
 interface Occupant {
   userId: string;
@@ -31,7 +32,7 @@ interface Room {
   availabilityStatus: string;
   facilities: string[];
   occupants?: Occupant[];
-  _id?: string; 
+  _id?: string;
 }
 
 export default function AdminRoomsPage() {
@@ -172,6 +173,10 @@ export default function AdminRoomsPage() {
         .detail-item span:last-child { color: #0D1B2A; font-weight: 700; text-align: right; }
         .occupant { border: 1px solid rgba(13,27,42,0.08); border-radius: 18px; padding: 16px; margin-top: 14px; }
         .occupant-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+        .occupant-identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .occ-stack { display: flex; align-items: center; margin-top: 12px; }
+        .occ-stack__more { margin-left: -8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(13,27,42,0.06); color: #334155; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #fff; }
+        .occ-stack__empty { font-size: 12px; color: #94a3b8; font-style: italic; }
         .occupant-name { font-size: 16px; font-weight: 700; color: #0D1B2A; }
         .occupant-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; font-size: 13px; color: #334155; }
         .occupant-meta strong { color: #0D1B2A; }
@@ -236,6 +241,27 @@ export default function AdminRoomsPage() {
                     <div className="chip-row">
                       {room.facilities.slice(0, 4).map((facility) => <span key={facility} className="chip">{facility}</span>)}
                     </div>
+                    {/* Cụm avatar sinh viên đang ở trong phòng */}
+                    <div className="occ-stack">
+                      {room.occupants && room.occupants.length > 0 ? (
+                        <>
+                          {room.occupants.slice(0, 5).map((occ, i) => (
+                            <AvatarLightbox
+                              key={occ.userId || occ.mssv || i}
+                              name={occ.fullName}
+                              avatar={occ.avatar}
+                              size={28}
+                              style={{ marginLeft: i === 0 ? 0 : -8, boxShadow: "0 0 0 2px #fff" }}
+                            />
+                          ))}
+                          {room.occupants.length > 5 && (
+                            <span className="occ-stack__more">+{room.occupants.length - 5}</span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="occ-stack__empty">Chưa có sinh viên</span>
+                      )}
+                    </div>
                   </button>
                 );
               })}
@@ -276,9 +302,12 @@ export default function AdminRoomsPage() {
                     selectedRoom.occupants.map((occupant, idx) => (
                       <div key={occupant.userId || occupant.mssv || idx} className="occupant">
                         <div className="occupant-head">
-                          <div>
-                            <div className="occupant-name">{occupant.fullName}</div>
-                            <div className="text-sm text-slate-500">MSSV: {occupant.mssv}</div>
+                          <div className="occupant-identity">
+                            <AvatarLightbox name={occupant.fullName} avatar={occupant.avatar} size={46} />
+                            <div style={{ minWidth: 0 }}>
+                              <div className="occupant-name">{occupant.fullName}</div>
+                              <div className="text-sm text-slate-500">MSSV: {occupant.mssv}</div>
+                            </div>
                           </div>
                           <span className={`tag ${occupant.roomStatus === "CONFIRMED" ? "tag--available" : "tag--maintenance"}`}>{occupant.roomStatus || "CONFIRMED"}</span>
                         </div>
