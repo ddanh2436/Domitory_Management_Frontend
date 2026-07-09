@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Playfair_Display, Inter } from "next/font/google";
 import { apiClient } from "../../utils/apiClient";
+import { useToast } from "../../components/ToastProvider";
 
 const display = Playfair_Display({
   subsets: ["latin", "vietnamese"],
@@ -29,11 +30,6 @@ interface Contract {
 }
 
 type ToastKind = "success" | "error";
-interface Toast {
-  id: number;
-  kind: ToastKind;
-  message: string;
-}
 
 interface ConfirmState {
   title: string;
@@ -41,53 +37,6 @@ interface ConfirmState {
   confirmLabel: string;
   variant: "default" | "danger";
   onConfirm: () => void;
-}
-
-// ─── Toast Notifications ───────────────────────────────────────────────────
-function ToastStack({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: number) => void }) {
-  if (toasts.length === 0) return null;
-  return (
-    <div className="fixed top-6 right-6 z-[100] flex flex-col gap-3 print:hidden" role="status" aria-live="polite">
-      {toasts.map((t) => (
-        <div
-          key={t.id}
-          className={`flex items-start gap-3 min-w-[280px] max-w-sm rounded-2xl px-5 py-4 shadow-xl border animate-[toast-in_0.25s_ease-out] ${
-            t.kind === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-              : "bg-rose-50 border-rose-200 text-rose-800"
-          }`}
-        >
-          <span className="mt-0.5 flex-shrink-0">
-            {t.kind === "success" ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M12 3l9 16H3L12 3z" />
-              </svg>
-            )}
-          </span>
-          <p className="text-[13.5px] font-semibold leading-snug flex-1">{t.message}</p>
-          <button
-            onClick={() => onDismiss(t.id)}
-            aria-label="Đóng thông báo"
-            className="text-current opacity-50 hover:opacity-100 transition-opacity"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      ))}
-      <style jsx>{`
-        @keyframes toast-in {
-          from { opacity: 0; transform: translateY(-8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-    </div>
-  );
 }
 
 // ─── Confirm Dialog ─────────────────────────────────────────────────────────
@@ -202,13 +151,16 @@ export default function StudentContractPage() {
   const [loadError, setLoadError] = useState(false);
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const notify = useToast();
 
-  const pushToast = useCallback((kind: ToastKind, message: string) => {
-    const id = Date.now() + Math.random();
-    setToasts((prev) => [...prev, { id, kind, message }]);
-    window.setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4500);
-  }, []);
+  // Chuyển pushToast sang hệ thống toast dùng chung (giữ nguyên chữ ký gọi sẵn có)
+  const pushToast = useCallback(
+    (kind: ToastKind, message: string) => {
+      if (kind === "success") notify.success(message);
+      else notify.error(message);
+    },
+    [notify],
+  );
 
   const fetchContract = useCallback(async () => {
     try {
@@ -285,7 +237,6 @@ export default function StudentContractPage() {
 
   return (
     <div className={`${body.className} w-full min-h-screen bg-slate-100 py-10 px-4 print:p-0 print:bg-white flex flex-col items-center`}>
-      <ToastStack toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
       <ConfirmDialog state={confirmState} busy={actionBusy} onCancel={closeConfirm} />
 
       <div className="w-full max-w-[850px] flex flex-col">

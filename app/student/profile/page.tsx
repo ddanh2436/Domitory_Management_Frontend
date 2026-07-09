@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "../../components/ToastProvider";
 
 interface StudentProfile {
   _id: string;
@@ -34,7 +35,14 @@ export default function StudentProfilePage() {
   const [violations, setViolations] = useState<Violation[]>([]);
   const [formData, setFormData] = useState({ phone: "", cccd: "", avatar: "" });
   const [loading, setLoading] = useState(true);
-  const [alertMsg, setAlertMsg] = useState({ text: "", type: "" });
+  const toast = useToast();
+  // Cầu nối sang toast dùng chung (giữ nguyên các lệnh setAlertMsg sẵn có)
+  const setAlertMsg = ({ text, type }: { text: string; type: string }) => {
+    if (!text) return;
+    if (type === "success") toast.success(text);
+    else if (type === "info") toast.info(text);
+    else toast.error(text);
+  };
 
   const loadProfile = async () => {
     try {
@@ -168,12 +176,6 @@ export default function StudentProfilePage() {
 
       <div className="profile-page-body">
         <div className="profile-page-title">Hồ sơ cá nhân</div>
-
-        {alertMsg.text && (
-          <div className={`profile-alert profile-alert--${alertMsg.type === "success" ? "success" : alertMsg.type === "info" ? "info" : "error"}`}>
-            {alertMsg.text}
-          </div>
-        )}
 
         <div className="profile-card">
           <div className="profile-left">
