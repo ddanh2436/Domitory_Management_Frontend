@@ -16,7 +16,29 @@ interface Student {
   accessStatus?: string;
   blockReason?: string;
   avatar?: string;
+  behaviorScore?: number;
 }
+
+interface Violation {
+  _id: string;
+  reason: string;
+  points: number;
+  scoreAfter?: number;
+  createdAt: string;
+  markedBy?: { fullName?: string };
+}
+
+// Danh sách lỗi vi phạm thường gặp để admin chọn nhanh (vẫn có thể tự nhập)
+const VIOLATION_PRESETS: { reason: string; points: number }[] = [
+  { reason: "Về ký túc xá muộn quá giờ quy định", points: 5 },
+  { reason: "Không trực nhật / gây mất vệ sinh chung", points: 5 },
+  { reason: "Gây ồn ào, mất trật tự trong giờ yên lặng", points: 10 },
+  { reason: "Hút thuốc / sử dụng đồ uống có cồn trong KTX", points: 10 },
+  { reason: "Cho người lạ vào phòng hoặc lưu trú trái phép", points: 15 },
+  { reason: "Sử dụng thiết bị điện dễ cháy nổ trái phép", points: 20 },
+  { reason: "Đánh nhau, gây rối trật tự khu nội trú", points: 30 },
+  { reason: "Cờ bạc, tàng trữ vũ khí / chất cấm", points: 40 },
+];
 
 const Icons = {
   search: (
@@ -37,16 +59,71 @@ export default function AdminStudentsPage() {
 
   // STATE CHO MODAL SINH VIÊN
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [modalTab, setModalTab] = useState<"PROFILE" | "SECURITY">("PROFILE");
+  const [modalTab, setModalTab] = useState<"PROFILE" | "SECURITY" | "BEHAVIOR">("PROFILE");
 
   const [editForm, setEditForm] = useState({
     fullName: "",
     phone: "",
     cccd: "",
-    avatar: "" 
+    avatar: ""
   });
   const [adminMessage, setAdminMessage] = useState("");
-  const [blockReasonInput, setBlockReasonInput] = useState(""); 
+  const [blockReasonInput, setBlockReasonInput] = useState("");
+
+  // Điểm hành vi / vi phạm
+  const [violations, setViolations] = useState<Violation[]>([]);
+  const [violationForm, setViolationForm] = useState({ reason: "", points: 5 });
+  const [presetSel, setPresetSel] = useState<string>(""); // "" = chưa chọn, "custom" = tự nhập, còn lại = index preset
+  const [markingViolation, setMarkingViolation] = useState(false);
+  // Điểm hành vi hiện tại của sinh viên đang mở modal (cập nhật ngay sau khi trừ)
+  const [currentScore, setCurrentScore] = useState<number>(100);
+
+  const loadViolations = async (studentId: string) => {
+    try {
+      const res = await apiClient.get(`/violations/student/${studentId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) setViolations(data);
+      }
+    } catch (error) {
+      console.error("Lỗi tải lịch sử vi phạm:", error);
+    }
+  };
+
+  const handleMarkViolation = async () => {
+    if (!selectedStudent) return;
+    if (!violationForm.reason.trim()) {
+      setAlertMsg({ text: "Vui lòng nhập lý do vi phạm!", type: "error" });
+      return;
+    }
+    setMarkingViolation(true);
+    try {
+      const res = await apiClient.post("/violations", {
+        studentId: selectedStudent._id,
+        reason: violationForm.reason.trim(),
+        points: Number(violationForm.points),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setAlertMsg({ text: `Đã ghi nhận vi phạm. Điểm còn lại: ${data.behaviorScore}/100`, type: "success" });
+        setCurrentScore(data.behaviorScore);
+        setViolationForm({ reason: "", points: 5 });
+        setPresetSel("");
+        await loadViolations(selectedStudent._id);
+        // Đồng bộ lại điểm trong danh sách bảng
+        setStudents((prev) =>
+          prev.map((s) => (s._id === selectedStudent._id ? { ...s, behaviorScore: data.behaviorScore } : s)),
+        );
+      } else {
+        setAlertMsg({ text: data.message || "Không ghi nhận được vi phạm", type: "error" });
+      }
+    } catch (error) {
+      console.error(error);
+      setAlertMsg({ text: "Lỗi kết nối máy chủ", type: "error" });
+    } finally {
+      setMarkingViolation(false);
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -76,8 +153,13 @@ export default function AdminStudentsPage() {
       cccd: student.cccd || "",
       avatar: student.avatar || "", 
     });
-    setAdminMessage(""); 
-    setBlockReasonInput(""); 
+    setAdminMessage("");
+    setBlockReasonInput("");
+    setViolationForm({ reason: "", points: 5 });
+    setPresetSel("");
+    setViolations([]);
+    setCurrentScore(student.behaviorScore ?? 100);
+    void loadViolations(student._id);
     setModalTab("PROFILE");
   };
 
@@ -404,12 +486,19 @@ export default function AdminStudentsPage() {
               >
                 Thông tin cá nhân
               </button>
-              <button 
-                type="button" 
-                className={`modal-inner-tab-btn ${modalTab === 'SECURITY' ? 'active' : ''}`} 
+              <button
+                type="button"
+                className={`modal-inner-tab-btn ${modalTab === 'SECURITY' ? 'active' : ''}`}
                 onClick={() => setModalTab('SECURITY')}
               >
                 Quản lý quyền & Lời nhắn
+              </button>
+              <button
+                type="button"
+                className={`modal-inner-tab-btn ${modalTab === 'BEHAVIOR' ? 'active' : ''}`}
+                onClick={() => setModalTab('BEHAVIOR')}
+              >
+                Điểm hành vi
               </button>
             </div>
 
@@ -530,6 +619,126 @@ export default function AdminStudentsPage() {
                         <button type="button" className="btn-block" onClick={handleBlockUser}>
                           🔒 Xác nhận Khóa tài khoản
                         </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: ĐIỂM HÀNH VI & VI PHẠM */}
+              {modalTab === 'BEHAVIOR' && (
+                <div className="animate-fadeIn">
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16,
+                    padding: "16px 18px", borderRadius: 12, marginBottom: 20,
+                    background: currentScore < 60 ? "rgba(239,68,68,0.08)" : "rgba(201,168,76,0.1)",
+                    border: `1px solid ${currentScore < 60 ? "rgba(239,68,68,0.25)" : "var(--gold-border)"}`,
+                  }}>
+                    <div>
+                      <div style={{ fontSize: 12, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
+                        Điểm hành vi hiện tại
+                      </div>
+                      <div style={{ fontSize: 13, color: currentScore < 60 ? "#b91c1c" : "#7A5E1A", marginTop: 4 }}>
+                        {currentScore < 60 ? "Dưới ngưỡng cảnh báo (60)" : "Trong ngưỡng an toàn"}
+                      </div>
+                    </div>
+                    <div style={{ fontFamily: "'Fraunces', serif", fontSize: 34, fontWeight: 700, color: currentScore < 60 ? "#dc2626" : "var(--gold)", whiteSpace: "nowrap" }}>
+                      {currentScore}<span style={{ fontSize: 15, color: "var(--muted)", fontWeight: 400 }}>/100</span>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label" style={{ color: "var(--navy)", fontWeight: "bold", fontSize: "13px" }}>
+                      ⚠️ Ghi nhận vi phạm (trừ điểm)
+                    </label>
+                    <p style={{ fontSize: "12px", color: "var(--muted)", marginBottom: "10px" }}>
+                      Sinh viên sẽ nhận được thông báo và bị trừ điểm ngay khi bạn bấm &quot;Trừ điểm&quot;.
+                    </p>
+                    <select
+                      className="form-input-text"
+                      value={presetSel}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setPresetSel(val);
+                        if (val === "custom") {
+                          setViolationForm({ reason: "", points: 5 });
+                        } else if (val !== "") {
+                          const p = VIOLATION_PRESETS[Number(val)];
+                          setViolationForm({ reason: p.reason, points: p.points });
+                        }
+                      }}
+                      style={{ marginBottom: 12, cursor: "pointer" }}
+                    >
+                      <option value="">— Chọn nhanh lỗi vi phạm thường gặp —</option>
+                      {VIOLATION_PRESETS.map((p, i) => (
+                        <option key={i} value={i}>
+                          {p.reason} (−{p.points})
+                        </option>
+                      ))}
+                      <option value="custom">✏️ Khác (tự nhập)…</option>
+                    </select>
+                    <input
+                      type="text"
+                      className="form-input-text"
+                      placeholder="Lý do vi phạm (VD: Về phòng muộn quá giờ quy định)..."
+                      value={violationForm.reason}
+                      onChange={(e) => {
+                        setViolationForm({ ...violationForm, reason: e.target.value });
+                        setPresetSel("custom");
+                      }}
+                      style={{ marginBottom: 12 }}
+                    />
+                    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                      <input
+                        type="number"
+                        min={1}
+                        max={100}
+                        className="form-input-text"
+                        value={violationForm.points}
+                        onChange={(e) => {
+                          setViolationForm({ ...violationForm, points: Number(e.target.value) });
+                          setPresetSel("custom");
+                        }}
+                        style={{ width: 110 }}
+                        title="Số điểm trừ (1-100)"
+                      />
+                      <span style={{ fontSize: 12.5, color: "var(--muted)" }}>điểm sẽ bị trừ</span>
+                      <button
+                        type="button"
+                        className="btn-block"
+                        style={{ marginLeft: "auto", opacity: markingViolation ? 0.6 : 1 }}
+                        disabled={markingViolation}
+                        onClick={handleMarkViolation}
+                      >
+                        {markingViolation ? "Đang xử lý…" : "➖ Trừ điểm"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <hr style={{ margin: "22px 0", borderTop: "1px solid var(--border)" }} />
+
+                  <div className="form-group">
+                    <label className="form-label" style={{ color: "var(--navy)", fontWeight: "bold", fontSize: "13px", marginBottom: 12, display: "block" }}>
+                      📋 Lịch sử vi phạm ({violations.length})
+                    </label>
+                    {violations.length === 0 ? (
+                      <div style={{ padding: 18, textAlign: "center", fontSize: 13, color: "var(--muted)", background: "#F9F8F6", border: "1px dashed var(--border)", borderRadius: 10 }}>
+                        Sinh viên này chưa có vi phạm nào.
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 220, overflowY: "auto" }}>
+                        {violations.map((v) => (
+                          <div key={v._id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 14px", border: "1px solid var(--border)", borderRadius: 10, background: "#FCFBF9" }}>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: 13.5, fontWeight: 500, color: "var(--navy)" }}>{v.reason}</div>
+                              <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 3 }}>
+                                {new Date(v.createdAt).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                                {v.markedBy?.fullName && ` · bởi ${v.markedBy.fullName}`}
+                              </div>
+                            </div>
+                            <div style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: "#dc2626", whiteSpace: "nowrap" }}>-{v.points}</div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>

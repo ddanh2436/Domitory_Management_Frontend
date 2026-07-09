@@ -98,6 +98,12 @@ const Icons = {
       <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" strokeWidth={1.8} />
     </svg>
   ),
+  shield: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9.5 12l1.8 1.8L15 10" />
+    </svg>
+  ),
 };
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
@@ -255,6 +261,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             <NavItem icon={Icons.user} label="Hồ sơ cá nhân" href="/student/profile" active={pathname.startsWith("/student/profile")} />
             <NavItem icon={Icons.bell} label="Thông báo" href="/student/notifications" active={pathname.startsWith("/student/notifications")} badge={unreadNotifications} />
             <NavItem icon={Icons.wrench} label="Yêu cầu sửa chữa" href="/student/maintenance" active={pathname.startsWith("/student/maintenance")} />
+            <NavItem icon={Icons.shield} label="Nội quy KTX" href="/student/rules" active={pathname.startsWith("/student/rules")} />
           </nav>
 
           <div className="st-sb-footer">
