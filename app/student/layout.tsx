@@ -271,7 +271,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
         <div className="st-main">
           {/* HEADER CHỨA CHUÔNG THÔNG BÁO (Kính mờ) */}
-          <header className="sticky top-0 z-40 h-20 px-8 flex items-center justify-end bg-[#F2EFE9]/80 backdrop-blur-md">
+          <header className="sticky top-0 z-40 h-20 pl-8 pr-16 flex items-center justify-end bg-[#F2EFE9]/80 backdrop-blur-md">
             <NotificationBell />
           </header>
 

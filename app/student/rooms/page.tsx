@@ -62,7 +62,6 @@ export default function StudentRoomsPage() {
   const [room, setRoom] = useState<RoomData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  // THÊM MỚI: State để nhận diện việc sinh viên chưa có phòng
   const [hasNoRoom, setHasNoRoom] = useState(false); 
 
   useEffect(() => {
@@ -76,7 +75,6 @@ export default function StudentRoomsPage() {
         const payload = await response.json();
 
         if (!response.ok) {
-          // THÊM MỚI: Nếu lỗi là 404 (Không tìm thấy phòng do chưa đăng ký) -> Hiện giao diện "Mời đăng ký"
           if (response.status === 404) {
             setHasNoRoom(true);
           } else {
@@ -110,20 +108,29 @@ export default function StudentRoomsPage() {
         .room-title { font-family: 'Fraunces', serif; font-size: 34px; line-height: 1.05; margin: 8px 0 10px; letter-spacing: -0.6px; }
         .room-subtitle { max-width: 700px; color: rgba(255,255,255,0.72); font-size: 14px; line-height: 1.6; }
         .room-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); font-size: 12px; font-weight: 700; letter-spacing: 0.02em; }
-        .room-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; }
+        
+        /* Đã gỡ bỏ chia cột cho room-layout để tràn toàn màn hình */
+        .room-layout { display: block; }
+        
         .panel { background: #fff; border: 1px solid rgba(13,27,42,0.09); border-radius: 20px; padding: 24px; box-shadow: 0 10px 24px rgba(13,27,42,0.04); }
         .panel-title { font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 18px; color: #0D1B2A; }
-        .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 20px; }
+        
+        /* Cấu hình lại các stat-grid và room-meta chia 4 cột giãn đều full bề ngang */
+        .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin-bottom: 20px; }
         .stat { background: #f8fafc; border: 1px solid rgba(13,27,42,0.08); border-radius: 16px; padding: 16px; }
         .stat__label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #8A9BAD; margin-bottom: 6px; }
         .stat__value { font-size: 18px; font-weight: 700; color: #0D1B2A; }
-        .room-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
-        .meta-item { padding: 14px 16px; border-radius: 14px; background: #fffdf8; border: 1px solid rgba(201,168,76,0.18); display: flex; justify-content: space-between; gap: 16px; }
+        
+        .room-meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin-top: 8px; }
+        .meta-item { padding: 14px 16px; border-radius: 14px; background: #fffdf8; border: 1px solid rgba(201,168,76,0.18); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; text-align: center; }
         .meta-item span:first-child { color: #64748b; font-size: 13px; }
-        .meta-item span:last-child { color: #0D1B2A; font-weight: 700; text-align: right; }
+        .meta-item span:last-child { color: #0D1B2A; font-weight: 700; font-size: 16px; }
+        
         .chips { display: flex; flex-wrap: wrap; gap: 10px; }
         .chip { padding: 8px 12px; border-radius: 999px; background: rgba(13,27,42,0.04); border: 1px solid rgba(13,27,42,0.08); color: #334155; font-size: 13px; font-weight: 600; }
-        .occupant-list { display: grid; gap: 14px; }
+        
+        /* Chia lại danh sách người ở thành 2 cột cho đẹp do đã có không gian rộng */
+        .occupant-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
         .occupant { border: 1px solid rgba(13,27,42,0.08); border-radius: 18px; padding: 16px; display: grid; grid-template-columns: auto 1fr; gap: 14px; background: linear-gradient(180deg, #fff, #fcfcfb); }
         .avatar { width: 58px; height: 58px; border-radius: 18px; overflow: hidden; background: linear-gradient(135deg, #0D1B2A, #284766); color: #C9A84C; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; font-size: 22px; }
         .occupant-name { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
@@ -133,15 +140,21 @@ export default function StudentRoomsPage() {
         .status { display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
         .status--active { background: rgba(34,197,94,0.12); color: #16a34a; }
         .status--warning { background: rgba(245,158,11,0.12); color: #d97706; }
-        .side-card { display: grid; gap: 12px; }
-        .side-line { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(13,27,42,0.08); font-size: 14px; }
-        .side-line:last-child { border-bottom: 0; padding-bottom: 0; }
-        .side-line span:first-child { color: #64748b; }
-        .side-line span:last-child { color: #0D1B2A; font-weight: 700; text-align: right; }
         .error-box { background: #fff; border: 1px solid rgba(239,68,68,0.18); color: #b91c1c; border-radius: 16px; padding: 18px; }
         .loading-box { padding: 54px; text-align: center; color: #64748b; }
-        @media (max-width: 960px) { .room-layout { grid-template-columns: 1fr; } .stat-grid, .room-meta, .occupant-grid { grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 640px) { .room-page { padding-top: 12px; } .room-title { font-size: 26px; } .stat-grid, .room-meta, .occupant-grid { grid-template-columns: 1fr; } .room-hero { border-radius: 20px; padding: 22px; } .panel { padding: 18px; } }
+        
+        /* Responsive để tự động rớt dòng khi co nhỏ màn hình */
+        @media (max-width: 960px) { 
+          .stat-grid, .room-meta, .occupant-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } 
+          .occupant-grid { grid-template-columns: 1fr; } 
+        }
+        @media (max-width: 640px) { 
+          .room-page { padding-top: 12px; } 
+          .room-title { font-size: 26px; } 
+          .stat-grid, .room-meta, .occupant-list, .occupant-grid { grid-template-columns: 1fr; } 
+          .room-hero { border-radius: 20px; padding: 22px; } 
+          .panel { padding: 18px; } 
+        }
       `}</style>
 
       <div className="room-page">
@@ -153,7 +166,7 @@ export default function StudentRoomsPage() {
                 {Icons.back} Về tổng quan
               </Link>
               <h1 className="room-title">Phòng của tôi</h1>
-              <p className="room-subtitle">Chỉ hiển thị thông tin phòng mà bạn đang được phân. Danh sách bên dưới là các cư dân cùng phòng với quyền riêng tư được giữ đúng theo chính sách.</p>
+              <p className="room-subtitle">Chỉ hiển thị thôngত্তি tin phòng mà bạn đang được phân. Danh sách bên dưới là các cư dân cùng phòng với quyền riêng tư được giữ đúng theo chính sách.</p>
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <div className="room-chip">{Icons.room} Bảo mật theo vai trò</div>
@@ -165,7 +178,6 @@ export default function StudentRoomsPage() {
         {loading ? (
           <div className="panel loading-box">Đang tải thông tin phòng và danh sách người ở cùng...</div>
         ) : hasNoRoom ? (
-          /* THÊM MỚI: Giao diện trống thân thiện mời đặt phòng */
           <div className="panel flex flex-col items-center text-center py-16 px-6">
             <div className="w-20 h-20 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-6">
               <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
@@ -177,7 +189,6 @@ export default function StudentRoomsPage() {
               Bạn chưa có thông tin phòng ở trong hệ thống. Hãy xem danh sách các phòng đang còn trống và đăng ký để bắt đầu trải nghiệm lưu trú nhé!
             </p>
             <div className="flex gap-4">
-              {/* Nút bấm dẫn tới trang /student/book-room vừa code lúc nãy */}
               <Link 
                 href="/student/book-room" 
                 className="px-6 py-3 bg-[#0D1B2A] hover:bg-[#1f3b5c] text-white font-semibold rounded-xl transition-colors shadow-lg shadow-blue-900/20"
@@ -212,14 +223,14 @@ export default function StudentRoomsPage() {
                 <div className="meta-item"><span>Hệ thống kiểm soát</span><span>{room.status === "MAINTENANCE" ? "Bảo trì" : "Hoạt động"}</span></div>
               </div>
 
-              <div style={{ marginTop: 20 }}>
+              <div style={{ marginTop: 24 }}>
                 <div className="panel-title" style={{ marginBottom: 12 }}>Tiện ích</div>
                 <div className="chips">
                   {room.facilities.map((facility) => <span key={facility} className="chip">{facility}</span>)}
                 </div>
               </div>
 
-              <div style={{ marginTop: 24 }}>
+              <div style={{ marginTop: 32 }}>
                 <div className="panel-title" style={{ marginBottom: 12 }}>Danh sách cư dân cùng phòng</div>
                 <div className="occupant-list">
                   {room.occupants.map((occupant, index) => (
@@ -247,20 +258,6 @@ export default function StudentRoomsPage() {
                 </div>
               </div>
             </section>
-
-            <aside className="panel">
-              <h2 className="panel-title">Thông tin bảo mật</h2>
-              <div className="side-card">
-                <div className="side-line"><span>Quyền truy cập</span><span>Chỉ phòng hiện tại</span></div>
-                <div className="side-line"><span>Kiểm tra backend</span><span>Đã bật</span></div>
-                <div className="side-line"><span>Contact được phép xem</span><span>Chỉ khi cư dân cho phép</span></div>
-                <div className="side-line"><span>Người lạ trong hệ thống</span><span>Bị chặn</span></div>
-              </div>
-
-              <div style={{ marginTop: 20, padding: 16, borderRadius: 16, background: "#fff7ed", border: "1px solid #fed7aa", color: "#9a3412", fontSize: 13, lineHeight: 1.6 }}>
-                Thông tin liên hệ chỉ hiển thị khi chính cư dân đó cho phép. Các yêu cầu không đúng quyền sẽ bị từ chối và ghi log ở lớp API nội bộ.
-              </div>
-            </aside>
           </div>
         ) : null}
       </div>
