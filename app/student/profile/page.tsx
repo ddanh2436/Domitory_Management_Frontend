@@ -10,7 +10,16 @@ interface StudentProfile {
   phone?: string;
   cccd?: string;
   avatar?: string;
+  behaviorScore?: number;
   room?: { name: string; building: string };
+}
+
+interface Violation {
+  _id: string;
+  reason: string;
+  points: number;
+  scoreAfter?: number;
+  createdAt: string;
 }
 
 const CameraIcon = (
@@ -22,6 +31,7 @@ const CameraIcon = (
 
 export default function StudentProfilePage() {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
+  const [violations, setViolations] = useState<Violation[]>([]);
   const [formData, setFormData] = useState({ phone: "", cccd: "", avatar: "" });
   const [loading, setLoading] = useState(true);
   const [alertMsg, setAlertMsg] = useState({ text: "", type: "" });
@@ -29,13 +39,22 @@ export default function StudentProfilePage() {
   const loadProfile = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/api/users/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const [res, violRes] = await Promise.all([
+        fetch("http://localhost:3001/api/users/profile", { headers }),
+        fetch("http://localhost:3001/api/violations/me", { headers }),
+      ]);
+
       if (res.ok) {
         const data = await res.json();
         setProfile(data);
         setFormData({ phone: data.phone || "", cccd: data.cccd || "", avatar: data.avatar || "" });
+      }
+
+      if (violRes.ok) {
+        const vData = await violRes.json();
+        if (Array.isArray(vData)) setViolations(vData);
       }
     } catch (error) {
       console.error("Lỗi tải thông tin:", error);
@@ -120,6 +139,25 @@ export default function StudentProfilePage() {
         .profile-alert--info    { background: var(--gold-dim); color: #7A5E1A; border-color: var(--gold-b); }
         .profile-alert--error   { background: rgba(239,68,68,.08); color: #b91c1c; border-color: rgba(239,68,68,.22); }
 
+        .behavior-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-top: 24px; box-shadow: 0 4px 20px rgba(13,27,42,0.03); }
+        .behavior-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+        .behavior-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--navy); }
+        .behavior-sub { font-size: 13px; color: var(--muted); margin-top: 4px; max-width: 480px; line-height: 1.6; }
+        .behavior-score { font-family: 'Fraunces', serif; font-size: 42px; font-weight: 700; line-height: 1; letter-spacing: -1px; white-space: nowrap; }
+        .behavior-score-max { font-size: 16px; color: var(--muted); font-weight: 400; margin-left: 2px; }
+        .behavior-bar { height: 10px; border-radius: 100px; background: #EDEBE6; overflow: hidden; }
+        .behavior-bar-fill { height: 100%; border-radius: 100px; transition: width 0.5s ease; }
+        .behavior-tier { display: inline-block; margin-top: 12px; padding: 4px 12px; border-radius: 100px; font-size: 12.5px; font-weight: 600; }
+        .behavior-warning { margin-top: 18px; display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; border-radius: 12px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.22); color: #b91c1c; font-size: 13px; line-height: 1.6; }
+        .behavior-warning svg { flex-shrink: 0; margin-top: 1px; }
+        .behavior-list-title { margin-top: 24px; margin-bottom: 12px; font-size: 13px; font-weight: 600; color: var(--navy); text-transform: uppercase; letter-spacing: 0.04em; }
+        .behavior-empty { padding: 20px; text-align: center; font-size: 13.5px; color: var(--muted); background: #F9F8F6; border: 1px dashed var(--border); border-radius: 12px; }
+        .behavior-list { display: flex; flex-direction: column; gap: 10px; }
+        .behavior-item { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: #FCFBF9; }
+        .behavior-item-reason { font-size: 14px; font-weight: 500; color: var(--navy); line-height: 1.4; }
+        .behavior-item-time { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+        .behavior-item-points { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; color: #dc2626; white-space: nowrap; }
+
         @media (max-width: 760px) {
           .profile-card { flex-direction: column; }
           .profile-left { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 32px 24px; }
@@ -201,6 +239,77 @@ export default function StudentProfilePage() {
             <button type="submit" className="btn-save">Cập nhật thay đổi</button>
           </form>
         </div>
+
+        {/* ─── ĐIỂM HÀNH VI / NỀ NẾP ─────────────────────────────── */}
+        {(() => {
+          const score = profile?.behaviorScore ?? 100;
+          const tier =
+            score >= 80
+              ? { label: "Tốt", color: "#16a34a", bg: "rgba(34,197,94,0.1)" }
+              : score >= 60
+              ? { label: "Khá", color: "#C9A84C", bg: "rgba(201,168,76,0.14)" }
+              : { label: "Cần cải thiện", color: "#dc2626", bg: "rgba(239,68,68,0.1)" };
+          return (
+            <div className="behavior-card">
+              <div className="behavior-head">
+                <div>
+                  <div className="behavior-title">Điểm hành vi &amp; nề nếp</div>
+                  <div className="behavior-sub">
+                    Điểm khởi đầu 100. Ban quản lý sẽ trừ điểm khi bạn vi phạm nội quy ký túc xá.
+                  </div>
+                </div>
+                <div className="behavior-score" style={{ color: tier.color }}>
+                  {score}
+                  <span className="behavior-score-max">/100</span>
+                </div>
+              </div>
+
+              <div className="behavior-bar">
+                <div
+                  className="behavior-bar-fill"
+                  style={{ width: `${score}%`, background: tier.color }}
+                />
+              </div>
+              <div className="behavior-tier" style={{ color: tier.color, background: tier.bg }}>
+                Xếp loại: {tier.label}
+              </div>
+
+              {score < 60 && (
+                <div className="behavior-warning">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>
+                    <strong>Cảnh báo:</strong> Điểm hành vi của bạn đang dưới 60. Vui lòng chấp hành nghiêm nội quy để tránh bị xử lý kỷ luật hoặc chấm dứt hợp đồng lưu trú.
+                  </span>
+                </div>
+              )}
+
+              <div className="behavior-list-title">Lịch sử vi phạm</div>
+              {violations.length === 0 ? (
+                <div className="behavior-empty">Bạn chưa có vi phạm nào. Hãy tiếp tục giữ vững nề nếp! 🎉</div>
+              ) : (
+                <div className="behavior-list">
+                  {violations.map((v) => (
+                    <div key={v._id} className="behavior-item">
+                      <div className="behavior-item-main">
+                        <div className="behavior-item-reason">{v.reason}</div>
+                        <div className="behavior-item-time">
+                          {new Date(v.createdAt).toLocaleString("vi-VN", {
+                            day: "2-digit", month: "2-digit", year: "numeric",
+                            hour: "2-digit", minute: "2-digit",
+                          })}
+                          {typeof v.scoreAfter === "number" && ` · Còn ${v.scoreAfter}/100`}
+                        </div>
+                      </div>
+                      <div className="behavior-item-points">-{v.points}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </>
   );
