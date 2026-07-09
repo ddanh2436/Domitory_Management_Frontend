@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiClient } from "../../utils/apiClient"; // TÍCH HỢP APICLIENT VÀO ĐÂY
 import AvatarLightbox from "../../components/AvatarLightbox";
+import { useToast } from "../../components/ToastProvider";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Student {
@@ -50,10 +51,17 @@ const Icons = {
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function AdminStudentsPage() {
+  const toast = useToast();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [alertMsg, setAlertMsg] = useState({ text: "", type: "" });
+  // Cầu nối: giữ nguyên các lệnh gọi setAlertMsg({text,type}) sẵn có, chuyển sang toast đẹp dùng chung
+  const setAlertMsg = ({ text, type }: { text: string; type: string }) => {
+    if (!text) return;
+    if (type === "success") toast.success(text);
+    else if (type === "info") toast.info(text);
+    else toast.error(text);
+  };
   
   const [activeTab, setActiveTab] = useState<"ACTIVE" | "LOCKED">("ACTIVE");
 
@@ -168,7 +176,7 @@ export default function AdminStudentsPage() {
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      alert("Vui lòng chọn ảnh nhỏ hơn 2MB!");
+      toast.error("Vui lòng chọn ảnh nhỏ hơn 2MB!");
       return;
     }
 
@@ -217,7 +225,7 @@ export default function AdminStudentsPage() {
   const handleBlockUser = async () => {
     if (!selectedStudent) return;
     if (!blockReasonInput.trim()) {
-      alert("Vui lòng nhập lý do khóa tài khoản!");
+      toast.error("Vui lòng nhập lý do khóa tài khoản!");
       return;
     }
 
@@ -358,11 +366,6 @@ export default function AdminStudentsPage() {
         .animate-fadeIn { animation: fadeIn 0.2s ease-out forwards; }
       `}</style>
 
-      {alertMsg.text && (
-        <div className={`p-4 rounded-xl font-medium mb-6 border ${alertMsg.type === 'success' ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200'}`}>
-          {alertMsg.text}
-        </div>
-      )}
 
       <div className="panel">
         <div className="panel__header">

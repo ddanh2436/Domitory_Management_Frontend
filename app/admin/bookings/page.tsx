@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "../../components/ToastProvider";
 
 interface Booking {
   _id: string;
@@ -13,7 +14,7 @@ interface Booking {
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [actionMsg, setActionMsg] = useState({ text: "", type: "" });
+  const toast = useToast();
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -48,13 +49,17 @@ export default function AdminBookingsPage() {
       
       const data = await response.json();
       if (response.ok) {
-        setActionMsg({ text: `Đã ${action === 'approve' ? 'duyệt' : 'từ chối'} đơn thành công!`, type: "success" });
-        fetchBookings(); 
+        if (action === 'approve') {
+          toast.success("Đơn đăng ký đã được duyệt, hợp đồng đã được tạo cho sinh viên.", "Đã duyệt đơn 🎉");
+        } else {
+          toast.success("Đã từ chối đơn đăng ký lưu trú này.", "Đã từ chối");
+        }
+        fetchBookings();
       } else {
-        setActionMsg({ text: data.message, type: "error" });
+        toast.error(data.message || "Không xử lý được đơn, vui lòng thử lại.");
       }
     } catch (error) {
-      setActionMsg({ text: "Lỗi kết nối máy chủ", type: "error" });
+      toast.error("Không thể kết nối đến máy chủ.");
     }
   };
 
@@ -153,16 +158,6 @@ export default function AdminBookingsPage() {
         .badge--approved { background: rgba(34,197,94,0.12); color: #16a34a; }
         .badge--rejected { background: rgba(239,68,68,0.12); color: #dc2626; }
       `}</style>
-
-      {actionMsg.text && (
-        <div className={`mb-6 p-5 rounded-2xl font-bold text-sm border ${
-          actionMsg.type === 'success' 
-            ? 'bg-green-50 text-green-800 border-green-200' 
-            : 'bg-red-50 text-red-800 border-red-200'
-        }`}>
-          {actionMsg.text}
-        </div>
-      )}
 
       <div className="panel">
         <h2 className="panel-title">Danh sách Đơn đăng ký lưu trú</h2>

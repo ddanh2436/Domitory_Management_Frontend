@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { apiClient } from "../../utils/apiClient"; // THÊM IMPORT apiClient
+import { useToast } from "../../components/ToastProvider";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
@@ -130,17 +131,6 @@ function ConfirmModal({ payload, onConfirm, onCancel, loading }: { payload: Conf
   );
 }
 
-// ─── Toast ────────────────────────────────────────────────────────────────────
-function Toast({ type, text, onClose }: { type: "success" | "error"; text: string; onClose: () => void; }) {
-  useEffect(() => { const t = setTimeout(onClose, 4000); return () => clearTimeout(t); }, [onClose]);
-  return (
-    <div className={`am-toast am-toast--${type}`}>
-      <span className="am-toast-icon">{type === "success" ? I.check : I.x}</span>
-      <span className="am-toast-text">{text}</span>
-      <button className="am-toast-close" onClick={onClose}>{I.x}</button>
-    </div>
-  );
-}
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 function StatCard({ label, value, accent = false, valueColor }: { label: string; value: number | string; accent?: boolean; valueColor?: string; }) {
@@ -262,7 +252,7 @@ export default function AdminMaintenancePage() {
   const [loading, setLoading] = useState(true);
   const [confirm, setConfirm] = useState<ConfirmPayload | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [toast, setToast] = useState<{ type: "success" | "error"; text: string; } | null>(null);
+  const toast = useToast();
   const [activeFilter, setActiveFilter] = useState<"ALL" | Status>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -298,13 +288,19 @@ export default function AdminMaintenancePage() {
       const data = await res.json();
       
       if (res.ok) {
-        setToast({ type: "success", text: "Cập nhật tiến độ thành công!" });
+        if (confirm.nextStatus === "RESOLVED") {
+          toast.success("Đã đánh dấu hoàn thành và gửi thông báo cho sinh viên.", "Sửa chữa hoàn tất 🛠️");
+        } else if (confirm.nextStatus === "REJECTED") {
+          toast.success("Đã từ chối yêu cầu bảo trì này.", "Đã từ chối");
+        } else {
+          toast.success("Cập nhật tiến độ yêu cầu thành công!");
+        }
         setRequests((prev) => prev.map((r) => r._id === confirm.requestId ? { ...r, status: confirm.nextStatus, resolvedAt: confirm.nextStatus === "RESOLVED" ? new Date().toISOString() : r.resolvedAt } : r ));
       } else {
-        setToast({ type: "error", text: data.message || "Có lỗi xảy ra" });
+        toast.error(data.message || "Có lỗi xảy ra, vui lòng thử lại.");
       }
     } catch {
-      setToast({ type: "error", text: "Lỗi kết nối máy chủ" });
+      toast.error("Không thể kết nối đến máy chủ.");
     } finally {
       setProcessing(false);
       setConfirm(null);
@@ -508,7 +504,6 @@ export default function AdminMaintenancePage() {
 
       {/* Modals & Toasts */}
       {confirm && <ConfirmModal payload={confirm} onConfirm={handleConfirm} onCancel={() => setConfirm(null)} loading={processing} />}
-      {toast && <Toast type={toast.type} text={toast.text} onClose={() => setToast(null)} />}
     </div>
   );
 }

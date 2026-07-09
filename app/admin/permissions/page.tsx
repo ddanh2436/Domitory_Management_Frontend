@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useToast } from "../../components/ToastProvider";
 
 type AccountRole =
   | "ADMIN"
@@ -59,6 +60,7 @@ const SearchIcon = (
 );
 
 export default function AdminPermissionsPage() {
+  const toast = useToast();
   const [accounts, setAccounts] = useState<AccountAccess[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -133,8 +135,11 @@ export default function AdminPermissionsPage() {
       setAccounts((current) =>
         current.map((account) => account.id === id ? updatedAccount : account)
       );
+      toast.success("Đã cập nhật phân quyền tài khoản thành công.", "Cập nhật thành công");
     } catch (error: unknown) {
-      setErrorMsg(error instanceof Error ? error.message : "Không thể cập nhật phân quyền.");
+      const msg = error instanceof Error ? error.message : "Không thể cập nhật phân quyền.";
+      setErrorMsg(msg);
+      toast.error(msg);
     } finally {
       setSavingAccountId(null);
     }

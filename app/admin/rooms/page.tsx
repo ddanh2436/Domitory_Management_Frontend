@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiClient } from "../../utils/apiClient";
 import AvatarLightbox from "../../components/AvatarLightbox";
+import { useToast } from "../../components/ToastProvider";
 
 interface Occupant {
   userId: string;
@@ -36,6 +37,7 @@ interface Room {
 }
 
 export default function AdminRoomsPage() {
+  const toast = useToast();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
@@ -112,12 +114,13 @@ export default function AdminRoomsPage() {
         setIsAddModalOpen(false);
         setNewRoom({ name: "", building: "", floor: 1, capacity: 4, price: 0, facilities: "" });
         await fetchRooms(); // Tải lại danh sách
+        toast.success("Đã thêm phòng mới vào hệ thống.", "Thêm phòng thành công");
       } else {
         const errorData = await response.json();
-        alert(`Lỗi thêm phòng: ${errorData.message}`);
+        toast.error(errorData.message || "Không thể thêm phòng.");
       }
     } catch (err) {
-      alert("Đã xảy ra lỗi khi kết nối với server.");
+      toast.error("Đã xảy ra lỗi khi kết nối với server.");
     } finally {
       setIsSubmitting(false);
     }
@@ -134,15 +137,15 @@ export default function AdminRoomsPage() {
     try {
       const response = await apiClient.delete(`/rooms/${selectedRoomId}`);
       if (response.ok) {
-        alert("Đã xóa phòng thành công!");
+        toast.success(`Đã xóa phòng ${roomName} khỏi hệ thống.`, "Xóa phòng thành công");
         setSelectedRoomId(null); // Xóa selection
         fetchRooms(); // Tải lại danh sách
       } else {
         const errorData = await response.json();
-        alert(`Lỗi xóa phòng: ${errorData.message}`);
+        toast.error(errorData.message || "Không thể xóa phòng.");
       }
     } catch (err) {
-      alert("Đã xảy ra lỗi khi kết nối với server.");
+      toast.error("Đã xảy ra lỗi khi kết nối với server.");
     }
   };
 
