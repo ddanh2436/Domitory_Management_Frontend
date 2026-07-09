@@ -18,6 +18,8 @@ interface MaintenanceRequest {
   status: Status;
   createdAt: string;
   resolvedAt?: string;
+  rating?: number;
+  ratedAt?: string;
 }
 
 type NextAction = {
@@ -150,6 +152,19 @@ function StatCard({ label, value, accent = false, valueColor }: { label: string;
   );
 }
 
+// ─── Hiển thị sao đánh giá (chỉ đọc) ─────────────────────────────────────────
+function RatingStars({ value }: { value: number }) {
+  return (
+    <span style={{ display: "inline-flex", gap: 1, alignItems: "center" }} aria-label={`${value} trên 5 sao`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <svg key={n} width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style={{ color: n <= value ? "#f59e0b" : "#d4d4d8" }}>
+          <path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.11 6.47L12 17.4l-5.81 3.05 1.11-6.47-4.7-4.58 6.5-.95L12 2.5z" />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
 // ─── Request Card ─────────────────────────────────────────────────────────────
 function RequestCard({ req, onAction }: { req: MaintenanceRequest; onAction: (payload: ConfirmPayload) => void; }) {
   const p = PRIORITY_CFG[req.priority];
@@ -200,6 +215,14 @@ function RequestCard({ req, onAction }: { req: MaintenanceRequest; onAction: (pa
           {req.resolvedAt && (
             <span className="am-card-resolved">{I.check} {new Date(req.resolvedAt).toLocaleDateString("vi-VN")}</span>
           )}
+          {req.rating ? (
+            <span className="am-card-time" title={`Sinh viên đánh giá ${req.rating}/5 sao`}>
+              <RatingStars value={req.rating} />
+              <strong style={{ color: "#b45309", marginLeft: 3 }}>{req.rating}/5</strong>
+            </span>
+          ) : req.status === "RESOLVED" ? (
+            <span className="am-card-time" style={{ fontStyle: "italic", opacity: 0.7 }}>Chưa đánh giá</span>
+          ) : null}
         </div>
 
         <div className="am-card-actions">

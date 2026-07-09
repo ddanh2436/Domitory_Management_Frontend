@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { io, Socket } from "socket.io-client";
 import { apiClient } from "../utils/apiClient"; // Bổ sung import đúng quy định
 
 interface Profile {
@@ -10,12 +11,24 @@ interface Profile {
   email: string;
   role: string;
   avatar?: string;
+  createdAt?: string;
   room?: {
     name: string;
     building: string;
     floor: number;
     contractEnd?: string;
   };
+}
+
+type ActivityColor = "green" | "gold" | "blue" | "rose" | "muted";
+
+interface Activity {
+  id: string;
+  icon: React.ReactNode;
+  color: ActivityColor;
+  title: string;
+  time: number; // mốc thời gian (ms) để sắp xếp
+  live?: boolean; // sự kiện vừa đến qua realtime
 }
 
 function FeatureCard({
@@ -52,28 +65,6 @@ function FeatureCard({
     <Link href={href ?? "#"} style={{ textDecoration: "none" }}>
       {content}
     </Link>
-  );
-}
-
-function ActivityItem({
-  icon,
-  title,
-  time,
-  color,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  time: string;
-  color: string;
-}) {
-  return (
-    <div className="st-activity-item">
-      <div className={`st-activity-dot st-activity-dot--${color}`}>{icon}</div>
-      <div className="st-activity-content">
-        <span className="st-activity-title">{title}</span>
-        <span className="st-activity-time">{time}</span>
-      </div>
-    </div>
   );
 }
 
@@ -148,24 +139,160 @@ const Icons = {
   ),
 };
 
+// ─── Helpers cho nhật ký hoạt động ─────────────────────────────────────────────
+function timeAgo(ts: number): string {
+  const sec = Math.round((Date.now() - ts) / 1000);
+  if (sec < 60) return "Vừa xong";
+  const min = Math.round(sec / 60);
+  if (min < 60) return `${min} phút trước`;
+  const hour = Math.round(min / 60);
+  if (hour < 24) return `${hour} giờ trước`;
+  const day = Math.round(hour / 24);
+  if (day < 7) return `${day} ngày trước`;
+  return new Date(ts).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+// Map loại thông báo realtime -> icon + màu
+function metaForType(type?: string): { icon: React.ReactNode; color: ActivityColor } {
+  switch ((type || "").toUpperCase()) {
+    case "BOOKING": return { icon: Icons.doc, color: "gold" };
+    case "INVOICE": return { icon: Icons.invoice, color: "blue" };
+    case "MAINTENANCE": return { icon: Icons.wrench, color: "rose" };
+    default: return { icon: Icons.info, color: "muted" };
+  }
+}
+
+interface BookingLite { _id: string; status: string; createdAt: string; room?: { name?: string } }
+interface MaintenanceLite { _id: string; title: string; status: string; createdAt: string; resolvedAt?: string; rating?: number; ratedAt?: string }
+
+// Dựng danh sách hoạt động THẬT từ dữ liệu tài khoản
+function buildActivities(
+  profile: Profile | null,
+  bookings: BookingLite[],
+  maintenance: MaintenanceLite[],
+): Activity[] {
+  const items: Activity[] = [];
+
+  if (profile?.createdAt) {
+    items.push({
+      id: "account-created",
+      icon: Icons.check,
+      color: "green",
+      title: "Tài khoản của bạn được khởi tạo trên hệ thống",
+      time: new Date(profile.createdAt).getTime(),
+    });
+  }
+
+  bookings.forEach((b) => {
+    const roomLabel = b.room?.name ? `phòng ${b.room.name}` : "phòng";
+    let title = `Đã gửi yêu cầu đặt ${roomLabel}`;
+    let color: ActivityColor = "gold";
+    if (b.status === "APPROVED") { title = `Đơn đặt ${roomLabel} đã được duyệt`; color = "green"; }
+    else if (b.status === "REJECTED") { title = `Đơn đặt ${roomLabel} bị từ chối`; color = "rose"; }
+    else if (b.status === "CANCELLED") { title = `Bạn đã hủy đơn đặt ${roomLabel}`; color = "muted"; }
+    items.push({ id: `booking-${b._id}`, icon: Icons.doc, color, title, time: new Date(b.createdAt).getTime() });
+  });
+
+  maintenance.forEach((m) => {
+    items.push({
+      id: `maint-new-${m._id}`,
+      icon: Icons.wrench,
+      color: "blue",
+      title: `Đã gửi yêu cầu sửa chữa: "${m.title}"`,
+      time: new Date(m.createdAt).getTime(),
+    });
+    if (m.resolvedAt) {
+      items.push({
+        id: `maint-done-${m._id}`,
+        icon: Icons.check,
+        color: "green",
+        title: `Sự cố "${m.title}" đã được khắc phục xong`,
+        time: new Date(m.resolvedAt).getTime(),
+      });
+    }
+    if (m.ratedAt && m.rating) {
+      items.push({
+        id: `maint-rate-${m._id}`,
+        icon: Icons.info,
+        color: "gold",
+        title: `Bạn đã đánh giá ${m.rating}★ cho "${m.title}"`,
+        time: new Date(m.ratedAt).getTime(),
+      });
+    }
+  });
+
+  return items.sort((a, b) => b.time - a.time);
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function StudentDashboard() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const load = async () => {
       try {
-        // Cập nhật lại cho đúng Constitution, gọi qua apiClient
-        const res = await apiClient.get("/users/profile");
-        if (res.ok) setProfile(await res.json());
+        // Gọi song song hồ sơ + lịch sử đặt phòng + lịch sử sửa chữa
+        const [profileRes, bookingsRes, maintenanceRes] = await Promise.all([
+          apiClient.get("/users/profile"),
+          apiClient.get("/bookings/me"),
+          apiClient.get("/maintenance/me"),
+        ]);
+
+        let prof: Profile | null = null;
+        if (profileRes.ok) {
+          prof = await profileRes.json();
+          setProfile(prof);
+        }
+
+        const bookings = bookingsRes.ok ? await bookingsRes.json() : [];
+        const maintenance = maintenanceRes.ok ? await maintenanceRes.json() : [];
+
+        setActivities(
+          buildActivities(
+            prof,
+            Array.isArray(bookings) ? bookings : [],
+            Array.isArray(maintenance) ? maintenance : [],
+          ),
+        );
       } catch (e) {
         console.error(e);
       } finally {
         setLoading(false);
       }
     };
-    fetchProfile();
+    void load();
+  }, []);
+
+  // Realtime: mỗi khi có sự kiện mới (đơn được duyệt, hóa đơn, bảo trì…) thêm vào đầu nhật ký
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const socketUrl = rawApiUrl.replace(/\/api$/, "");
+    socketRef.current = io(socketUrl, { auth: { token } });
+
+    socketRef.current.on("newNotification", (n: { _id?: string; title?: string; type?: string }) => {
+      const meta = metaForType(n?.type);
+      setActivities((prev) => [
+        {
+          id: `live-${n?._id || Date.now()}`,
+          icon: meta.icon,
+          color: meta.color,
+          title: n?.title || "Có cập nhật mới trên tài khoản của bạn",
+          time: Date.now(),
+          live: true,
+        },
+        ...prev,
+      ]);
+    });
+
+    return () => {
+      socketRef.current?.disconnect();
+    };
   }, []);
 
   const firstName = profile?.fullName?.split(" ").pop() ?? "bạn";
@@ -357,12 +484,17 @@ export default function StudentDashboard() {
         }
         a .st-feat-card { display: flex; }
 
-        .st-activity-list { display: flex; flex-direction: column; }
+        .st-activity-list { display: flex; flex-direction: column; max-height: 420px; overflow-y: auto; }
         .st-activity-item {
           display: flex; align-items: flex-start; gap: 12px;
           padding: 12px 20px; border-bottom: 1px solid var(--border);
         }
         .st-activity-item:last-child { border-bottom: none; }
+        .st-activity-item--new { animation: stNewFlash 1.6s ease; }
+        @keyframes stNewFlash {
+          0%   { background: rgba(201,168,76,0.18); }
+          100% { background: transparent; }
+        }
         .st-activity-dot {
           width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
           display: flex; align-items: center; justify-content: center;
@@ -370,10 +502,26 @@ export default function StudentDashboard() {
         .st-activity-dot--green  { background: rgba(34,197,94,0.1); color: #16a34a; }
         .st-activity-dot--gold   { background: rgba(201,168,76,0.12); color: var(--gold); }
         .st-activity-dot--blue   { background: rgba(59,130,246,0.1); color: #3b82f6; }
+        .st-activity-dot--rose   { background: rgba(224,90,106,0.1); color: #E05A6A; }
         .st-activity-dot--muted  { background: rgba(13,27,42,0.06); color: var(--muted); }
         .st-activity-content { display: flex; flex-direction: column; gap: 2px; flex: 1; }
-        .st-activity-title { font-size: 13px; font-weight: 400; color: var(--navy); }
+        .st-activity-title { font-size: 13px; font-weight: 400; color: var(--navy); line-height: 1.45; }
         .st-activity-time { font-size: 11.5px; color: var(--muted); }
+
+        .st-live-badge {
+          display: inline-flex; align-items: center; gap: 6px;
+          font-size: 11px; font-weight: 500; color: #16a34a;
+          background: rgba(34,197,94,0.09); border: 1px solid rgba(34,197,94,0.2);
+          padding: 3px 10px; border-radius: 100px;
+        }
+        .st-live-dot {
+          width: 6px; height: 6px; border-radius: 50%; background: #22c55e;
+          animation: stLivePulse 1.6s ease infinite;
+        }
+        @keyframes stLivePulse {
+          0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+          50%      { opacity: 0.6; box-shadow: 0 0 0 4px rgba(34,197,94,0); }
+        }
 
         .st-notice {
           margin: 0 18px 16px;
@@ -605,31 +753,41 @@ export default function StudentDashboard() {
               <div>
                 <div className="st-panel-title">Hoạt động gần đây</div>
                 <div className="st-panel-sub">
-                  Lịch sử tương tác của bạn
+                  Nhật ký thời gian thực của tài khoản
                 </div>
               </div>
+              <span className="st-live-badge" title="Cập nhật theo thời gian thực">
+                <span className="st-live-dot" />
+                Trực tiếp
+              </span>
             </div>
             <div className="st-activity-list">
-              <ActivityItem
-                icon={Icons.check}
-                color="green"
-                title="Tài khoản đã được kích hoạt thành công"
-                time="Hôm nay"
-              />
-              <ActivityItem
-                icon={Icons.info}
-                color="blue"
-                title="Hồ sơ sinh viên đã được xác minh"
-                time="Hôm nay"
-              />
-
-              {!profile?.room && !loading && (
-                <ActivityItem
-                  icon={Icons.building}
-                  color="muted"
-                  title="Chưa có phòng — tìm và đặt phòng để bắt đầu"
-                  time="—"
-                />
+              {loading ? (
+                [0, 1, 2].map((i) => (
+                  <div key={i} className="st-activity-item">
+                    <Skeleton w={30} h={30} r={8} />
+                    <div className="st-activity-content">
+                      <Skeleton w={180} h={13} r={3} />
+                      <div style={{ marginTop: 5 }}>
+                        <Skeleton w={70} h={11} r={3} />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : activities.length > 0 ? (
+                activities.slice(0, 8).map((a) => (
+                  <div key={a.id} className={`st-activity-item ${a.live ? "st-activity-item--new" : ""}`}>
+                    <div className={`st-activity-dot st-activity-dot--${a.color}`}>{a.icon}</div>
+                    <div className="st-activity-content">
+                      <span className="st-activity-title">{a.title}</span>
+                      <span className="st-activity-time">{timeAgo(a.time)}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div style={{ textAlign: "center", padding: "28px 20px", fontSize: 13, color: "var(--muted)" }}>
+                  Chưa có hoạt động nào. Hãy bắt đầu bằng việc tìm và đặt phòng.
+                </div>
               )}
             </div>
           </div>
