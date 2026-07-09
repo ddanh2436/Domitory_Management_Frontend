@@ -59,70 +59,178 @@ export default function AdminBookingsPage() {
   };
 
   return (
-    <div className="w-full space-y-8 text-slate-800 font-sans p-6 md:p-8">
+    <div className="adm-page px-6">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=DM+Sans:wght@400;500;700&display=swap');
+        
+        .adm-page { 
+          max-width: 1180px; 
+          margin: 0 auto; 
+          padding-top: 24px;
+          padding-bottom: 48px;
+          color: #0D1B2A; 
+          font-family: 'DM Sans', sans-serif; 
+        }
+        
+        .panel { 
+          background: #fff; 
+          border: 1px solid rgba(13,27,42,0.09); 
+          border-radius: 20px; 
+          padding: 28px 32px; 
+          box-shadow: 0 10px 24px rgba(13,27,42,0.04); 
+          overflow: hidden; 
+        }
+        
+        .panel-title { 
+          font-family: 'Fraunces', serif; 
+          font-size: 24px; 
+          font-weight: 700; 
+          color: #0D1B2A; 
+          margin-bottom: 24px; 
+          letter-spacing: -0.5px; 
+        }
+        
+        .adm-table { 
+          width: 100%; 
+          border-collapse: separate; 
+          border-spacing: 0; 
+          text-align: left; 
+        }
+        
+        .adm-table th { 
+          padding: 16px 20px; 
+          font-size: 11px; 
+          font-weight: 700; 
+          text-transform: uppercase; 
+          letter-spacing: 0.08em; 
+          color: #8A9BAD; 
+          border-bottom: 1px solid rgba(13,27,42,0.08); 
+          background: #f8fafc; 
+        }
+        
+        .adm-table th:first-child { 
+          border-top-left-radius: 12px; 
+          border-bottom-left-radius: 12px; 
+          padding-left: 24px;
+        }
+        
+        .adm-table th:last-child { 
+          border-top-right-radius: 12px; 
+          border-bottom-right-radius: 12px; 
+          text-align: center; 
+        }
+        
+        .adm-table td { 
+          padding: 20px; 
+          border-bottom: 1px solid rgba(13,27,42,0.04); 
+          vertical-align: middle; 
+        }
+        
+        .adm-table td:first-child {
+          padding-left: 24px;
+        }
+        
+        .adm-table tr:last-child td { 
+          border-bottom: none; 
+        }
+        
+        .adm-table tr:hover td { 
+          background: #fcfcfb; 
+        }
+        
+        .badge { 
+          display: inline-flex; 
+          align-items: center; 
+          padding: 6px 12px; 
+          border-radius: 999px; 
+          font-size: 11px; 
+          font-weight: 800; 
+          letter-spacing: 0.04em; 
+          text-transform: uppercase; 
+        }
+        
+        .badge--pending { background: rgba(245,158,11,0.12); color: #d97706; }
+        .badge--approved { background: rgba(34,197,94,0.12); color: #16a34a; }
+        .badge--rejected { background: rgba(239,68,68,0.12); color: #dc2626; }
+      `}</style>
+
       {actionMsg.text && (
-        <div className={`p-5 rounded-2xl font-bold text-base ${actionMsg.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+        <div className={`mb-6 p-5 rounded-2xl font-bold text-sm border ${
+          actionMsg.type === 'success' 
+            ? 'bg-green-50 text-green-800 border-green-200' 
+            : 'bg-red-50 text-red-800 border-red-200'
+        }`}>
           {actionMsg.text}
         </div>
       )}
 
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 py-6 sm:py-10">
-        
-        <div className="flex items-center justify-between mb-8">
-           {/* Ép thụt lề tiêu đề sang phải */}
-           <h2 className="text-2xl font-bold text-slate-800" style={{ paddingLeft: '32px' }}>
-             Danh sách Đơn đăng ký lưu trú
-           </h2>
-        </div>
+      <div className="panel">
+        <h2 className="panel-title">Danh sách Đơn đăng ký lưu trú</h2>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-base">
-            <thead className="bg-slate-50">
+          <table className="adm-table">
+            <thead>
               <tr>
-                {/* Ép thụt lề tên cột đầu tiên sang phải */}
-                <th className="py-5 text-left font-bold text-slate-600 rounded-tl-2xl" style={{ paddingLeft: '32px', paddingRight: '32px' }}>Sinh viên</th>
-                <th className="px-8 py-5 text-left font-bold text-slate-600">Phòng đăng ký</th>
-                <th className="px-8 py-5 text-left font-bold text-slate-600">Ngày gửi</th>
-                <th className="px-8 py-5 text-left font-bold text-slate-600">Trạng thái</th>
-                <th className="px-8 py-5 text-center font-bold text-slate-600 rounded-tr-2xl">Hành động</th>
+                <th>Sinh viên</th>
+                <th>Phòng đăng ký</th>
+                <th>Ngày gửi</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {loading ? (
-                <tr><td colSpan={5} className="text-center py-12 text-slate-500 text-lg">Đang tải dữ liệu...</td></tr>
+                <tr>
+                  <td colSpan={5} className="text-center py-16 text-[#8A9BAD] font-medium text-sm">
+                    Đang tải dữ liệu...
+                  </td>
+                </tr>
               ) : bookings.length === 0 ? (
-                <tr><td colSpan={5} className="text-center py-12 text-slate-500 text-lg">Chưa có đơn đăng ký nào.</td></tr>
+                <tr>
+                  <td colSpan={5} className="text-center py-16 text-[#8A9BAD] font-medium text-sm">
+                    Chưa có đơn đăng ký nào.
+                  </td>
+                </tr>
               ) : (
                 bookings.map((b) => (
-                  <tr key={b._id} className="hover:bg-slate-50 transition-colors">
-                    {/* Ép thụt lề dữ liệu cột đầu tiên sang phải */}
-                    <td className="py-6" style={{ paddingLeft: '32px', paddingRight: '32px' }}>
-                      <div className="font-bold text-slate-800 text-[17px]">{b.user?.fullName}</div>
-                      <div className="text-slate-500 text-sm mt-1">MSSV: {b.user?.mssv || '—'}</div>
+                  <tr key={b._id} style={{ transition: 'background-color 0.2s' }}>
+                    <td>
+                      <div className="font-bold text-[#0D1B2A] text-[15px]">{b.user?.fullName}</div>
+                      <div className="text-[#8A9BAD] text-[13px] mt-1">MSSV: {b.user?.mssv || '—'}</div>
                     </td>
-                    <td className="px-8 py-6">
-                      <div className="font-bold text-blue-600 text-[17px]">{b.room?.name}</div>
-                      <div className="text-slate-500 text-sm mt-1">Tòa {b.room?.building}</div>
+                    <td>
+                      <div className="font-bold text-[#2563eb] text-[15px]">{b.room?.name}</div>
+                      <div className="text-[#8A9BAD] text-[13px] mt-1">Tòa {b.room?.building}</div>
                     </td>
-                    <td className="px-8 py-6 text-slate-600 font-medium">
+                    <td className="text-[#334155] font-medium text-[14px]">
                       {new Date(b.createdAt).toLocaleDateString('vi-VN')}
                     </td>
-                    <td className="px-8 py-6">
-                      <span className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${
-                        b.status === 'PENDING' ? 'bg-orange-100 text-orange-700' :
-                        b.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    <td>
+                      <span className={`badge ${
+                        b.status === 'PENDING' ? 'badge--pending' :
+                        b.status === 'APPROVED' ? 'badge--approved' : 'badge--rejected'
                       }`}>
                         {b.status}
                       </span>
                     </td>
-                    <td className="px-8 py-6 text-center space-x-3">
+                    <td className="text-center space-x-2">
                       {b.status === 'PENDING' ? (
-                        <>
-                          <button onClick={() => handleAction(b._id, 'approve')} className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-bold transition-colors shadow-sm">Duyệt đơn</button>
-                          <button onClick={() => handleAction(b._id, 'reject')} className="px-5 py-2.5 bg-rose-50 text-rose-700 rounded-xl hover:bg-rose-100 font-bold border border-rose-200 transition-colors">Từ chối</button>
-                        </>
+                        <div className="flex items-center justify-center gap-2">
+                          <button 
+                            onClick={() => handleAction(b._id, 'approve')} 
+                            className="px-4 py-2 bg-[#0D1B2A] text-white rounded-lg hover:bg-[#1A2E42] font-semibold text-[13px] transition-all shadow-sm"
+                          >
+                            Duyệt
+                          </button>
+                          <button 
+                            onClick={() => handleAction(b._id, 'reject')} 
+                            className="px-4 py-2 bg-white text-[#dc2626] rounded-lg hover:bg-red-50 font-semibold text-[13px] border border-red-200 transition-all"
+                          >
+                            Từ chối
+                          </button>
+                        </div>
                       ) : (
-                        <span className="text-slate-400 italic text-sm font-medium">Đã xử lý xong</span>
+                        <span className="text-[#8A9BAD] italic text-[13px] font-medium">Đã xử lý xong</span>
                       )}
                     </td>
                   </tr>
