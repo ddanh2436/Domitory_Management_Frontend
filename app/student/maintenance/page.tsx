@@ -14,6 +14,8 @@ interface MaintenanceRequest {
   status: "PENDING" | "IN_PROGRESS" | "RESOLVED" | "REJECTED";
   createdAt: string;
   resolvedAt?: string;
+  rating?: number;
+  ratedAt?: string;
 }
 
 type Priority = MaintenanceRequest["priority"];
@@ -75,7 +77,48 @@ function StatusBadge({ status }: { status: Status }) {
   );
 }
 
-function RequestCard({ req }: { req: MaintenanceRequest }) {
+function StarRating({
+  value = 0,
+  readOnly = false,
+  onRate,
+}: {
+  value?: number;
+  readOnly?: boolean;
+  onRate?: (n: number) => void;
+}) {
+  const [hover, setHover] = useState(0);
+  const active = hover || value;
+
+  return (
+    <div className="mn-stars" role="radiogroup" aria-label="Đánh giá sao">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          disabled={readOnly}
+          className={`mn-star ${n <= active ? "mn-star--on" : ""} ${readOnly ? "mn-star--ro" : ""}`}
+          onMouseEnter={() => !readOnly && setHover(n)}
+          onMouseLeave={() => !readOnly && setHover(0)}
+          onClick={() => !readOnly && onRate?.(n)}
+          aria-label={`${n} sao`}
+          title={`${n} sao`}
+        >
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.11 6.47L12 17.4l-5.81 3.05 1.11-6.47-4.7-4.58 6.5-.95L12 2.5z" />
+          </svg>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function RequestCard({
+  req,
+  onRate,
+}: {
+  req: MaintenanceRequest;
+  onRate: (id: string, rating: number) => void;
+}) {
   const p = PRIORITY_CONFIG[req.priority];
   return (
     <div className="mn-card" style={{ borderLeftColor: p.barColor }}>
@@ -112,6 +155,23 @@ function RequestCard({ req }: { req: MaintenanceRequest }) {
           </span>
         )}
       </div>
+
+      {/* Đánh giá sao — chỉ hiện khi yêu cầu đã hoàn thành sửa chữa */}
+      {req.status === "RESOLVED" && (
+        <div className="mn-rating-box">
+          {req.rating ? (
+            <div className="mn-rating-row">
+              <span className="mn-rating-label">Đánh giá của bạn</span>
+              <StarRating value={req.rating} readOnly />
+            </div>
+          ) : (
+            <div className="mn-rating-row">
+              <span className="mn-rating-label">Bạn hài lòng với lần sửa chữa này chứ? Chấm sao nhé:</span>
+              <StarRating onRate={(n) => onRate(req._id, n)} />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -257,6 +317,30 @@ export default function StudentMaintenancePage() {
     }
   };
 
+  const handleRate = async (id: string, rating: number) => {
+    // Optimistic UI: hiện sao ngay, nếu lỗi thì hoàn lại
+    setRequests((prev) =>
+      prev.map((r) => (r._id === id ? { ...r, rating, ratedAt: new Date().toISOString() } : r)),
+    );
+    try {
+      const res = await apiClient.patch(`/maintenance/${id}/rate`, { rating });
+      if (res.ok) {
+        setToast({ type: "success", text: "Cảm ơn bạn đã đánh giá!" });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setToast({ type: "error", text: data.message || "Không gửi được đánh giá" });
+        setRequests((prev) =>
+          prev.map((r) => (r._id === id ? { ...r, rating: undefined, ratedAt: undefined } : r)),
+        );
+      }
+    } catch {
+      setToast({ type: "error", text: "Lỗi kết nối máy chủ" });
+      setRequests((prev) =>
+        prev.map((r) => (r._id === id ? { ...r, rating: undefined, ratedAt: undefined } : r)),
+      );
+    }
+  };
+
   const countByStatus = (s: Status) => requests.filter(r => r.status === s).length;
   
   const filtered = (activeFilter === "ALL" ? requests : requests.filter(r => r.status === activeFilter)).sort((a, b) => {
@@ -353,6 +437,17 @@ export default function StudentMaintenancePage() {
         .mn-card-foot { display:flex; align-items:center; justify-content:space-between; padding-top:16px; border-top:1px solid var(--border); }
         .mn-card-resolved { display:flex; align-items:center; gap:6px; font-size:12.5px; color:#16a34a; font-weight:500; }
         .mn-card-resolved svg { width:13px; height:13px; stroke:currentColor; }
+
+        /* ── ĐÁNH GIÁ SAO ── */
+        .mn-rating-box { margin-top:16px; padding-top:16px; border-top:1px dashed var(--border); }
+        .mn-rating-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+        .mn-rating-label { font-size:13px; color:#4A6580; font-weight:500; }
+        .mn-stars { display:flex; gap:2px; }
+        .mn-star { background:none; border:none; padding:2px; cursor:pointer; color:#d4d4d8; display:flex; transition:color .12s, transform .12s; }
+        .mn-star--on { color:#f59e0b; }
+        .mn-star:not(.mn-star--ro):hover { transform:scale(1.18); }
+        .mn-star--ro { cursor:default; }
+        .mn-star svg { width:26px; height:26px; }
 
         /* badges */
         .mn-status-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:100px; font-size:12px; font-weight:500; white-space:nowrap; flex-shrink:0; }
@@ -562,7 +657,7 @@ export default function StudentMaintenancePage() {
         </div>
       ) : (
         <div className="mn-cards">
-          {filtered.map((req) => <RequestCard key={req._id} req={req} />)}
+          {filtered.map((req) => <RequestCard key={req._id} req={req} onRate={handleRate} />)}
         </div>
       )}
 
