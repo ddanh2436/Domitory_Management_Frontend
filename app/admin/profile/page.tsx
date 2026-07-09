@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "../../components/ToastProvider";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface AdminProfile {
@@ -24,10 +25,17 @@ const Icons = {
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function AdminProfilePage() {
+  const toast = useToast();
   const [profile, setProfile] = useState<AdminProfile | null>(null);
   const [formData, setFormData] = useState({ fullName: "", phone: "", cccd: "", avatar: "" });
   const [loading, setLoading] = useState(true);
-  const [alertMsg, setAlertMsg] = useState({ text: "", type: "" });
+  // Cầu nối sang toast dùng chung (giữ nguyên các lệnh setAlertMsg sẵn có)
+  const setAlertMsg = ({ text, type }: { text: string; type: string }) => {
+    if (!text) return;
+    if (type === "success") toast.success(text);
+    else if (type === "info") toast.info(text);
+    else toast.error(text);
+  };
 
   const loadProfile = async () => {
     try {
@@ -131,12 +139,6 @@ export default function AdminProfilePage() {
           .form-grid { grid-template-columns: 1fr; gap: 16px; }
         }
       `}</style>
-
-      {alertMsg.text && (
-        <div className={`p-4 rounded-xl font-medium mb-6 border ${alertMsg.type === 'success' ? 'bg-green-50 text-green-800 border-green-200' : alertMsg.type === 'info' ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-red-50 text-red-800 border-red-200'}`}>
-          {alertMsg.text}
-        </div>
-      )}
 
       <div className="profile-card">
         {/* CỘT TRÁI: AVATAR VÀ THÔNG TIN CHUNG */}

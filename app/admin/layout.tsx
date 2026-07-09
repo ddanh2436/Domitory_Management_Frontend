@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import RoleGuard from "../components/RoleGuard";
 import NotificationBell from "../components/NotificationBell";
+import { ToastProvider } from "../components/ToastProvider";
 
 interface AdminProfile {
   _id: string;
@@ -158,6 +159,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <RoleGuard allowedRoles={["ADMIN", "DORMITORY_MANAGER", "FLOOR_MANAGER", "MAINTENANCE_STAFF"]}>
+      <ToastProvider>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -272,6 +274,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </main>
         </div>
       </div>
+      </ToastProvider>
     </RoleGuard>
   );
 }

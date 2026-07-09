@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "../../components/ToastProvider";
 
 interface Invoice {
   _id: string;
@@ -39,7 +40,7 @@ export default function AdminInvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
-  const [actionMsg, setActionMsg] = useState({ text: "", type: "" });
+  const toast = useToast();
   
   // Modal State
   const [showModal, setShowModal] = useState(false);
@@ -96,13 +97,13 @@ export default function AdminInvoicesPage() {
       
       const data = await response.json();
       if (response.ok) {
-        setActionMsg({ text: "Đã xác nhận thanh toán thành công!", type: "success" });
-        fetchData(); 
+        toast.success("Đã xác nhận thu tiền và gửi thông báo cho sinh viên.", "Thanh toán thành công 💰");
+        fetchData();
       } else {
-        setActionMsg({ text: data.message, type: "error" });
+        toast.error(data.message || "Không xác nhận được thanh toán.");
       }
     } catch (error) {
-      setActionMsg({ text: "Lỗi kết nối máy chủ", type: "error" });
+      toast.error("Không thể kết nối đến máy chủ.");
     }
   };
 
@@ -114,18 +115,17 @@ export default function AdminInvoicesPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) {
-        setActionMsg({ text: "Đã quét và cập nhật các hóa đơn quá hạn!", type: "success" });
+        toast.success("Đã quét và cập nhật các hóa đơn quá hạn!", "Hoàn tất");
         fetchData();
       }
     } catch (error) {
-      setActionMsg({ text: "Lỗi kết nối máy chủ", type: "error" });
+      toast.error("Không thể kết nối đến máy chủ.");
     }
   };
 
   const handleCreateInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setActionMsg({ text: "", type: "" });
 
     try {
       const token = localStorage.getItem("token");
@@ -145,7 +145,7 @@ export default function AdminInvoicesPage() {
 
       const data = await response.json();
       if (response.ok) {
-        setActionMsg({ text: "Tạo hóa đơn thành công!", type: "success" });
+        toast.success("Đã tạo hóa đơn mới cho phòng thành công!", "Tạo hóa đơn thành công");
         setShowModal(false);
         setFormData({
           roomId: "",
@@ -157,10 +157,10 @@ export default function AdminInvoicesPage() {
         });
         fetchData();
       } else {
-        setActionMsg({ text: data.message || "Lỗi tạo hóa đơn", type: "error" });
+        toast.error(data.message || "Không tạo được hóa đơn.");
       }
     } catch (error) {
-      setActionMsg({ text: "Lỗi kết nối đến máy chủ", type: "error" });
+      toast.error("Không thể kết nối đến máy chủ.");
     } finally {
       setIsSubmitting(false);
     }
@@ -274,15 +274,6 @@ export default function AdminInvoicesPage() {
         }
       `}</style>
 
-      {actionMsg.text && (
-        <div className={`mb-6 p-5 rounded-2xl font-bold text-sm border ${
-          actionMsg.type === 'success' 
-            ? 'bg-green-50 text-green-800 border-green-200' 
-            : 'bg-red-50 text-red-800 border-red-200'
-        }`}>
-          {actionMsg.text}
-        </div>
-      )}
 
       <div className="panel">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
