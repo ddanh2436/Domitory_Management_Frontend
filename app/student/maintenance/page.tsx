@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiClient } from "../../utils/apiClient"; // ĐÃ THÊM IMPORT apiClient
+import { useToast } from "../../components/ToastProvider";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface MaintenanceRequest {
@@ -176,19 +177,6 @@ function RequestCard({
   );
 }
 
-function Toast({ type, text, onClose }: { type: "success" | "error"; text: string; onClose: () => void }) {
-  useEffect(() => {
-    const t = setTimeout(onClose, 4500);
-    return () => clearTimeout(t);
-  }, [onClose]);
-  return (
-    <div className={`mn-toast mn-toast--${type}`}>
-      <span className="mn-toast-icon">{type === "success" ? Icons.check : Icons.alert}</span>
-      <span className="mn-toast-text">{text}</span>
-      <button className="mn-toast-close" onClick={onClose}>{Icons.x}</button>
-    </div>
-  );
-}
 
 function PriorityOption({ value, selected, onClick }: { value: Priority; selected: boolean; onClick: () => void; }) {
   const c = PRIORITY_CONFIG[value];
@@ -212,7 +200,10 @@ export default function StudentMaintenancePage() {
   const [hasRoom,      setHasRoom]     = useState(true);
   const [showModal,    setShowModal]   = useState(false);
   const [submitting,   setSubmitting]  = useState(false);
-  const [toast,        setToast]       = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const notify = useToast();
+  // Cầu nối: giữ nguyên các lệnh setToast({type,text}) sẵn có, chuyển sang toast dùng chung
+  const setToast = (t: { type: "success" | "error"; text: string }) =>
+    t.type === "success" ? notify.success(t.text) : notify.error(t.text);
   const [activeFilter, setActiveFilter] = useState<"ALL" | Status>("ALL");
   const [imageFile,    setImageFile]   = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -761,10 +752,6 @@ export default function StudentMaintenancePage() {
         </div>
       )}
 
-      {/* ─── Toast ──────────────────────────────────────────────────── */}
-      {toast && (
-        <Toast type={toast.type} text={toast.text} onClose={() => setToast(null)} />
-      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import RoleGuard from "../../components/RoleGuard";
 import { apiClient } from "../../utils/apiClient";
+import { useToast } from "../../components/ToastProvider";
 
 // ─── Types (identical to original) ────────────────────────────────────────────
 interface Room {
@@ -95,6 +96,7 @@ function VisualBedMap({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function BookRoomPage() {
+  const toast = useToast();
   // ── State (identical to original) ──
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
@@ -152,13 +154,13 @@ export default function BookRoomPage() {
       });
       const data = await response.json();
       if (response.ok) {
-        alert("🎉 Đặt phòng thành công! Vui lòng chờ Ban quản lý phê duyệt.");
-        window.location.href = "/student/bookings";
+        toast.success("Đặt phòng thành công! Vui lòng chờ Ban quản lý phê duyệt.", "Đã gửi yêu cầu 🎉");
+        setTimeout(() => { window.location.href = "/student/bookings"; }, 900);
       } else {
-        alert(`❌ Lỗi: ${data.message}`);
+        toast.error(data.message || "Không đặt được phòng.");
       }
     } catch (err) {
-      alert("Đã xảy ra lỗi hệ thống, vui lòng thử lại sau.");
+      toast.error("Đã xảy ra lỗi hệ thống, vui lòng thử lại sau.");
     } finally {
       setSubmitting(false);
     }

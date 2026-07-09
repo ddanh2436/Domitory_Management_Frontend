@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import RoleGuard from "../components/RoleGuard";
 import NotificationBell from "../components/NotificationBell";
+import { ToastProvider } from "../components/ToastProvider";
 import { apiClient } from "../utils/apiClient";
 
 interface Profile {
@@ -171,6 +172,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
   return (
     <RoleGuard allowedRoles={["STUDENT"]}>
+      <ToastProvider>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -287,6 +289,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           </main>
         </div>
       </div>
+      </ToastProvider>
     </RoleGuard>
   );
 }

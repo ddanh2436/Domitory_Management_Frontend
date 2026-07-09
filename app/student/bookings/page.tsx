@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import RoleGuard from "../../components/RoleGuard";
 import { apiClient } from "../../utils/apiClient";
+import { useToast } from "../../components/ToastProvider";
 
 interface Booking {
   _id: string;
@@ -38,6 +39,7 @@ function StatusBadge({ status }: { status: Booking["status"] }) {
 }
 
 export default function MyBookingsPage() {
+  const toast = useToast();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -71,12 +73,13 @@ export default function MyBookingsPage() {
       const data = await response.json();
 
       if (response.ok) {
+        toast.success("Đã hủy đơn đăng ký lưu trú.", "Hủy đơn thành công");
         fetchMyBookings(); // Tải lại dữ liệu
       } else {
-        alert(`Lỗi: ${data.message}`);
+        toast.error(data.message || "Không hủy được đơn.");
       }
     } catch (err) {
-      alert("Lỗi kết nối khi hủy đơn.");
+      toast.error("Lỗi kết nối khi hủy đơn.");
     }
   };
 
