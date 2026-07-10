@@ -401,7 +401,7 @@ export default function StudentMaintenancePage() {
         .mn-btn-new {
           display:flex; align-items:center; gap:8px;
           background:var(--gold); color:var(--navy);
-          border:none; padding:10px 20px; border-radius:9px;
+          border:none; padding:10px 20px; border-radius:8px;
           font-family:'DM Sans',sans-serif; font-weight:500; font-size:13.5px;
           cursor:pointer; transition:all .18s;
         }
@@ -503,7 +503,7 @@ export default function StudentMaintenancePage() {
         .mn-priority-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
         .mn-priority-opt {
           display:flex; flex-direction:column; align-items:center; gap:7px;
-          padding:10px 6px; border-radius:9px; border:1px solid var(--border);
+          padding:10px 6px; border-radius:8px; border:1px solid var(--border);
           background:transparent; cursor:pointer; transition:all .15s;
         }
         .mn-priority-opt:hover { border-color:rgba(13,27,42,.2); background:#F9F8F6; }
@@ -514,14 +514,14 @@ export default function StudentMaintenancePage() {
         /* modal footer */
         .mn-modal-foot { display:flex; gap:10px; padding:0 24px 22px; }
         .mn-btn-cancel {
-          flex:1; padding:11px; border:1px solid var(--border); border-radius:9px;
+          flex:1; padding:11px; border:1px solid var(--border); border-radius:8px;
           background:transparent; cursor:pointer; font-family:'DM Sans',sans-serif;
           font-size:13.5px; color:var(--navy); transition:background .15s;
         }
         .mn-btn-cancel:hover { background:#F5F3EF; }
         .mn-btn-submit {
           flex:2; padding:11px; background:var(--navy); color:#fff;
-          border:none; border-radius:9px; cursor:pointer; font-family:'DM Sans',sans-serif;
+          border:none; border-radius:8px; cursor:pointer; font-family:'DM Sans',sans-serif;
           font-size:13.5px; font-weight:500; display:flex; align-items:center; justify-content:center; gap:7px;
           transition:all .15s;
         }

@@ -71,14 +71,14 @@ function ConfirmDialog({ state, busy, onCancel }: { state: ConfirmState | null; 
           <button
             onClick={onCancel}
             disabled={busy}
-            className="flex-1 py-3 rounded-xl font-bold text-[14px] text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors disabled:opacity-50"
+            className="flex-1 py-3 rounded-lg font-bold text-[14px] text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors disabled:opacity-50"
           >
             Hủy bỏ
           </button>
           <button
             onClick={state.onConfirm}
             disabled={busy}
-            className={`flex-1 py-3 rounded-xl font-bold text-[14px] text-white transition-colors disabled:opacity-60 flex items-center justify-center gap-2 ${
+            className={`flex-1 py-3 rounded-lg font-bold text-[14px] text-white transition-colors disabled:opacity-60 flex items-center justify-center gap-2 ${
               isDanger ? "bg-rose-600 hover:bg-rose-700" : "bg-slate-900 hover:bg-slate-800"
             }`}
           >

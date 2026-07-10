@@ -432,9 +432,9 @@ export default function AdminMaintenancePage() {
         .am-modal-title { font-family:'Fraunces',serif; font-size:19px; font-weight:700; color:var(--navy); margin-bottom:10px; }
         .am-modal-desc { font-size:13.5px; color:#4A6580; line-height:1.65; margin-bottom:24px; }
         .am-modal-actions { display:flex; gap:10px; }
-        .am-modal-btn-cancel { flex:1; padding:11px; border:1px solid var(--border); border-radius:9px; background:transparent; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13.5px; color:var(--navy); transition:background .15s; }
+        .am-modal-btn-cancel { flex:1; padding:11px; border:1px solid var(--border); border-radius:8px; background:transparent; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13.5px; color:var(--navy); transition:background .15s; }
         .am-modal-btn-cancel:hover { background:#F5F3EF; }
-        .am-modal-btn-confirm { flex:1; padding:11px; border:none; border-radius:9px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13.5px; font-weight:500; color:#fff; transition:background .15s; }
+        .am-modal-btn-confirm { flex:1; padding:11px; border:none; border-radius:8px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13.5px; font-weight:500; color:#fff; transition:background .15s; }
         .am-modal-btn-confirm:disabled { opacity:.6; cursor:not-allowed; }
         .am-modal-btn-confirm--blue { background:#0284c7; }
         .am-modal-btn-confirm--blue:hover { background:#0369a1; }

@@ -128,6 +128,38 @@ export default function NotificationBell() {
     return () => document.removeEventListener("keydown", handleEsc);
   }, [isOpen]);
 
+  // Hover vào thông báo chưa đọc ~0.5s thì tự đánh dấu đã đọc (tránh mark nhầm khi lướt chuột qua)
+  const hoverTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  useEffect(() => {
+    const timers = hoverTimers.current;
+    return () => Object.values(timers).forEach(clearTimeout);
+  }, []);
+
+  // Đóng panel thì hủy mọi timer đang chờ, tránh mark đọc sau khi hàng đã unmount
+  useEffect(() => {
+    if (!isOpen) {
+      Object.values(hoverTimers.current).forEach(clearTimeout);
+      hoverTimers.current = {};
+    }
+  }, [isOpen]);
+
+  const scheduleHoverRead = (notif: Notification) => {
+    if (notif.isRead || hoverTimers.current[notif._id]) return;
+    hoverTimers.current[notif._id] = setTimeout(() => {
+      delete hoverTimers.current[notif._id];
+      void markRead(notif._id, false);
+    }, 500);
+  };
+
+  const cancelHoverRead = (notifId: string) => {
+    const timer = hoverTimers.current[notifId];
+    if (timer) {
+      clearTimeout(timer);
+      delete hoverTimers.current[notifId];
+    }
+  };
+
   const markRead = async (notifId: string, isRead: boolean) => {
     if (isRead) return;
     setNotifications((prev) => prev.map((n) => (n._id === notifId ? { ...n, isRead: true } : n)));
@@ -153,6 +185,7 @@ export default function NotificationBell() {
   };
 
   const handleClickNotif = (notif: Notification) => {
+    cancelHoverRead(notif._id);
     void markRead(notif._id, notif.isRead);
     setIsOpen(false);
     if (notif.link) router.push(notif.link);
@@ -161,6 +194,7 @@ export default function NotificationBell() {
   const handleDelete = async (e: ReactMouseEvent<HTMLButtonElement>, notifId: string) => {
     e.preventDefault();
     e.stopPropagation();
+    cancelHoverRead(notifId);
     try {
       const res = await apiClient.delete(`/notifications/${notifId}`);
       if (!res.ok) throw new Error("Delete notification failed");
@@ -201,7 +235,7 @@ export default function NotificationBell() {
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Thông báo"
         title="Thông báo"
-        className={`relative w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 ${
+        className={`relative w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 ${
           isOpen
             ? "bg-[#0D1B2A] text-[#C9A84C]"
             : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -222,27 +256,34 @@ export default function NotificationBell() {
 
       {/* Bảng thông báo kiểu Facebook */}
       {isOpen && (
-        <div className="nb-panel absolute top-[52px] right-0 w-[368px] bg-white rounded-2xl shadow-[0_12px_48px_rgba(13,27,42,0.22)] ring-1 ring-black/5 z-[99999] overflow-hidden">
+        <div className="nb-panel absolute top-[52px] right-0 w-[380px] bg-white rounded-lg shadow-[0_12px_48px_rgba(13,27,42,0.18)] ring-1 ring-black/5 z-[99999] overflow-hidden">
           {/* Tiêu đề */}
-          <div className="px-4 pt-4 pb-2 flex items-center justify-between">
-            <h3 className="text-[20px] font-extrabold text-slate-900 tracking-tight">Thông báo</h3>
+          <div className="px-4 py-3 flex items-center justify-between border-b border-slate-100">
+            <h3 className="text-[15px] font-bold text-slate-900 tracking-tight">
+              Thông báo
+              {unreadCount > 0 && (
+                <span className="ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-md bg-[#2563eb]/10 text-[#2563eb] text-[11.5px] font-bold align-middle">
+                  {badgeLabel}
+                </span>
+              )}
+            </h3>
             {unreadCount > 0 && (
               <button
                 type="button"
                 onClick={handleMarkAllRead}
-                className="text-[13px] font-semibold text-[#2563eb] hover:underline cursor-pointer"
+                className="text-[12.5px] font-semibold text-[#2563eb] px-2.5 py-1.5 rounded-lg hover:bg-[#2563eb]/10 transition-colors cursor-pointer"
               >
-                Đánh dấu đã đọc
+                Đánh dấu tất cả đã đọc
               </button>
             )}
           </div>
 
           {/* Danh sách */}
-          <div className="nb-scroll max-h-[440px] overflow-y-auto px-1.5 pb-1.5">
+          <div className="nb-scroll max-h-[440px] overflow-y-auto divide-y divide-slate-100">
             {notifications.length === 0 ? (
               <div className="px-6 py-12 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-300 mb-3">
-                  <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+                <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-300 mb-3">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2.25A6.75 6.75 0 005.25 9v.75a8.22 8.22 0 01-2.12 5.52.75.75 0 00.3 1.2c1.54.58 3.16 1 4.83 1.25a3.75 3.75 0 007.48 0 24.6 24.6 0 004.83-1.25.75.75 0 00.3-1.2 8.22 8.22 0 01-2.12-5.52V9A6.75 6.75 0 0012 2.25zM9.75 18a2.25 2.25 0 004.5 0 24.9 24.9 0 01-4.5 0z" />
                   </svg>
                 </div>
@@ -258,34 +299,34 @@ export default function NotificationBell() {
                   <div
                     key={notif._id}
                     onClick={() => handleClickNotif(notif)}
-                    className="group relative flex items-center gap-3 px-2.5 py-2 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors"
+                    onMouseEnter={() => scheduleHoverRead(notif)}
+                    onMouseLeave={() => cancelHoverRead(notif._id)}
+                    className={`group relative flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors ${
+                      notif.isRead ? "bg-white hover:bg-slate-50" : "bg-[#f2f7ff] hover:bg-[#e8f1ff]"
+                    }`}
                   >
-                    {/* Ảnh đại diện tròn + huy hiệu loại ở góc */}
-                    <div className="relative shrink-0">
-                      <div
-                        className="w-14 h-14 rounded-full flex items-center justify-center p-3.5"
-                        style={{ background: t.color.soft, color: t.color.solid }}
-                      >
-                        {t.icon}
-                      </div>
-                      <div
-                        className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full flex items-center justify-center border-[2.5px] border-white p-1 text-white"
-                        style={{ background: t.color.solid }}
-                      >
-                        {t.icon}
-                      </div>
+                    {/* Icon loại thông báo */}
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                      style={{ background: t.color.soft, color: t.color.solid }}
+                    >
+                      <span className="w-5 h-5 flex">{t.icon}</span>
                     </div>
 
                     {/* Nội dung */}
-                    <div className="flex-1 min-w-0 pr-1">
-                      <div className="nb-clamp2 text-[13.5px] leading-snug text-slate-800">
-                        <span className={notif.isRead ? "font-semibold text-slate-900" : "font-bold text-slate-900"}>
-                          {notif.title}
-                        </span>{" "}
-                        <span className={notif.isRead ? "text-slate-500" : "text-slate-600"}>{notif.message}</span>
+                    <div className="flex-1 min-w-0 pr-7">
+                      <div
+                        className={`text-[13.5px] leading-snug truncate ${
+                          notif.isRead ? "font-medium text-slate-700" : "font-bold text-slate-900"
+                        }`}
+                      >
+                        {notif.title}
+                      </div>
+                      <div className="nb-clamp2 text-[12.5px] leading-relaxed text-slate-500 mt-0.5">
+                        {notif.message}
                       </div>
                       <div
-                        className={`text-[12px] mt-1 font-semibold ${
+                        className={`text-[11.5px] mt-1 font-semibold ${
                           notif.isRead ? "text-slate-400" : "text-[#2563eb]"
                         }`}
                       >
@@ -295,7 +336,7 @@ export default function NotificationBell() {
 
                     {/* Chấm chưa đọc */}
                     {!notif.isRead && (
-                      <span className="shrink-0 w-2.5 h-2.5 rounded-full bg-[#2563eb] group-hover:opacity-0 transition-opacity" />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#2563eb] group-hover:opacity-0 transition-opacity" />
                     )}
 
                     {/* Nút xóa hiện khi hover */}
@@ -304,9 +345,9 @@ export default function NotificationBell() {
                       title="Xóa thông báo"
                       aria-label="Xóa thông báo"
                       onClick={(e) => void handleDelete(e, notif._id)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-md text-slate-500 opacity-0 group-hover:opacity-100 hover:bg-slate-100 hover:text-red-600 transition-all"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center bg-white border border-slate-200 text-slate-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
                     >
-                      <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 6h18m-2 0l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m4 0V4a2 2 0 012-2h2a2 2 0 012 2v2m-6 5v6m4-6v6" />
                       </svg>
                     </button>

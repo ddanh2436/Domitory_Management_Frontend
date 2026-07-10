@@ -117,7 +117,7 @@ export default function MyBookingsPage() {
             position: relative; z-index: 1;
             display: inline-flex; align-items: center; gap: 8px;
             background: var(--gold); color: var(--navy);
-            border: none; padding: 11px 20px; border-radius: 10px;
+            border: none; padding: 11px 20px; border-radius: 8px;
             font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13.5px;
             text-decoration: none; cursor: pointer; transition: all .18s;
           }
@@ -141,7 +141,7 @@ export default function MyBookingsPage() {
           .bk-date { font-size: 13.5px; color: #4A6580; }
           .bk-badge { display: inline-flex; align-items: center; padding: 5px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; white-space: nowrap; }
 
-          .bk-cancel-btn { font-size: 12.5px; font-weight: 600; color: #dc2626; padding: 7px 14px; border: 1px solid rgba(239,68,68,.25); border-radius: 9px; background: var(--white); cursor: pointer; transition: all .15s; }
+          .bk-cancel-btn { font-size: 12.5px; font-weight: 600; color: #dc2626; padding: 7px 14px; border: 1px solid rgba(239,68,68,.25); border-radius: 8px; background: var(--white); cursor: pointer; transition: all .15s; }
           .bk-cancel-btn:hover { background: rgba(239,68,68,.06); border-color: rgba(239,68,68,.4); }
           .bk-na { font-size: 12.5px; color: var(--muted); font-style: italic; }
 
@@ -150,7 +150,7 @@ export default function MyBookingsPage() {
           .bk-empty-icon { width: 52px; height: 52px; border-radius: 14px; background: #F5F3EF; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; color: var(--muted); }
           .bk-empty-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
           .bk-empty-sub { font-size: 13.5px; color: var(--muted); line-height: 1.6; max-width: 340px; margin: 0 auto 22px; }
-          .bk-empty-link { display: inline-flex; align-items: center; gap: 7px; padding: 10px 20px; background: var(--navy); color: #fff; border-radius: 9px; text-decoration: none; font-size: 13.5px; font-weight: 500; transition: background .15s; }
+          .bk-empty-link { display: inline-flex; align-items: center; gap: 7px; padding: 10px 20px; background: var(--navy); color: #fff; border-radius: 8px; text-decoration: none; font-size: 13.5px; font-weight: 500; transition: background .15s; }
           .bk-empty-link:hover { background: #1A2E42; }
 
           /* ── SKELETON ── */

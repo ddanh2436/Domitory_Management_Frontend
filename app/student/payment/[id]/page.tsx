@@ -286,7 +286,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
 
         /* method tabs */
         .pm-methods { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px; }
-        .pm-method-btn { display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding:14px 14px; border-radius:12px; border:1.5px solid var(--border); background:var(--white); cursor:pointer; transition:all .15s; text-align:left; }
+        .pm-method-btn { display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding:14px 14px; border-radius:8px; border:1.5px solid var(--border); background:var(--white); cursor:pointer; transition:all .15s; text-align:left; }
         .pm-method-btn:hover { border-color:rgba(13,27,42,.25); }
         .pm-method-btn--active { border-color:var(--gold); background:var(--gold-dim); }
         .pm-method-icon { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; background:rgba(13,27,42,.05); color:var(--navy); }
@@ -314,7 +314,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
 
         /* ewallet */
         .pm-ewallet-grid { display:flex; flex-direction:column; gap:10px; }
-        .pm-ewallet-opt { display:flex; align-items:center; gap:12px; padding:14px 16px; border:1.5px solid var(--border); border-radius:12px; cursor:pointer; transition:all .15s; }
+        .pm-ewallet-opt { display:flex; align-items:center; gap:12px; padding:14px 16px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:all .15s; }
         .pm-ewallet-opt:hover { border-color:rgba(13,27,42,.2); }
         .pm-ewallet-opt--active { border-color:var(--gold); background:var(--gold-dim); }
         .pm-ewallet-dot { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; color:#fff; font-family:'Fraunces',serif; font-weight:700; font-size:13px; flex-shrink:0; }
@@ -332,7 +332,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
 
         /* pay button */
         .pm-pay-btn {
-          width:100%; padding:15px; margin-top:24px; border-radius:12px; border:none;
+          width:100%; padding:15px; margin-top:24px; border-radius:8px; border:none;
           background:var(--navy); color:#fff; font-family:'DM Sans',sans-serif;
           font-size:14.5px; font-weight:600; cursor:pointer; transition:all .18s;
           display:flex; align-items:center; justify-content:center; gap:9px;

@@ -221,7 +221,7 @@ export default function BookRoomPage() {
         .br-fac-tag { padding:3px 9px; background:#F5F3EF; color:#4A6580; border-radius:6px; font-size:11px; font-weight:500; border:1px solid var(--border); }
 
         .br-room-foot { padding:16px 22px; background:#FAFAF9; border-top:1px solid var(--border); }
-        .br-btn-select { width:100%; padding:12px; background:var(--navy); color:#fff; border:none; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:13.5px; font-weight:500; cursor:pointer; transition:all .18s; }
+        .br-btn-select { width:100%; padding:12px; background:var(--navy); color:#fff; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13.5px; font-weight:500; cursor:pointer; transition:all .18s; }
         .br-btn-select:hover { background:var(--navy-md); box-shadow:0 6px 18px rgba(13,27,42,.2); transform:translateY(-1px); }
 
         .br-empty-rooms { grid-column:1/-1; text-align:center; padding:60px 24px; background:var(--white); border:2px dashed var(--border); border-radius:16px; }
@@ -292,7 +292,7 @@ export default function BookRoomPage() {
         .br-sum-total-label { font-size:13px; color:var(--muted); font-weight:500; }
         .br-sum-total-val { font-family:'Fraunces',serif; font-size:26px; font-weight:700; color:var(--navy); letter-spacing:-.5px; }
 
-        .br-btn-confirm { width:100%; padding:14px; background:var(--navy); color:#fff; border:none; border-radius:11px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:all .18s; display:flex; align-items:center; justify-content:center; gap:8px; }
+        .br-btn-confirm { width:100%; padding:14px; background:var(--navy); color:#fff; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:all .18s; display:flex; align-items:center; justify-content:center; gap:8px; }
         .br-btn-confirm:hover:not(:disabled) { background:var(--navy-md); box-shadow:0 8px 22px rgba(13,27,42,.25); transform:translateY(-1px); }
         .br-btn-confirm:disabled { opacity:.5; cursor:not-allowed; }
 
