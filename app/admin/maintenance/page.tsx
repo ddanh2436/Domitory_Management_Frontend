@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { apiClient } from "../../utils/apiClient"; // THÊM IMPORT apiClient
 import { useToast } from "../../components/ToastProvider";
+import RoomFilterBar, { EMPTY_ROOM_FILTER, matchRoomFilter, type RoomFilterValue } from "../../components/RoomFilterBar";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
@@ -11,7 +12,7 @@ type Status = "PENDING" | "IN_PROGRESS" | "RESOLVED" | "REJECTED";
 interface MaintenanceRequest {
   _id: string;
   user: { _id: string; fullName: string; mssv?: string; phone?: string };
-  room: { _id: string; name: string; building: string };
+  room: { _id: string; name: string; building: string; floor?: number };
   title: string;
   description: string;
   imageUrl?: string;
@@ -255,6 +256,7 @@ export default function AdminMaintenancePage() {
   const toast = useToast();
   const [activeFilter, setActiveFilter] = useState<"ALL" | Status>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [roomFilter, setRoomFilter] = useState<RoomFilterValue>(EMPTY_ROOM_FILTER);
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
@@ -314,7 +316,7 @@ export default function AdminMaintenancePage() {
     const matchStatus = activeFilter === "ALL" || r.status === activeFilter;
     const q = searchQuery.toLowerCase();
     const matchSearch = !q || r.title.toLowerCase().includes(q) || r.room?.name.toLowerCase().includes(q) || r.user?.fullName.toLowerCase().includes(q) || (r.user?.mssv ?? "").toLowerCase().includes(q);
-    return matchStatus && matchSearch;
+    return matchStatus && matchSearch && matchRoomFilter(roomFilter, r.room);
   }).sort((a, b) => {
     // Ưu tiên xếp hạng trạng thái
     if (STATUS_WEIGHT[a.status] !== STATUS_WEIGHT[b.status]) {
@@ -477,6 +479,7 @@ export default function AdminMaintenancePage() {
         </div>
         <div className="am-toolbar-right">
           {!loading && <span className="am-count-badge">{filtered.length} yêu cầu</span>}
+          <RoomFilterBar rooms={requests.map((r) => r.room)} value={roomFilter} onChange={setRoomFilter} />
           <div className="am-search-wrap">
             <span className="am-search-ic">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>

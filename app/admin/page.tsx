@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import RoleGuard from "../components/RoleGuard";
 import { apiClient } from "../utils/apiClient";
+import { useConfirm } from "../components/ConfirmProvider";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell 
@@ -59,6 +60,7 @@ export default function AdminDashboard() {
   
   const [loading, setLoading] = useState(true);
   const [alertMsg, setAlertMsg] = useState({ text: "", type: "" });
+  const confirmDialog = useConfirm();
 
   const loadDashboardData = async () => {
     try {
@@ -142,8 +144,16 @@ export default function AdminDashboard() {
   }, []);
 
   const handleBookingAction = async (bookingId: string, action: "approve" | "reject", roomName: string) => {
-    const actionText = action === "approve" ? "DUYỆT CHẤP NHẬN" : "TỪ CHỐI";
-    if (!window.confirm(`Bạn có chắc chắn muốn ${actionText} đơn đăng ký vào phòng ${roomName}?`)) return;
+    const isApprove = action === "approve";
+    const ok = await confirmDialog({
+      title: isApprove ? `Duyệt đơn vào phòng ${roomName}?` : `Từ chối đơn vào phòng ${roomName}?`,
+      message: isApprove
+        ? "Sinh viên sẽ được xếp vào phòng và hệ thống tự động tạo hợp đồng lưu trú."
+        : "Đơn đăng ký này sẽ bị từ chối. Sinh viên có thể đăng ký phòng khác sau đó.",
+      confirmLabel: isApprove ? "Duyệt đơn" : "Từ chối",
+      variant: isApprove ? "primary" : "danger",
+    });
+    if (!ok) return;
 
     try {
       const response = await apiClient.patch(`/bookings/${bookingId}/${action}`);

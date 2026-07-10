@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { apiClient } from "../../utils/apiClient"; // TÍCH HỢP APICLIENT VÀO ĐÂY
 import AvatarLightbox from "../../components/AvatarLightbox";
 import { useToast } from "../../components/ToastProvider";
+import { useConfirm } from "../../components/ConfirmProvider";
+import RoomFilterBar, { EMPTY_ROOM_FILTER, matchRoomFilter, type RoomFilterValue } from "../../components/RoomFilterBar";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Student {
@@ -13,7 +15,7 @@ interface Student {
   email: string;
   phone?: string;
   cccd?: string;
-  room?: { name: string; building: string };
+  room?: { name: string; building: string; floor?: number };
   accessStatus?: string;
   blockReason?: string;
   avatar?: string;
@@ -52,9 +54,11 @@ const Icons = {
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function AdminStudentsPage() {
   const toast = useToast();
+  const confirmDialog = useConfirm();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [roomFilter, setRoomFilter] = useState<RoomFilterValue>(EMPTY_ROOM_FILTER);
   // Cầu nối: giữ nguyên các lệnh gọi setAlertMsg({text,type}) sẵn có, chuyển sang toast đẹp dùng chung
   const setAlertMsg = ({ text, type }: { text: string; type: string }) => {
     if (!text) return;
@@ -229,7 +233,12 @@ export default function AdminStudentsPage() {
       return;
     }
 
-    const isConfirm = window.confirm(`Khóa tài khoản sinh viên ${selectedStudent.fullName}? Người này sẽ không thể đăng nhập nữa.`);
+    const isConfirm = await confirmDialog({
+      title: `Khóa tài khoản ${selectedStudent.fullName}?`,
+      message: "Sinh viên này sẽ không thể đăng nhập vào hệ thống cho đến khi được mở khóa.",
+      confirmLabel: "Khóa tài khoản",
+      variant: "danger",
+    });
     if (!isConfirm) return;
 
     try {
@@ -262,8 +271,12 @@ export default function AdminStudentsPage() {
   const handleDeleteStudent = async () => {
     if (!selectedStudent) return;
     
-    const isConfirm = window.confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN sinh viên ${selectedStudent.fullName} khỏi hệ thống không? Hành động này không thể hoàn tác!`);
-    
+    const isConfirm = await confirmDialog({
+      title: `Xóa vĩnh viễn ${selectedStudent.fullName}?`,
+      message: "Toàn bộ dữ liệu của sinh viên sẽ bị xóa khỏi hệ thống. Hành động này không thể hoàn tác!",
+      confirmLabel: "Xóa vĩnh viễn",
+      variant: "danger",
+    });
     if (!isConfirm) return;
 
     try {
@@ -280,9 +293,10 @@ export default function AdminStudentsPage() {
   };
 
   const searchedStudents = students.filter(s =>
-    s.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-    s.email?.toLowerCase().includes(search.toLowerCase()) ||
-    (s.mssv ?? "").toLowerCase().includes(search.toLowerCase())
+    (s.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+      s.email?.toLowerCase().includes(search.toLowerCase()) ||
+      (s.mssv ?? "").toLowerCase().includes(search.toLowerCase())) &&
+    matchRoomFilter(roomFilter, s.room)
   );
 
   const displayedStudents = searchedStudents.filter(s => {
@@ -374,6 +388,7 @@ export default function AdminStudentsPage() {
             <div className="panel__subtitle">Xem danh sách, sửa hồ sơ hoặc khóa tài khoản vi phạm</div>
           </div>
           <div className="panel__header-right">
+            <RoomFilterBar rooms={students.map((s) => s.room)} value={roomFilter} onChange={setRoomFilter} />
             <div className="search-wrap">
               <span className="search-wrap__icon">{Icons.search}</span>
               <input

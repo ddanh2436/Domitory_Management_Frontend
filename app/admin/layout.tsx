@@ -8,6 +8,7 @@ import NotificationBell from "../components/NotificationBell";
 import { ToastProvider } from "../components/ToastProvider";
 import { apiClient } from "../utils/apiClient";
 import { clearToken } from "../utils/auth";
+import { ConfirmProvider } from "../components/ConfirmProvider";
 
 interface AdminProfile {
   _id: string;
@@ -74,6 +75,21 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
     </svg>
   ),
+  transfer: (
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+    </svg>
+  ),
+  moon: (
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+    </svg>
+  ),
+  megaphone: (
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+    </svg>
+  ),
   globe: (
     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <circle cx="12" cy="12" r="10" strokeWidth={1.8} />
@@ -111,6 +127,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [studentsCount, setStudentsCount] = useState(0);
   const [pendingBookings, setPendingBookings] = useState(0);
   const [pendingMaintenance, setPendingMaintenance] = useState(0);
+  const [pendingTransfers, setPendingTransfers] = useState(0);
+  const [pendingAbsences, setPendingAbsences] = useState(0);
 
   useEffect(() => {
     const loadLayoutData = async () => {
@@ -131,6 +149,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         if (resBookings.ok) {
           const bData = (await resBookings.json()) as BookingSummary[];
           setPendingBookings(bData.filter((booking) => booking.status === "PENDING").length);
+        }
+
+        const resTransfers = await apiClient.get("/transfers");
+        if (resTransfers.ok) {
+          const tData = (await resTransfers.json()) as BookingSummary[];
+          setPendingTransfers(tData.filter((transfer) => transfer.status === "PENDING").length);
+        }
+
+        const resAbsences = await apiClient.get("/absences");
+        if (resAbsences.ok) {
+          const aData = (await resAbsences.json()) as BookingSummary[];
+          setPendingAbsences(aData.filter((absence) => absence.status === "PENDING").length);
         }
 
         const resMaintenance = await apiClient.get("/maintenance");
@@ -154,6 +184,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <RoleGuard allowedRoles={["ADMIN", "DORMITORY_MANAGER", "FLOOR_MANAGER", "MAINTENANCE_STAFF"]}>
       <ToastProvider>
+      <ConfirmProvider>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -218,6 +249,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <NavItem href="/admin/students" icon={Icons.users} label="Sinh viên" badge={studentsCount} active={pathname.startsWith("/admin/students")} />
             <NavItem href="/admin/permissions" icon={Icons.users} label="Phân quyền tài khoản" active={pathname.startsWith("/admin/permissions")} />
             <NavItem href="/admin/bookings" icon={Icons.doc} label="Duyệt đơn phòng" badge={pendingBookings} active={pathname.startsWith("/admin/bookings")} />
+            <NavItem href="/admin/transfers" icon={Icons.transfer} label="Duyệt đổi phòng" badge={pendingTransfers} active={pathname.startsWith("/admin/transfers")} />
+            <NavItem href="/admin/absences" icon={Icons.moon} label="Tạm trú / Tạm vắng" badge={pendingAbsences} active={pathname.startsWith("/admin/absences")} />
+            <NavItem href="/admin/announcements" icon={Icons.megaphone} label="Gửi thông báo" active={pathname.startsWith("/admin/announcements")} />
             <NavItem href="/admin/invoices" icon={Icons.invoice} label="Hóa đơn" active={pathname.startsWith("/admin/invoices")} />
             <NavItem href="/admin/profile" icon={Icons.users} label="Hồ sơ cá nhân" active={pathname.startsWith("/admin/profile")} />
             <NavItem href="/admin/maintenance" icon={Icons.wrench} label="Bảo trì" badge={pendingMaintenance} active={pathname.startsWith("/admin/maintenance")} />
@@ -268,6 +302,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </main>
         </div>
       </div>
+      </ConfirmProvider>
       </ToastProvider>
     </RoleGuard>
   );

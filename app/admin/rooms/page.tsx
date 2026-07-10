@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { apiClient } from "../../utils/apiClient";
 import AvatarLightbox from "../../components/AvatarLightbox";
 import { useToast } from "../../components/ToastProvider";
+import { useConfirm } from "../../components/ConfirmProvider";
 
 interface Occupant {
   userId: string;
@@ -38,6 +39,7 @@ interface Room {
 
 export default function AdminRoomsPage() {
   const toast = useToast();
+  const confirmDialog = useConfirm();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
@@ -132,7 +134,13 @@ export default function AdminRoomsPage() {
     const roomToDelete = rooms.find(r => (r.roomId || r._id) === selectedRoomId);
     const roomName = roomToDelete?.roomNumber || roomToDelete?.name || "này";
 
-    if (!confirm(`Bạn có chắc chắn muốn xóa phòng ${roomName}? Hành động này không thể hoàn tác.`)) return;
+    const ok = await confirmDialog({
+      title: `Xóa phòng ${roomName}?`,
+      message: "Toàn bộ dữ liệu của phòng sẽ bị xóa khỏi hệ thống. Hành động này không thể hoàn tác.",
+      confirmLabel: "Xóa phòng",
+      variant: "danger",
+    });
+    if (!ok) return;
 
     try {
       const response = await apiClient.delete(`/rooms/${selectedRoomId}`);

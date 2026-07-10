@@ -12,7 +12,18 @@ interface AdminProfile {
   phone?: string;
   cccd?: string;
   avatar?: string;
+  role?: string;
+  accessStatus?: string;
+  createdAt?: string;
 }
+
+const ROLE_LABEL: Record<string, string> = {
+  ADMIN: "Quản trị viên",
+  DORMITORY_MANAGER: "Quản lý ký túc xá",
+  FLOOR_MANAGER: "Quản lý tầng",
+  MAINTENANCE_STAFF: "Nhân viên bảo trì",
+  STUDENT: "Sinh viên",
+};
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const Icons = {
@@ -103,103 +114,177 @@ export default function AdminProfilePage() {
     return <div className="w-full h-64 flex items-center justify-center text-slate-500">Đang tải hồ sơ...</div>;
   }
 
+  const roleLabel = ROLE_LABEL[profile?.role ?? ""] ?? "Quản trị viên";
+  const joinedAt = profile?.createdAt
+    ? new Date(profile.createdAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })
+    : "—";
+  const isLocked = profile?.accessStatus === "LOCKED";
+
   return (
-    <div className="w-full max-w-4xl mx-auto font-sans text-slate-800">
+    <div className="w-full max-w-5xl mx-auto font-sans text-slate-800">
       <style>{`
-        .profile-card { background: #ffffff; border: 1px solid rgba(13,27,42,0.09); border-radius: 16px; overflow: hidden; display: flex; flex-direction: row; box-shadow: 0 4px 20px rgba(13,27,42,0.03); }
-        .profile-left { width: 280px; background: #FAFAF9; border-right: 1px solid rgba(13,27,42,0.09); padding: 40px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .avatar-wrapper { position: relative; width: 140px; height: 140px; border-radius: 50%; border: 4px solid #ffffff; box-shadow: 0 8px 16px rgba(0,0,0,0.08); margin-bottom: 20px; overflow: hidden; background: #0D1B2A; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .pf-hero { position: relative; background: linear-gradient(135deg, #0D1B2A 0%, #182b43 60%, #253d5d 100%); border: 1px solid rgba(201,168,76,0.25); border-radius: 16px; padding: 28px 32px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; margin-bottom: 24px; overflow: hidden; }
+        .pf-hero::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: rgba(201,168,76,0.08); pointer-events: none; }
+
+        .avatar-wrapper { position: relative; width: 96px; height: 96px; border-radius: 50%; border: 3px solid rgba(201,168,76,0.5); box-shadow: 0 8px 20px rgba(0,0,0,0.25); overflow: hidden; background: #0D1B2A; display: flex; justify-content: center; align-items: center; cursor: pointer; flex-shrink: 0; }
         .avatar-img { width: 100%; height: 100%; object-fit: cover; }
-        .avatar-placeholder { font-family: 'Fraunces', serif; font-size: 56px; color: #C9A84C; }
-        .avatar-overlay { position: absolute; inset: 0; background: rgba(13, 27, 42, 0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; color: white; font-size: 12px; font-weight: 500; }
+        .avatar-placeholder { font-family: 'Fraunces', serif; font-size: 40px; color: #C9A84C; }
+        .avatar-overlay { position: absolute; inset: 0; background: rgba(13, 27, 42, 0.65); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; color: white; font-size: 11px; font-weight: 500; }
         .avatar-wrapper:hover .avatar-overlay { opacity: 1; }
         .hidden-input { display: none; }
-        .profile-right { flex: 1; padding: 40px; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 30px; }
-        .form-group { display: flex; flex-direction: column; gap: 8px; }
-        .form-label { font-size: 12.5px; font-weight: 500; color: #8A9BAD; text-transform: uppercase; letter-spacing: 0.05em; }
-        .form-input { padding: 12px 16px; border: 1px solid rgba(13,27,42,0.09); border-radius: 8px; font-family: inherit; font-size: 14px; color: #0D1B2A; background: #F9F8F6; outline: none; transition: all 0.2s; }
+
+        .pf-hero-name { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+        .pf-hero-email { margin-top: 4px; color: rgba(255,255,255,0.65); font-size: 13.5px; }
+        .pf-chips { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .pf-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
+        .pf-chip--role { background: rgba(201,168,76,0.15); color: #C9A84C; border: 1px solid rgba(201,168,76,0.35); }
+        .pf-chip--active { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+        .pf-chip--locked { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+        .pf-chip-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+        .pf-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
+
+        .pf-panel { background: #ffffff; border: 1px solid rgba(13,27,42,0.09); border-radius: 12px; overflow: hidden; }
+        .pf-panel-head { padding: 18px 24px; border-bottom: 1px solid rgba(13,27,42,0.09); }
+        .pf-panel-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; }
+        .pf-panel-sub { margin-top: 3px; font-size: 12.5px; color: #8A9BAD; }
+        .pf-panel-body { padding: 24px; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .form-group { display: flex; flex-direction: column; gap: 7px; }
+        .form-group--full { grid-column: 1 / -1; }
+        .form-label { font-size: 12px; font-weight: 700; color: #0D1B2A; }
+        .form-hint { font-size: 11.5px; color: #8A9BAD; font-weight: 400; }
+        .form-input { padding: 11px 14px; border: 1px solid rgba(13,27,42,0.15); border-radius: 8px; font-family: inherit; font-size: 13.5px; color: #0D1B2A; background: #fbfaf8; outline: none; transition: all 0.2s; }
         .form-input:focus { border-color: #C9A84C; background: #ffffff; box-shadow: 0 0 0 3px rgba(201,168,76,0.18); }
         .form-input:read-only { background: #f1f0ee; color: #8A9BAD; cursor: not-allowed; }
-        .btn-save { padding: 12px 24px; background: #0D1B2A; color: #C9A84C; font-size: 14px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s; width: 100%; }
-        .btn-save:hover { background: #162a3f; }
-        .role-badge { display: inline-block; padding: 6px 12px; background: #0D1B2A; color: #C9A84C; border: 1px solid rgba(201,168,76,0.25); border-radius: 6px; font-weight: 600; font-size: 13px; margin-top: 10px; text-transform: uppercase; }
 
-        @media (max-width: 768px) {
-          .profile-card { flex-direction: column; }
-          .profile-left { width: 100%; border-right: none; border-bottom: 1px solid rgba(13,27,42,0.09); padding: 30px 20px; }
-          .profile-right { padding: 30px 20px; }
-          .form-grid { grid-template-columns: 1fr; gap: 16px; }
+        .pf-form-foot { display: flex; justify-content: flex-end; margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(13,27,42,0.07); }
+        .btn-save { padding: 11px 28px; background: #0D1B2A; color: #C9A84C; font-size: 13.5px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+        .btn-save:hover { background: #162a3f; }
+
+        .pf-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid rgba(13,27,42,0.06); }
+        .pf-meta-row:last-child { border-bottom: none; }
+        .pf-meta-label { font-size: 12.5px; color: #8A9BAD; font-weight: 600; }
+        .pf-meta-value { font-size: 13.5px; color: #0D1B2A; font-weight: 600; text-align: right; word-break: break-all; }
+        .pf-note { margin-top: 16px; padding: 12px 14px; border-radius: 8px; background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.22); font-size: 12.5px; color: #7a6023; line-height: 1.6; }
+
+        @media (max-width: 900px) {
+          .pf-grid { grid-template-columns: 1fr; }
+          .form-grid { grid-template-columns: 1fr; }
         }
       `}</style>
 
-      <div className="profile-card">
-        {/* CỘT TRÁI: AVATAR VÀ THÔNG TIN CHUNG */}
-        <div className="profile-left">
-          <label className="avatar-wrapper" title="Bấm để thay đổi ảnh">
-            {formData.avatar ? (
-              <img src={formData.avatar} alt="Avatar" className="avatar-img" />
-            ) : (
-              <div className="avatar-placeholder">{profile?.fullName?.charAt(0).toUpperCase()}</div>
-            )}
-            <div className="avatar-overlay">
-              {Icons.camera}
-              <span style={{ marginTop: '4px' }}>Đổi ảnh</span>
-            </div>
-            <input type="file" accept="image/*" className="hidden-input" onChange={handleImageUpload} />
-          </label>
-          
-          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: '20px', color: '#0D1B2A', marginBottom: '4px' }}>
-            {profile?.fullName}
-          </h2>
-          <p style={{ color: '#8A9BAD', fontSize: '14px', marginBottom: '16px' }}>{profile?.email}</p>
-          
-          <div className="role-badge">Tài khoản Admin</div>
-        </div>
+      {/* HERO: AVATAR + ĐỊNH DANH */}
+      <div className="pf-hero">
+        <label className="avatar-wrapper" title="Bấm để thay đổi ảnh">
+          {formData.avatar ? (
+            <img src={formData.avatar} alt="Avatar" className="avatar-img" />
+          ) : (
+            <div className="avatar-placeholder">{profile?.fullName?.charAt(0).toUpperCase()}</div>
+          )}
+          <div className="avatar-overlay">
+            {Icons.camera}
+            <span style={{ marginTop: "4px" }}>Đổi ảnh</span>
+          </div>
+          <input type="file" accept="image/*" className="hidden-input" onChange={handleImageUpload} />
+        </label>
 
-        {/* CỘT PHẢI: FORM CẬP NHẬT */}
-        <form className="profile-right" onSubmit={handleSaveProfile}>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#0D1B2A', marginBottom: '24px' }}>Thông tin liên hệ</h3>
-          
-          <div className="form-grid">
-            <div className="form-group">
-              <label className="form-label">Tài khoản Email</label>
-              <input type="text" className="form-input" value={profile?.email || ""} readOnly />
+        <div>
+          <div className="pf-hero-name">{profile?.fullName}</div>
+          <div className="pf-hero-email">{profile?.email}</div>
+          <div className="pf-chips">
+            <span className="pf-chip pf-chip--role">{roleLabel}</span>
+            <span className={`pf-chip ${isLocked ? "pf-chip--locked" : "pf-chip--active"}`}>
+              <span className="pf-chip-dot" />
+              {isLocked ? "Đã khóa" : "Đang hoạt động"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="pf-grid">
+        {/* FORM CẬP NHẬT THÔNG TIN LIÊN HỆ */}
+        <form className="pf-panel" onSubmit={handleSaveProfile}>
+          <div className="pf-panel-head">
+            <div className="pf-panel-title">Thông tin liên hệ</div>
+            <div className="pf-panel-sub">Cập nhật họ tên, số điện thoại và giấy tờ tùy thân của bạn</div>
+          </div>
+          <div className="pf-panel-body">
+            <div className="form-grid">
+              <div className="form-group form-group--full">
+                <label className="form-label">
+                  Tài khoản Email <span className="form-hint">(không thể thay đổi)</span>
+                </label>
+                <input type="text" className="form-input" value={profile?.email || ""} readOnly />
+              </div>
+              <div className="form-group form-group--full">
+                <label className="form-label">Họ và Tên</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Nhập họ và tên..."
+                  value={formData.fullName}
+                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Số điện thoại</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Nhập số điện thoại..."
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Căn cước công dân</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Nhập số CCCD..."
+                  value={formData.cccd}
+                  onChange={(e) => setFormData({ ...formData, cccd: e.target.value })}
+                />
+              </div>
             </div>
-            <div className="form-group">
-              <label className="form-label">Họ và Tên</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                placeholder="Nhập họ và tên..."
-                value={formData.fullName} 
-                onChange={(e) => setFormData({...formData, fullName: e.target.value})} 
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Số điện thoại</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                placeholder="Nhập số điện thoại..."
-                value={formData.phone} 
-                onChange={(e) => setFormData({...formData, phone: e.target.value})} 
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Căn cước công dân</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                placeholder="Nhập số CCCD..."
-                value={formData.cccd} 
-                onChange={(e) => setFormData({...formData, cccd: e.target.value})} 
-              />
+
+            <div className="pf-form-foot">
+              <button type="submit" className="btn-save">Cập nhật thay đổi</button>
             </div>
           </div>
-
-          <button type="submit" className="btn-save">Cập nhật thay đổi</button>
         </form>
+
+        {/* THÔNG TIN TÀI KHOẢN */}
+        <div className="pf-panel">
+          <div className="pf-panel-head">
+            <div className="pf-panel-title">Thông tin tài khoản</div>
+          </div>
+          <div className="pf-panel-body" style={{ paddingTop: 10, paddingBottom: 10 }}>
+            <div className="pf-meta-row">
+              <span className="pf-meta-label">Vai trò</span>
+              <span className="pf-meta-value">{roleLabel}</span>
+            </div>
+            <div className="pf-meta-row">
+              <span className="pf-meta-label">Trạng thái</span>
+              <span className="pf-meta-value" style={{ color: isLocked ? "#dc2626" : "#16a34a" }}>
+                {isLocked ? "Đã khóa" : "Đang hoạt động"}
+              </span>
+            </div>
+            <div className="pf-meta-row">
+              <span className="pf-meta-label">Số điện thoại</span>
+              <span className="pf-meta-value">{profile?.phone || "Chưa cập nhật"}</span>
+            </div>
+            <div className="pf-meta-row">
+              <span className="pf-meta-label">Ngày tham gia</span>
+              <span className="pf-meta-value">{joinedAt}</span>
+            </div>
+            <div className="pf-note">
+              Ảnh đại diện và thông tin liên hệ sẽ hiển thị với sinh viên trong các thông báo và trang quản lý.
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
