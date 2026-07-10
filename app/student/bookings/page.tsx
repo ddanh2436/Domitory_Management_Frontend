@@ -5,6 +5,7 @@ import Link from "next/link";
 import RoleGuard from "../../components/RoleGuard";
 import { apiClient } from "../../utils/apiClient";
 import { useToast } from "../../components/ToastProvider";
+import { useConfirm } from "../../components/ConfirmProvider";
 
 interface Booking {
   _id: string;
@@ -40,6 +41,7 @@ function StatusBadge({ status }: { status: Booking["status"] }) {
 
 export default function MyBookingsPage() {
   const toast = useToast();
+  const confirmDialog = useConfirm();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -66,7 +68,13 @@ export default function MyBookingsPage() {
   }, []);
 
   const handleCancelBooking = async (bookingId: string) => {
-    if (!confirm("Bạn có chắc chắn muốn hủy đơn đăng ký này?")) return;
+    const ok = await confirmDialog({
+      title: "Hủy đơn đăng ký?",
+      message: "Đơn đăng ký lưu trú đang chờ duyệt sẽ bị hủy. Bạn có thể đăng ký phòng khác sau đó.",
+      confirmLabel: "Hủy đơn",
+      variant: "danger",
+    });
+    if (!ok) return;
 
     try {
       const response = await apiClient.patch(`/bookings/${bookingId}/cancel`);

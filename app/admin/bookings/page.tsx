@@ -2,20 +2,26 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "../../components/ToastProvider";
+import { useConfirm } from "../../components/ConfirmProvider";
 import { apiClient } from "../../utils/apiClient";
+import RoomFilterBar, { EMPTY_ROOM_FILTER, matchRoomFilter, type RoomFilterValue } from "../../components/RoomFilterBar";
 
 interface Booking {
   _id: string;
   status: "PENDING" | "APPROVED" | "REJECTED";
   createdAt: string;
   user?: { fullName?: string; mssv?: string };
-  room?: { name?: string; building?: string };
+  room?: { name?: string; building?: string; floor?: number };
 }
 
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [roomFilter, setRoomFilter] = useState<RoomFilterValue>(EMPTY_ROOM_FILTER);
   const toast = useToast();
+  const confirmDialog = useConfirm();
+
+  const filteredBookings = bookings.filter((b) => matchRoomFilter(roomFilter, b.room));
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -36,7 +42,16 @@ export default function AdminBookingsPage() {
   }, []);
 
   const handleAction = async (bookingId: string, action: 'approve' | 'reject') => {
-    if (!confirm(`Bạn chắc chắn muốn ${action === 'approve' ? 'DUYỆT' : 'TỪ CHỐI'} đơn này?`)) return;
+    const isApprove = action === 'approve';
+    const ok = await confirmDialog({
+      title: isApprove ? "Duyệt đơn đăng ký?" : "Từ chối đơn đăng ký?",
+      message: isApprove
+        ? "Sinh viên sẽ được xếp vào phòng và hệ thống tự động tạo hợp đồng lưu trú."
+        : "Đơn đăng ký này sẽ bị từ chối. Sinh viên có thể đăng ký phòng khác sau đó.",
+      confirmLabel: isApprove ? "Duyệt đơn" : "Từ chối",
+      variant: isApprove ? "primary" : "danger",
+    });
+    if (!ok) return;
     
     try {
       const response = await apiClient.patch(`/bookings/${bookingId}/${action}`);
@@ -154,7 +169,10 @@ export default function AdminBookingsPage() {
       `}</style>
 
       <div className="panel">
-        <h2 className="panel-title">Danh sách Đơn đăng ký lưu trú</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <h2 className="panel-title" style={{ marginBottom: 0 }}>Danh sách Đơn đăng ký lưu trú</h2>
+          <RoomFilterBar rooms={bookings.map((b) => b.room)} value={roomFilter} onChange={setRoomFilter} />
+        </div>
 
         <div className="overflow-x-auto">
           <table className="adm-table">
@@ -174,14 +192,14 @@ export default function AdminBookingsPage() {
                     Đang tải dữ liệu...
                   </td>
                 </tr>
-              ) : bookings.length === 0 ? (
+              ) : filteredBookings.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="text-center py-16 text-[#8A9BAD] font-medium text-sm">
-                    Chưa có đơn đăng ký nào.
+                    {bookings.length === 0 ? "Chưa có đơn đăng ký nào." : "Không có đơn nào khớp bộ lọc."}
                   </td>
                 </tr>
               ) : (
-                bookings.map((b) => (
+                filteredBookings.map((b) => (
                   <tr key={b._id} style={{ transition: 'background-color 0.2s' }}>
                     <td>
                       <div className="font-bold text-[#0D1B2A] text-[15px]">{b.user?.fullName}</div>

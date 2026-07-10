@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { apiClient } from "../../../utils/apiClient";
 import RoleGuard from "../../../components/RoleGuard";
+import { useConfirm } from "../../../components/ConfirmProvider";
 import { 
   ArrowLeft, MapPin, CheckCircle2, Shield, 
   Wifi, Wind, Bed, Zap, Clock, Info, ShieldCheck, Sparkles
@@ -24,6 +25,7 @@ interface RoomData {
 export default function RoomDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const confirmDialog = useConfirm();
   
   const [room, setRoom] = useState<RoomData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,7 +63,12 @@ export default function RoomDetailPage() {
 
   const handleBooking = async () => {
     if (hasPendingBooking || isSubmitting || !room) return;
-    if (!window.confirm("Xác nhận gửi yêu cầu đăng ký phòng này?")) return;
+    const ok = await confirmDialog({
+      title: "Gửi yêu cầu đăng ký phòng?",
+      message: "Đơn đăng ký sẽ được gửi đến Ban quản lý phê duyệt. Bạn chưa phải thanh toán lúc này.",
+      confirmLabel: "Gửi yêu cầu",
+    });
+    if (!ok) return;
 
     setIsSubmitting(true);
     try {

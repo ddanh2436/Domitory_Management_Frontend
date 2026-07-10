@@ -37,28 +37,46 @@ const Icons = {
   ),
 };
 
+const PAGE_SIZE = 10;
+
 export default function StudentNotificationsPage() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const res = await apiClient.get("/notifications/me");
+  const fetchNotifications = async (targetPage: number) => {
+    setLoading(true);
+    try {
+      const res = await apiClient.get(`/notifications/me?page=${targetPage}&limit=${PAGE_SIZE}`);
 
-        if (res.ok) {
-          setNotifications(await res.json());
+      if (res.ok) {
+        const payload = await res.json();
+        const list = Array.isArray(payload) ? payload : payload?.data;
+        if (Array.isArray(list)) {
+          setNotifications(list);
+          setTotalPages(payload?.totalPages ?? 1);
+          setTotal(payload?.total ?? list.length);
+          setUnreadCount(
+            typeof payload?.unreadCount === "number"
+              ? payload.unreadCount
+              : list.filter((n: NotificationItem) => !n.isRead).length,
+          );
         }
-      } catch (error) {
-        console.error("Loi tai thong bao:", error);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("Loi tai thong bao:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    void fetchNotifications();
-  }, []);
+  useEffect(() => {
+    void fetchNotifications(page);
+  }, [page]);
 
   const handleOpenNotification = async (notification: NotificationItem) => {
     if (!notification.isRead) {
@@ -70,6 +88,7 @@ export default function StudentNotificationsPage() {
             item._id === notification._id ? { ...item, isRead: true } : item,
           ),
         );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
       } catch (error) {
         console.error("Loi cap nhat thong bao:", error);
       }
@@ -94,13 +113,17 @@ export default function StudentNotificationsPage() {
         throw new Error("Delete notification failed");
       }
 
-      setNotifications((prev) => prev.filter((item) => item._id !== notificationId));
+      // Tải lại trang hiện tại để danh sách và tổng số luôn khớp với server
+      const isLastItemOnPage = notifications.length === 1 && page > 1;
+      if (isLastItemOnPage) {
+        setPage((prev) => prev - 1);
+      } else {
+        void fetchNotifications(page);
+      }
     } catch (error) {
       console.error("Loi xoa thong bao:", error);
     }
   };
-
-  const unreadCount = notifications.filter((item) => !item.isRead).length;
 
   return (
     <div className="nf-shell">
@@ -264,6 +287,39 @@ export default function StudentNotificationsPage() {
           color: var(--muted);
           box-shadow: 0 8px 24px rgba(13,27,42,0.04);
         }
+
+        .nf-pagination {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          margin-top: 24px;
+          flex-wrap: wrap;
+        }
+        .nf-page-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          height: 38px;
+          padding: 0 16px;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--white);
+          color: var(--navy);
+          font-size: 13px;
+          font-weight: 600;
+          font-family: inherit;
+          cursor: pointer;
+          transition: all .15s;
+        }
+        .nf-page-btn:hover:not(:disabled) { border-color: var(--gold); color: #9a7b2c; }
+        .nf-page-btn:disabled { opacity: .45; cursor: not-allowed; }
+        .nf-page-info {
+          padding: 0 12px;
+          font-size: 13px;
+          color: var(--muted);
+          font-weight: 600;
+        }
       `}</style>
 
       <section className="nf-hero">
@@ -282,6 +338,7 @@ export default function StudentNotificationsPage() {
       ) : notifications.length === 0 ? (
         <div className="nf-empty">Bạn chưa có thông báo nào.</div>
       ) : (
+        <>
         <div className="nf-list">
           {notifications.map((notification) => (
             <article
@@ -316,6 +373,31 @@ export default function StudentNotificationsPage() {
             </article>
           ))}
         </div>
+
+        {totalPages > 1 && (
+          <div className="nf-pagination">
+            <button
+              type="button"
+              className="nf-page-btn"
+              disabled={page <= 1}
+              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+            >
+              ← Trang trước
+            </button>
+            <span className="nf-page-info">
+              Trang {page}/{totalPages} · {total} thông báo
+            </span>
+            <button
+              type="button"
+              className="nf-page-btn"
+              disabled={page >= totalPages}
+              onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+            >
+              Trang sau →
+            </button>
+          </div>
+        )}
+        </>
       )}
     </div>
   );

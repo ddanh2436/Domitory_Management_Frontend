@@ -5,6 +5,7 @@ import Link from "next/link";
 import RoleGuard from "../../components/RoleGuard";
 import { apiClient } from "../../utils/apiClient";
 import { useToast } from "../../components/ToastProvider";
+import { useConfirm } from "../../components/ConfirmProvider";
 
 // ─── Types (identical to original) ────────────────────────────────────────────
 interface Room {
@@ -97,6 +98,7 @@ function VisualBedMap({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function BookRoomPage() {
   const toast = useToast();
+  const confirmDialog = useConfirm();
   // ── State (identical to original) ──
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
@@ -144,7 +146,12 @@ export default function BookRoomPage() {
   // ── handleBookRoom (identical to original) ──
   const handleBookRoom = async () => {
     if (!selectedRoom || !selectedBed) return;
-    if (!confirm(`Bạn có chắc chắn muốn đăng ký ${selectedBed.code} - Phòng ${selectedRoom.name || selectedRoom.roomNumber}?`)) return;
+    const ok = await confirmDialog({
+      title: "Xác nhận đăng ký phòng?",
+      message: `Bạn sẽ đăng ký ${selectedBed.code} - Phòng ${selectedRoom.name || selectedRoom.roomNumber}. Đơn sẽ được gửi đến Ban quản lý phê duyệt.`,
+      confirmLabel: "Đăng ký ngay",
+    });
+    if (!ok) return;
 
     setSubmitting(true);
     try {

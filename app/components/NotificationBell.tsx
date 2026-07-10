@@ -86,12 +86,18 @@ export default function NotificationBell() {
     if (!token) return;
 
     apiClient
-      .get("/notifications/me")
+      .get("/notifications/me?page=1&limit=15")
       .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setNotifications(data);
-          setUnreadCount(data.filter((n) => !n.isRead).length);
+      .then((payload) => {
+        // API mới trả { data, unreadCount, ... }; vẫn đỡ được dạng mảng cũ
+        const list = Array.isArray(payload) ? payload : payload?.data;
+        if (Array.isArray(list)) {
+          setNotifications(list);
+          setUnreadCount(
+            typeof payload?.unreadCount === "number"
+              ? payload.unreadCount
+              : list.filter((n: Notification) => !n.isRead).length,
+          );
         }
       })
       .catch((err) => console.error("Lỗi gọi API thông báo:", err));
@@ -173,12 +179,12 @@ export default function NotificationBell() {
 
   const handleMarkAllRead = async (e?: ReactMouseEvent) => {
     e?.stopPropagation();
-    const unread = notifications.filter((n) => !n.isRead);
-    if (unread.length === 0) return;
+    if (unreadCount === 0) return;
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     setUnreadCount(0);
     try {
-      await Promise.all(unread.map((n) => apiClient.patch(`/notifications/${n._id}/read`)));
+      // Đánh dấu toàn bộ ở server (kể cả thông báo ngoài trang hiện tại)
+      await apiClient.patch("/notifications/read-all");
     } catch (err) {
       console.error("Lỗi đánh dấu tất cả đã đọc:", err);
     }
@@ -198,11 +204,9 @@ export default function NotificationBell() {
     try {
       const res = await apiClient.delete(`/notifications/${notifId}`);
       if (!res.ok) throw new Error("Delete notification failed");
-      setNotifications((prev) => {
-        const next = prev.filter((n) => n._id !== notifId);
-        setUnreadCount(next.filter((n) => !n.isRead).length);
-        return next;
-      });
+      const wasUnread = notifications.some((n) => n._id === notifId && !n.isRead);
+      setNotifications((prev) => prev.filter((n) => n._id !== notifId));
+      if (wasUnread) setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
       console.error("Loi xoa thong bao:", err);
     }

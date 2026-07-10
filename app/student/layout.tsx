@@ -9,6 +9,7 @@ import NotificationBell from "../components/NotificationBell";
 import { ToastProvider } from "../components/ToastProvider";
 import { apiClient } from "../utils/apiClient";
 import { clearToken } from "../utils/auth";
+import { ConfirmProvider } from "../components/ConfirmProvider";
 
 interface Profile {
   fullName: string;
@@ -89,6 +90,16 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
     </svg>
   ),
+  transfer: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+    </svg>
+  ),
+  moon: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+    </svg>
+  ),
   logout: (
     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -123,7 +134,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
         const [profileRes, notificationsRes] = await Promise.all([
           apiClient.get("/users/profile"),
-          apiClient.get("/notifications/me"),
+          apiClient.get("/notifications/me?page=1&limit=1"),
         ]);
 
         if (profileRes.ok) {
@@ -131,9 +142,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         }
 
         if (notificationsRes.ok) {
-          const notifications = await notificationsRes.json();
-          if (Array.isArray(notifications)) {
-            setUnreadNotifications(notifications.filter((item: any) => !item.isRead).length);
+          const payload = await notificationsRes.json();
+          if (typeof payload?.unreadCount === "number") {
+            setUnreadNotifications(payload.unreadCount);
+          } else if (Array.isArray(payload)) {
+            setUnreadNotifications(payload.filter((item: { isRead: boolean }) => !item.isRead).length);
           }
         }
       } catch (e) {
@@ -174,6 +187,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   return (
     <RoleGuard allowedRoles={["STUDENT"]}>
       <ToastProvider>
+      <ConfirmProvider>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -259,6 +273,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           <nav className="st-nav">
             <NavItem icon={Icons.home} label="Tổng quan" href="/student" active={pathname === "/student"} />
             <NavItem icon={Icons.search} label="Tìm & Đặt phòng" href="/student/rooms" active={pathname.startsWith("/student/rooms")} />
+            <NavItem icon={Icons.transfer} label="Đổi phòng" href="/student/transfers" active={pathname.startsWith("/student/transfers")} />
+            <NavItem icon={Icons.moon} label="Tạm trú / Tạm vắng" href="/student/absences" active={pathname.startsWith("/student/absences")} />
             <NavItem icon={Icons.doc} label="Hợp đồng điện tử" href="/student/contracts" active={pathname.startsWith("/student/contracts")} />
             <NavItem icon={Icons.invoice} label="Hóa đơn" href="/student/invoices" active={pathname.startsWith("/student/invoices")} />
             <NavItem icon={Icons.user} label="Hồ sơ cá nhân" href="/student/profile" active={pathname.startsWith("/student/profile")} />
@@ -290,6 +306,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           </main>
         </div>
       </div>
+      </ConfirmProvider>
       </ToastProvider>
     </RoleGuard>
   );

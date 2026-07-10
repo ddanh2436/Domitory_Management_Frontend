@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "../../components/ToastProvider";
+import { useConfirm } from "../../components/ConfirmProvider";
 import { apiClient } from "../../utils/apiClient";
+import RoomFilterBar, { EMPTY_ROOM_FILTER, matchRoomFilter, type RoomFilterValue } from "../../components/RoomFilterBar";
 
 interface Invoice {
   _id: string;
-  room: { _id: string; name: string; building: string };
+  room: { _id: string; name: string; building: string; floor?: number };
   month: number;
   year: number;
   roomFee: number;
@@ -41,7 +43,11 @@ export default function AdminInvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
+  const [roomFilter, setRoomFilter] = useState<RoomFilterValue>(EMPTY_ROOM_FILTER);
   const toast = useToast();
+  const confirmDialog = useConfirm();
+
+  const filteredInvoices = invoices.filter((inv) => matchRoomFilter(roomFilter, inv.room));
   
   // Modal State
   const [showModal, setShowModal] = useState(false);
@@ -81,7 +87,12 @@ export default function AdminInvoicesPage() {
   }, []);
 
   const handleMarkAsPaid = async (invoiceId: string) => {
-    if (!window.confirm(`Xác nhận đã thu tiền cho hóa đơn này?`)) return;
+    const ok = await confirmDialog({
+      title: "Xác nhận đã thu tiền?",
+      message: "Hóa đơn sẽ được đánh dấu ĐÃ THU và sinh viên trong phòng nhận được thông báo thanh toán thành công.",
+      confirmLabel: "Đã thu tiền",
+    });
+    if (!ok) return;
     
     try {
       const response = await apiClient.patch(`/invoices/${invoiceId}/pay`);
@@ -257,8 +268,9 @@ export default function AdminInvoicesPage() {
       <div className="panel">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
            <h2 className="panel-title">Quản lý Hệ thống Hóa đơn</h2>
-           
-           <div className="flex gap-3 shrink-0">
+
+           <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <RoomFilterBar rooms={invoices.map((inv) => inv.room)} value={roomFilter} onChange={setRoomFilter} />
             <button 
               onClick={handleTriggerOverdue}
               className="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 font-bold transition-colors text-[13px] whitespace-nowrap"
@@ -290,10 +302,10 @@ export default function AdminInvoicesPage() {
             <tbody>
               {loading ? (
                 <tr><td colSpan={7} className="text-center py-16 text-[#8A9BAD] font-medium text-sm">Đang tải dữ liệu...</td></tr>
-              ) : invoices.length === 0 ? (
-                <tr><td colSpan={7} className="text-center py-16 text-[#8A9BAD] font-medium text-sm">Chưa có hóa đơn nào.</td></tr>
+              ) : filteredInvoices.length === 0 ? (
+                <tr><td colSpan={7} className="text-center py-16 text-[#8A9BAD] font-medium text-sm">{invoices.length === 0 ? "Chưa có hóa đơn nào." : "Không có hóa đơn nào khớp bộ lọc."}</td></tr>
               ) : (
-                invoices.map((inv) => (
+                filteredInvoices.map((inv) => (
                   <tr key={inv._id} style={{ transition: 'background-color 0.2s' }}>
                     <td className="whitespace-nowrap">
                       <div className="font-bold text-[#0D1B2A] text-[15px]">{inv.room?.name || 'Phòng đã xóa'}</div>
