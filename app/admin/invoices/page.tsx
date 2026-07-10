@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "../../components/ToastProvider";
+import { apiClient } from "../../utils/apiClient";
 
 interface Invoice {
   _id: string;
@@ -57,19 +58,13 @@ export default function AdminInvoicesPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      
-      const resInvoices = await fetch("http://localhost:3001/api/invoices?limit=100", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const resInvoices = await apiClient.get("/invoices?limit=100");
       if (resInvoices.ok) {
         const result = await resInvoices.json();
         setInvoices(result.data || []);
       }
 
-      const resRooms = await fetch("http://localhost:3001/api/rooms?limit=100", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const resRooms = await apiClient.get("/rooms?limit=100");
       if (resRooms.ok) {
         const result = await resRooms.json();
         setRooms(result.data || []);
@@ -89,11 +84,7 @@ export default function AdminInvoicesPage() {
     if (!window.confirm(`Xác nhận đã thu tiền cho hóa đơn này?`)) return;
     
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:3001/api/invoices/${invoiceId}/pay`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.patch(`/invoices/${invoiceId}/pay`);
       
       const data = await response.json();
       if (response.ok) {
@@ -109,11 +100,7 @@ export default function AdminInvoicesPage() {
 
   const handleTriggerOverdue = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:3001/api/invoices/trigger-overdue`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.post("/invoices/trigger-overdue", {});
       if (response.ok) {
         toast.success("Đã quét và cập nhật các hóa đơn quá hạn!", "Hoàn tất");
         fetchData();
@@ -128,19 +115,11 @@ export default function AdminInvoicesPage() {
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3001/api/invoices", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({
-          ...formData,
-          electricityFee: Number(formData.electricityFee),
-          waterFee: Number(formData.waterFee),
-          dueDate: new Date(formData.dueDate).toISOString(),
-        }),
+      const response = await apiClient.post("/invoices", {
+        ...formData,
+        electricityFee: Number(formData.electricityFee),
+        waterFee: Number(formData.waterFee),
+        dueDate: new Date(formData.dueDate).toISOString(),
       });
 
       const data = await response.json();

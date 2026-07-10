@@ -8,6 +8,7 @@ import RoleGuard from "../components/RoleGuard";
 import NotificationBell from "../components/NotificationBell";
 import { ToastProvider } from "../components/ToastProvider";
 import { apiClient } from "../utils/apiClient";
+import { clearToken } from "../utils/auth";
 
 interface Profile {
   fullName: string;
@@ -166,7 +167,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    clearToken();
     window.location.href = "/login";
   };
 

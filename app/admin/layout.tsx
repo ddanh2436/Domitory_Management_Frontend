@@ -6,6 +6,8 @@ import { useRouter, usePathname } from "next/navigation";
 import RoleGuard from "../components/RoleGuard";
 import NotificationBell from "../components/NotificationBell";
 import { ToastProvider } from "../components/ToastProvider";
+import { apiClient } from "../utils/apiClient";
+import { clearToken } from "../utils/auth";
 
 interface AdminProfile {
   _id: string;
@@ -116,30 +118,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const resProfile = await fetch("http://localhost:3001/api/users/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const resProfile = await apiClient.get("/users/profile");
         if (resProfile.ok) setAdminProfile(await resProfile.json());
 
-        const resStudents = await fetch("http://localhost:3001/api/users/students", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const resStudents = await apiClient.get("/users/students");
         if (resStudents.ok) {
           const sData = await resStudents.json();
           setStudentsCount(sData.length);
         }
 
-        const resBookings = await fetch("http://localhost:3001/api/bookings", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const resBookings = await apiClient.get("/bookings");
         if (resBookings.ok) {
           const bData = (await resBookings.json()) as BookingSummary[];
           setPendingBookings(bData.filter((booking) => booking.status === "PENDING").length);
         }
 
-        const resMaintenance = await fetch("http://localhost:3001/api/maintenance", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const resMaintenance = await apiClient.get("/maintenance");
         if (resMaintenance.ok) {
           const mData = (await resMaintenance.json()) as MaintenanceSummary[];
           setPendingMaintenance(mData.filter((req) => req.status === "PENDING").length);
@@ -153,7 +147,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    clearToken();
     window.location.href = "/login";
   };
 

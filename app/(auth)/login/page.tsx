@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GoogleLogin } from "@react-oauth/google";
 import type { CredentialResponse } from "@react-oauth/google";
-import { getDashboardPath, getLoggedInUser } from "@/app/utils/auth";
+import { getDashboardPath, getLoggedInUser, persistToken } from "@/app/utils/auth";
+import { apiClient } from "@/app/utils/apiClient";
 import { FaUser, FaIdCard, FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────
@@ -137,15 +138,11 @@ export default function AuthPage() {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // ĐỔI: Gửi 'identifier' thay cho 'email' để Backend nhận dạng MSSV/Email/CCCD
-        body: JSON.stringify({ identifier: loginIdentifier, password: loginPassword }),
-      });
+      // Gửi 'identifier' thay cho 'email' để Backend nhận dạng MSSV/Email/CCCD
+      const res = await apiClient.post("/auth/login", { identifier: loginIdentifier, password: loginPassword });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Sai thông tin đăng nhập.");
-      localStorage.setItem("token", data.access_token);
+      persistToken(data.access_token);
       const user = getLoggedInUser();
       if (user) router.push(getDashboardPath(user.role));
     } catch (err: unknown) {
@@ -164,14 +161,10 @@ export default function AuthPage() {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: credentialResponse.credential }),
-      });
+      const res = await apiClient.post("/auth/google", { token: credentialResponse.credential });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Lỗi đăng nhập Google từ server.");
-      localStorage.setItem("token", data.access_token);
+      persistToken(data.access_token);
       const user = getLoggedInUser();
       if (user) router.push(getDashboardPath(user.role));
     } catch (err: unknown) {

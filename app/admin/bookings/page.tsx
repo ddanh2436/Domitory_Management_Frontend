@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "../../components/ToastProvider";
+import { apiClient } from "../../utils/apiClient";
 
 interface Booking {
   _id: string;
@@ -19,10 +20,7 @@ export default function AdminBookingsPage() {
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3001/api/bookings", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.get("/bookings");
       if (response.ok) {
         setBookings(await response.json());
       }
@@ -41,11 +39,7 @@ export default function AdminBookingsPage() {
     if (!confirm(`Bạn chắc chắn muốn ${action === 'approve' ? 'DUYỆT' : 'TỪ CHỐI'} đơn này?`)) return;
     
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:3001/api/bookings/${bookingId}/${action}`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await apiClient.patch(`/bookings/${bookingId}/${action}`);
       
       const data = await response.json();
       if (response.ok) {

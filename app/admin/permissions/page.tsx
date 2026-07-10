@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useToast } from "../../components/ToastProvider";
+import { apiClient } from "../../utils/apiClient";
 
 type AccountRole =
   | "ADMIN"
@@ -32,8 +33,6 @@ interface ApiAccount {
   role?: AccountRole;
   accessStatus?: AccessStatus;
 }
-
-const API_BASE_URL = "http://localhost:3001";
 
 const roleOptions: { value: AccountRole; label: string }[] = [
   { value: "ADMIN", label: "Quản trị viên" },
@@ -73,12 +72,7 @@ export default function AdminPermissionsPage() {
       setErrorMsg(null);
 
       try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("Bạn cần đăng nhập để xem danh sách tài khoản.");
-
-        const response = await fetch(`${API_BASE_URL}/api/users/access-control`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await apiClient.get("/users/access-control");
 
         const data = await response.json();
         if (!response.ok) {
@@ -114,17 +108,7 @@ export default function AdminPermissionsPage() {
     setErrorMsg(null);
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Bạn cần đăng nhập để cập nhật phân quyền.");
-
-      const response = await fetch(`${API_BASE_URL}/api/users/${id}/access-control`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updateData),
-      });
+      const response = await apiClient.patch(`/users/${id}/access-control`, updateData);
 
       const data = await response.json();
       if (!response.ok) {

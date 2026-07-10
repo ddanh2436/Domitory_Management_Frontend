@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { apiClient } from "../../utils/apiClient";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Invoice {
@@ -143,12 +144,8 @@ export default function StudentInvoicesPage() {
   useEffect(() => {
     const fetchMyInvoices = async () => {
       try {
-        const token = localStorage.getItem("token");
-
         // 1. Lấy thông tin cá nhân để biết sinh viên đang ở phòng nào (lấy _id của phòng)
-        const profileRes = await fetch("http://localhost:3001/api/users/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const profileRes = await apiClient.get("/users/profile");
         const profile = await profileRes.json();
 
         // Nếu sinh viên chưa có phòng (chưa đăng ký hoặc chưa được duyệt)
@@ -159,9 +156,7 @@ export default function StudentInvoicesPage() {
         }
 
         // 2. Gọi API lấy danh sách hóa đơn theo ID phòng đó
-        const invoiceRes = await fetch(`http://localhost:3001/api/invoices/room/${profile.room._id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const invoiceRes = await apiClient.get(`/invoices/room/${profile.room._id}`);
 
         if (invoiceRes.ok) {
           const data = await invoiceRes.json();
