@@ -13,8 +13,12 @@ export const SocketProvider = ({ children, userId }: { children: React.ReactNode
   useEffect(() => {
     if (!userId) return;
 
-    const socketUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    // Gateway chạy cùng host với API (port 3001), URL socket không có hậu tố /api
+    const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const socketUrl = rawApiUrl.replace(/\/api$/, '');
+    const token = localStorage.getItem('token');
     const socketInstance = io(socketUrl, {
+      auth: token ? { token } : undefined,
       query: { userId },
     });
 

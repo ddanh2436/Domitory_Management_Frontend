@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "../../components/ToastProvider";
+import { apiClient } from "../../utils/apiClient";
 
 interface StudentProfile {
   _id: string;
@@ -46,12 +47,9 @@ export default function StudentProfilePage() {
 
   const loadProfile = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const headers = { Authorization: `Bearer ${token}` };
-
       const [res, violRes] = await Promise.all([
-        fetch("http://localhost:3001/api/users/profile", { headers }),
-        fetch("http://localhost:3001/api/violations/me", { headers }),
+        apiClient.get("/users/profile"),
+        apiClient.get("/violations/me"),
       ]);
 
       if (res.ok) {
@@ -95,12 +93,7 @@ export default function StudentProfilePage() {
     e.preventDefault();
     setAlertMsg({ text: "Đang lưu...", type: "info" });
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3001/api/users/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(formData),
-      });
+      const response = await apiClient.patch("/users/profile", formData);
 
       if (response.ok) {
         setAlertMsg({ text: "Cập nhật hồ sơ thành công!", type: "success" });

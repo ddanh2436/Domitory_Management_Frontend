@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { useRouter } from "next/navigation";
+import { apiClient } from "../../utils/apiClient";
 
 interface NotificationItem {
   _id: string;
@@ -44,12 +45,7 @@ export default function StudentNotificationsPage() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
-        const res = await fetch("http://localhost:3001/api/notifications/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await apiClient.get("/notifications/me");
 
         if (res.ok) {
           setNotifications(await res.json());
@@ -66,13 +62,8 @@ export default function StudentNotificationsPage() {
 
   const handleOpenNotification = async (notification: NotificationItem) => {
     if (!notification.isRead) {
-      const token = localStorage.getItem("token");
-
       try {
-        await fetch(`http://localhost:3001/api/notifications/${notification._id}/read`, {
-          method: "PATCH",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await apiClient.patch(`/notifications/${notification._id}/read`);
 
         setNotifications((prev) =>
           prev.map((item) =>
@@ -97,11 +88,7 @@ export default function StudentNotificationsPage() {
     event.stopPropagation();
 
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:3001/api/notifications/${notificationId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await apiClient.delete(`/notifications/${notificationId}`);
 
       if (!res.ok) {
         throw new Error("Delete notification failed");

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "../../components/ToastProvider";
+import { apiClient } from "../../utils/apiClient";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface AdminProfile {
@@ -39,10 +40,7 @@ export default function AdminProfilePage() {
 
   const loadProfile = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/api/users/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await apiClient.get("/users/profile");
       if (res.ok) {
         const data = await res.json();
         setProfile(data);
@@ -87,12 +85,7 @@ export default function AdminProfilePage() {
     e.preventDefault();
     setAlertMsg({ text: "Đang lưu...", type: "info" });
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3001/api/users/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(formData),
-      });
+      const response = await apiClient.patch("/users/profile", formData);
 
       if (response.ok) {
         setAlertMsg({ text: "Cập nhật hồ sơ thành công!", type: "success" });

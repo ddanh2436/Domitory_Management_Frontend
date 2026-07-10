@@ -12,6 +12,19 @@ export function getDashboardPath(role: UserRole) {
   return role === 'STUDENT' ? '/student' : '/admin';
 }
 
+// Lưu token vào localStorage (cho apiClient/socket) và cookie (cho middleware.ts
+// kiểm tra phía server). Cookie không phải httpOnly vì được set từ JS — middleware
+// chỉ dùng nó để gating route; xác thực thật vẫn do backend kiểm tra Bearer token.
+export function persistToken(token: string) {
+  localStorage.setItem("token", token);
+  document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+}
+
+export function clearToken() {
+  localStorage.removeItem("token");
+  document.cookie = "token=; path=/; max-age=0; SameSite=Lax";
+}
+
 export function getLoggedInUser(): JwtPayload | null {
   if (typeof window === "undefined") return null;
   
@@ -33,13 +46,13 @@ export function getLoggedInUser(): JwtPayload | null {
     
     if (decoded.exp * 1000 < Date.now()) {
       console.warn("Session đã hết hạn! Tự động đăng xuất.");
-      localStorage.removeItem("token"); // Xóa token đã hết hạn khỏi bộ nhớ
+      clearToken(); // Xóa token đã hết hạn khỏi bộ nhớ
       return null;
     }
-    
+
     return decoded;
   } catch {
-    localStorage.removeItem("token");
+    clearToken();
     return null;
   }
 }

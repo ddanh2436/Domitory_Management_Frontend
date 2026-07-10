@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { apiClient } from "../../../utils/apiClient";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type PaymentMethod = "CARD" | "QR" | "EWALLET" | "BANK";
@@ -128,12 +129,8 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     const fetchInvoiceData = async () => {
       try {
-        const token = localStorage.getItem("token");
-        
         // 1. Lấy phòng hiện tại của Sinh viên
-        const profileRes = await fetch("http://localhost:3001/api/users/profile", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const profileRes = await apiClient.get("/users/profile");
         const profile = await profileRes.json();
         const roomId = profile.room?._id || profile.room;
 
@@ -143,9 +140,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
         }
 
         // 2. Lấy tất cả hóa đơn của phòng và lọc ra đúng ID này
-        const invRes = await fetch(`http://localhost:3001/api/invoices/room/${roomId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const invRes = await apiClient.get(`/invoices/room/${roomId}`);
         
         if (invRes.ok) {
           const allInvoices = (await invRes.json()) as InvoiceData[];
@@ -174,11 +169,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
     // Giả lập thời gian xử lý phía cổng thanh toán
     setTimeout(async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:3001/api/invoices/${invoiceId}/pay-mock`, {
-          method: "PATCH",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await apiClient.patch(`/invoices/${invoiceId}/pay-mock`);
 
         if (res.ok) {
           setSuccess(true);
