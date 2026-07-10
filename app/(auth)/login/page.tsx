@@ -256,7 +256,7 @@ export default function AuthPage() {
         .ap-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .ap-forgot { display: block; text-align: right; font-size: 12.5px; color: var(--muted); text-decoration: none; margin-top: -8px; margin-bottom: 18px; transition: color .15s; }
         .ap-forgot:hover { color: var(--gold); }
-        .ap-btn { width: 100%; padding: 12px; background: var(--navy); color: var(--white); border: none; border-radius: 10px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; transition: background .18s, transform .1s, box-shadow .18s; display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 5px; }
+        .ap-btn { width: 100%; padding: 12px; background: var(--navy); color: var(--white); border: none; border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; transition: background .18s, transform .1s, box-shadow .18s; display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 5px; }
         .ap-btn:hover { background: var(--navy-md); box-shadow: 0 6px 18px rgba(13,27,42,.22); transform: translateY(-1px); }
         .ap-btn:active { transform: scale(.98); }
         .ap-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }

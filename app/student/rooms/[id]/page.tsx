@@ -107,7 +107,7 @@ export default function RoomDetailPage() {
             <Info className="w-14 h-14 text-slate-300 mx-auto mb-5" />
             <h2 className="text-xl font-bold text-slate-800">Không tìm thấy phòng</h2>
             <p className="text-slate-500 text-[15px] leading-relaxed mt-2 mb-8">Căn phòng này có thể đã bị xóa hoặc tạm thời không có sẵn trên hệ thống.</p>
-            <button onClick={() => router.back()} className="w-full py-3 bg-[#0D1B2A] hover:bg-[#1A2E42] text-white rounded-xl font-semibold transition-colors">Quay lại danh sách</button>
+            <button onClick={() => router.back()} className="w-full py-3 bg-[#0D1B2A] hover:bg-[#1A2E42] text-white rounded-lg font-semibold transition-colors">Quay lại danh sách</button>
           </div>
         </div>
       </RoleGuard>
@@ -125,7 +125,7 @@ export default function RoomDetailPage() {
             onClick={() => router.back()}
             className="group inline-flex items-center text-sm font-semibold text-slate-500 hover:text-[#0D1B2A] transition-colors"
           >
-            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 group-hover:bg-slate-200 mr-3 transition-colors">
+            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-slate-200 mr-3 transition-colors">
               <ArrowLeft className="w-4 h-4" />
             </span>
             Trở về tìm kiếm
@@ -241,7 +241,7 @@ export default function RoomDetailPage() {
                 <button
                   onClick={handleBooking}
                   disabled={hasPendingBooking || isSubmitting}
-                  className={`w-full py-4 rounded-2xl font-bold text-[16px] tracking-wide transition-all duration-200 ${
+                  className={`w-full py-4 rounded-lg font-bold text-[16px] tracking-wide transition-all duration-200 ${
                     hasPendingBooking
                       ? "bg-slate-200 text-slate-400 cursor-not-allowed"
                       : "bg-[#0D1B2A] hover:bg-[#1A2E42] text-white shadow-lg shadow-[#0D1B2A]/25 active:scale-[0.98]"

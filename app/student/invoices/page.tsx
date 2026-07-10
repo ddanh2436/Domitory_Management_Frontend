@@ -244,7 +244,7 @@ export default function StudentInvoicesPage() {
         .iv-total-label { font-size:13.5px; color:var(--muted); }
         .iv-total-amount { font-family:'Fraunces',serif; font-size:23px; font-weight:700; color:var(--navy); letter-spacing:-.5px; }
 
-        .iv-btn-pay { width:100%; padding:13px; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:14.5px; font-weight:600; text-align:center; border:none; cursor:pointer; transition:all .18s; }
+        .iv-btn-pay { width:100%; padding:13px; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14.5px; font-weight:600; text-align:center; border:none; cursor:pointer; transition:all .18s; }
         .iv-btn-pay--active { background:var(--navy); color:var(--white); }
         .iv-btn-pay--active:hover { background:#1a334d; box-shadow:0 6px 18px rgba(13,27,42,.18); transform:translateY(-1px); }
         .iv-btn-pay--overdue { background:#dc2626; color:#fff; }

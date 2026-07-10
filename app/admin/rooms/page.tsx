@@ -250,7 +250,7 @@ export default function AdminRoomsPage() {
                         <>
                           {room.occupants.slice(0, 5).map((occ, i) => (
                             <AvatarLightbox
-                              key={occ.userId || occ.mssv || i}
+                              key={`${occ.userId || occ.mssv || "occ"}-${i}`}
                               name={occ.fullName}
                               avatar={occ.avatar}
                               size={28}
@@ -303,7 +303,7 @@ export default function AdminRoomsPage() {
                   <div className="text-lg font-bold text-[#0D1B2A] mb-3">Danh sách Occupants</div>
                   {selectedRoom.occupants && selectedRoom.occupants.length > 0 ? (
                     selectedRoom.occupants.map((occupant, idx) => (
-                      <div key={occupant.userId || occupant.mssv || idx} className="occupant">
+                      <div key={`${occupant.userId || occupant.mssv || "occ"}-${idx}`} className="occupant">
                         <div className="occupant-head">
                           <div className="occupant-identity">
                             <AvatarLightbox name={occupant.fullName} avatar={occupant.avatar} size={46} />

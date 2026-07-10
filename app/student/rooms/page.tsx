@@ -234,7 +234,7 @@ export default function StudentRoomsPage() {
                 <div className="panel-title" style={{ marginBottom: 12 }}>Danh sách cư dân cùng phòng</div>
                 <div className="occupant-list">
                   {room.occupants.map((occupant, index) => (
-                    <article key={occupant.userId || (occupant as any)._id || occupant.mssv || `occupant-${index}`} className="occupant">
+                    <article key={`${occupant.userId || (occupant as any)._id || occupant.mssv || "occupant"}-${index}`} className="occupant">
                       <div className="avatar">
                         {occupant.avatar ? <img src={occupant.avatar} alt={occupant.fullName} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : occupant.fullName.charAt(0)}
                       </div>

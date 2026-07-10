@@ -234,7 +234,7 @@ export default function StudentNotificationsPage() {
         .nf-delete-btn {
           width: 34px;
           height: 34px;
-          border-radius: 10px;
+          border-radius: 8px;
           border: 1px solid transparent;
           background: transparent;
           color: #94a3b8;
