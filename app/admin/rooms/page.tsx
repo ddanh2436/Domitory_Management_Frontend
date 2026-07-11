@@ -1,399 +1,788 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import RoleGuard from "../../components/RoleGuard";
 import { apiClient } from "../../utils/apiClient";
-import AvatarLightbox from "../../components/AvatarLightbox";
-import { useToast } from "../../components/ToastProvider";
-import { useConfirm } from "../../components/ConfirmProvider";
 
-interface Occupant {
-  userId: string;
-  fullName: string;
-  mssv: string;
-  dateOfBirth: string;
-  avatar?: string;
-  contactInfo?: { phone?: string; email?: string } | null;
-  checkInDate: string;
-  roomStatus: string;
-  bookingHistory: { bookingId: string; roomNumber: string; requestedAt: string; status: string }[];
-  contractInfo: { contractNumber: string; startDate: string; endDate: string; rentalFee: number; status: string };
-  currentRoomAssignment: { roomId: string; roomNumber: string; roomType: string; building: string; floor: number };
-}
-
+// ─── Types ────────────────────────────────────────────────────────────────────
 interface Room {
-  roomId: string;
-  roomNumber: string;
-  name?: string; // Tên phòng trên database (nếu có)
-  roomType: string;
+  _id: string;
+  name: string;
+  roomId?: string;
+  roomNumber?: string;
   building: string;
   floor: number;
   capacity: number;
   currentOccupancy: number;
   price: number;
   status: "AVAILABLE" | "FULL" | "MAINTENANCE";
-  availabilityStatus: string;
-  facilities: string[];
-  occupants?: Occupant[];
-  _id?: string;
+  facilities?: string[];
+  occupants?: unknown[];
 }
 
+interface FormData {
+  name: string;
+  building: string;
+  floor: string;
+  capacity: string;
+  price: string;
+  facilities: string;
+}
+
+// ─── Logo ─────────────────────────────────────────────────────────────────────
+function DormifyLogoMark({ size = 36 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 42 42" fill="none">
+      <rect width="42" height="42" rx="10" fill="#1A2E42" />
+      <rect x="10" y="8" width="4" height="26" rx="1" fill="#C9A84C" />
+      <path d="M14 8 Q28 8 28 21 Q28 34 14 34" stroke="#C9A84C" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+      <rect x="18" y="12" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
+      <rect x="18" y="19" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
+      <rect x="18" y="26" width="4" height="4" rx="1" fill="rgba(201,168,76,0.45)" />
+      <line x1="10" y1="6" x2="26" y2="6" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// ─── Icons ────────────────────────────────────────────────────────────────────
+const Icons = {
+  chart: <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+  home: <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
+  users: <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>,
+  doc: <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+  invoice: <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+  wrench: <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><circle cx="12" cy="12" r="3" strokeWidth={1.8} /></svg>,
+  logout: <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>,
+  bell: <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>,
+  plus: <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 4v16m8-8H4" /></svg>,
+  trash: <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
+  check: <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>,
+  x: <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>,
+  warn: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>,
+};
+
+// ─── Sidebar Nav Item ─────────────────────────────────────────────────────────
+function NavItem({ icon, label, active = false, badge, href = "#" }: {
+  icon: React.ReactNode; label: string; active?: boolean; badge?: number; href?: string;
+}) {
+  return (
+    <a href={href} className={`rm-nav-item ${active ? "rm-nav-item--active" : ""}`}>
+      <span className="rm-nav-icon">{icon}</span>
+      <span className="rm-nav-label">{label}</span>
+      {badge != null && <span className="rm-nav-badge">{badge}</span>}
+    </a>
+  );
+}
+
+// ─── Delete Confirm Modal ─────────────────────────────────────────────────────
+function DeleteModal({ room, onConfirm, onCancel, loading }: {
+  room: Room; onConfirm: () => void; onCancel: () => void; loading: boolean;
+}) {
+  return (
+    <div className="rm-overlay">
+      <div className="rm-modal">
+        <div className="rm-modal__icon-wrap">
+          <span className="rm-modal__icon">{Icons.warn}</span>
+        </div>
+        <h3 className="rm-modal__title">Xóa phòng này?</h3>
+        <p className="rm-modal__desc">
+          Bạn sắp xóa phòng <strong>{room.name}</strong> — Tòa {room.building}, Tầng {room.floor}.
+          Hành động này không thể hoàn tác.
+        </p>
+        <div className="rm-modal__actions">
+          <button className="rm-btn-cancel" onClick={onCancel} disabled={loading}>Hủy</button>
+          <button className="rm-btn-delete-confirm" onClick={onConfirm} disabled={loading}>
+            {loading ? "Đang xóa…" : "Xóa phòng"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Status Badge ─────────────────────────────────────────────────────────────
+function StatusBadge({ status }: { status: Room["status"] }) {
+  const map = {
+    AVAILABLE: { label: "Còn trống", cls: "rm-badge--green" },
+    FULL:      { label: "Đã đầy",   cls: "rm-badge--red" },
+    MAINTENANCE: { label: "Bảo trì", cls: "rm-badge--amber" },
+  };
+  const { label, cls } = map[status] ?? { label: status, cls: "rm-badge--gray" };
+  return <span className={`rm-badge ${cls}`}>{label}</span>;
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function Toast({ type, text, onClose }: { type: "success" | "error"; text: string; onClose: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 4000);
+    return () => clearTimeout(t);
+  }, [onClose]);
+  return (
+    <div className={`rm-toast rm-toast--${type}`}>
+      <span className="rm-toast__icon">{type === "success" ? Icons.check : Icons.x}</span>
+      <span className="rm-toast__text">{text}</span>
+      <button className="rm-toast__close" onClick={onClose}>{Icons.x}</button>
+    </div>
+  );
+}
+
+// ─── Field ────────────────────────────────────────────────────────────────────
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="rm-field">
+      <label className="rm-field__label">{label}</label>
+      {hint && <span className="rm-field__hint">{hint}</span>}
+      {children}
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function AdminRoomsPage() {
-  const toast = useToast();
-  const confirmDialog = useConfirm();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Room | null>(null);
+  const [toast, setToast] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | Room["status"]>("ALL");
 
-  // States cho tính năng Thêm phòng
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [newRoom, setNewRoom] = useState({
-    name: "",
-    building: "",
-    floor: 1,
-    capacity: 4,
-    price: 0,
-    facilities: "", // Chuỗi cách nhau bằng dấu phẩy
+  const [formData, setFormData] = useState<FormData>({
+    name: "", building: "", floor: "", capacity: "", price: "", facilities: "",
   });
 
+  // ── fetch rooms ──
   const fetchRooms = async () => {
     setLoading(true);
-    setError("");
-
     try {
-      const response = await apiClient.get("/rooms");
-      const payload = await response.json();
-
-      if (response.ok) {
-        setRooms(payload.data || []);
-        // Nếu không có phòng nào được chọn, tự động chọn phòng đầu tiên
-        if (!selectedRoomId && payload.data?.length > 0) {
-           const firstRoomId = payload.data[0].roomId || payload.data[0]._id;
-           setSelectedRoomId(firstRoomId);
-        }
-      } else {
-        setRooms([]);
-        setError(payload.message || "Không thể tải danh sách phòng.");
+      const res = await apiClient.get("/rooms");
+      if (res.ok) {
+        const json = await res.json();
+        const source = Array.isArray(json) ? json : (json.data || json.items || []);
+        setRooms(source.map((room: Room) => ({
+          ...room,
+          _id: room._id || room.roomId || "",
+          name: room.name || room.roomNumber || "",
+          currentOccupancy: Number(room.currentOccupancy ?? room.occupants?.length ?? 0),
+          facilities: room.facilities || [],
+        })));
       }
-    } catch (requestError) {
-      console.error(requestError);
-      setError("Không thể kết nối đến máy chủ.");
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchRooms();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(() => { fetchRooms(); }, []);
 
-  // Xử lý logic Thêm Phòng
-  const handleAddRoom = async (e: React.FormEvent) => {
+  // ── submit new room ──
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      // Tách chuỗi tiện ích thành mảng
-      const facilitiesArray = newRoom.facilities
-        .split(",")
-        .map((f) => f.trim())
-        .filter(Boolean);
 
+    // Client-side validation for instant feedback on duplicate room names
+    const isDuplicate = rooms.some(
+      (r) => r.name.trim().toLowerCase() === formData.name.trim().toLowerCase()
+    );
+    if (isDuplicate) {
+      setToast({ type: "error", text: 'Giá trị "name" này đã tồn tại trong cơ sở dữ liệu' });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
       const payload = {
-        name: newRoom.name,
-        building: newRoom.building,
-        floor: Number(newRoom.floor),
-        capacity: Number(newRoom.capacity),
-        price: Number(newRoom.price),
-        status: "AVAILABLE",
-        facilities: facilitiesArray,
+        name: formData.name,
+        building: formData.building,
+        floor: parseInt(formData.floor),
+        capacity: parseInt(formData.capacity),
+        price: parseInt(formData.price),
+        facilities: formData.facilities.split(",").map((s) => s.trim()).filter(Boolean),
       };
-
-      const response = await apiClient.post("/rooms", payload);
-      
-      if (response.ok) {
-        setIsAddModalOpen(false);
-        setNewRoom({ name: "", building: "", floor: 1, capacity: 4, price: 0, facilities: "" });
-        await fetchRooms(); // Tải lại danh sách
-        toast.success("Đã thêm phòng mới vào hệ thống.", "Thêm phòng thành công");
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Không thể thêm phòng.");
-      }
-    } catch (err) {
-      toast.error("Đã xảy ra lỗi khi kết nối với server.");
+      const res = await apiClient.post("/rooms", { ...payload, status: "AVAILABLE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Lỗi khi tạo phòng");
+      setToast({ type: "success", text: `Tạo phòng "${formData.name}" thành công!` });
+      setFormData({ name: "", building: "", floor: "", capacity: "", price: "", facilities: "" });
+      fetchRooms();
+    } catch (err: any) {
+      setToast({ type: "error", text: err.message });
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
-  // Xử lý logic Xóa Phòng
-  const handleDeleteRoom = async () => {
-    if (!selectedRoomId) return;
-    const roomToDelete = rooms.find(r => (r.roomId || r._id) === selectedRoomId);
-    const roomName = roomToDelete?.roomNumber || roomToDelete?.name || "này";
-
-    const ok = await confirmDialog({
-      title: `Xóa phòng ${roomName}?`,
-      message: "Toàn bộ dữ liệu của phòng sẽ bị xóa khỏi hệ thống. Hành động này không thể hoàn tác.",
-      confirmLabel: "Xóa phòng",
-      variant: "danger",
-    });
-    if (!ok) return;
-
+  // ── delete room ──
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setDeletingId(deleteTarget._id);
     try {
-      const response = await apiClient.delete(`/rooms/${selectedRoomId}`);
-      if (response.ok) {
-        toast.success(`Đã xóa phòng ${roomName} khỏi hệ thống.`, "Xóa phòng thành công");
-        setSelectedRoomId(null); // Xóa selection
-        fetchRooms(); // Tải lại danh sách
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Không thể xóa phòng.");
+      const res = await apiClient.delete(`/rooms/${deleteTarget._id}`);
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Lỗi khi xóa phòng");
       }
-    } catch (err) {
-      toast.error("Đã xảy ra lỗi khi kết nối với server.");
+      setToast({ type: "success", text: `Đã xóa phòng "${deleteTarget.name}"` });
+      setRooms((prev) => prev.filter((r) => r._id !== deleteTarget._id));
+    } catch (err: any) {
+      setToast({ type: "error", text: err.message });
+    } finally {
+      setDeletingId(null);
+      setDeleteTarget(null);
     }
   };
 
-  const selectedRoom = rooms.find((room) => (room.roomId || room._id) === selectedRoomId) || rooms[0] || null;
+  // ── filtered list ──
+  const filtered = rooms.filter((r) => {
+    const matchSearch =
+      r.name.toLowerCase().includes(search.toLowerCase()) ||
+      r.building.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = statusFilter === "ALL" || r.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  };
+
+  const countByStatus = (s: Room["status"]) => rooms.filter((r) => r.status === s).length;
 
   return (
-    <div className="w-full space-y-6 text-slate-800 font-sans relative">
+    <RoleGuard allowedRoles={["ADMIN"]}>
       <style>{`
-        .rooms-hero { background: linear-gradient(135deg, #0D1B2A 0%, #182b43 60%, #253d5d 100%); color: #fff; border-radius: 24px; padding: 28px; border: 1px solid rgba(201,168,76,0.25); }
-        .rooms-layout { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 20px; }
-        .rooms-panel { background: #fff; border: 1px solid rgba(13,27,42,0.09); border-radius: 20px; box-shadow: 0 10px 24px rgba(13,27,42,0.04); overflow: hidden; }
-        .rooms-list { display: grid; gap: 12px; }
-        .room-card { border: 1px solid rgba(13,27,42,0.08); border-radius: 18px; padding: 16px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s; background: linear-gradient(180deg, #fff, #fbfbfa); }
-        .room-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(13,27,42,0.06); }
-        .room-card--active { border-color: rgba(201,168,76,0.45); box-shadow: 0 12px 24px rgba(201,168,76,0.08); }
-        .room-card__top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
-        .room-name { font-size: 18px; font-weight: 700; color: #0D1B2A; }
-        .room-sub { color: #64748b; font-size: 13px; margin-top: 4px; }
-        .tag { display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
-        .tag--available { background: rgba(34,197,94,0.12); color: #16a34a; }
-        .tag--full { background: rgba(239,68,68,0.12); color: #dc2626; }
-        .tag--maintenance { background: rgba(245,158,11,0.12); color: #d97706; }
-        .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-        .chip { padding: 6px 10px; border-radius: 999px; background: rgba(13,27,42,0.04); border: 1px solid rgba(13,27,42,0.08); font-size: 12px; color: #334155; font-weight: 600; }
-        .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        .detail-item { padding: 14px 16px; border-radius: 14px; background: #f8fafc; border: 1px solid rgba(13,27,42,0.08); display: flex; justify-content: space-between; gap: 12px; }
-        .detail-item span:first-child { color: #64748b; }
-        .detail-item span:last-child { color: #0D1B2A; font-weight: 700; text-align: right; }
-        .occupant { border: 1px solid rgba(13,27,42,0.08); border-radius: 18px; padding: 16px; margin-top: 14px; }
-        .occupant-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
-        .occupant-identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
-        .occ-stack { display: flex; align-items: center; margin-top: 12px; }
-        .occ-stack__more { margin-left: -8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(13,27,42,0.06); color: #334155; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #fff; }
-        .occ-stack__empty { font-size: 12px; color: #94a3b8; font-style: italic; }
-        .occupant-name { font-size: 16px; font-weight: 700; color: #0D1B2A; }
-        .occupant-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; font-size: 13px; color: #334155; }
-        .occupant-meta strong { color: #0D1B2A; }
-        .muted-box { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 16px; padding: 16px; font-size: 13px; line-height: 1.6; }
-        
-        /* Modal Styles */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(13,27,42,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); padding: 20px;}
-        .modal-content { background: #fff; border-radius: 20px; width: 100%; max-width: 500px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto;}
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 6px; }
-        .form-control { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; color: #0D1B2A; outline: none; transition: border-color 0.2s; }
-        .form-control:focus { border-color: #0D1B2A; }
-        
-        @media (max-width: 1000px) { .rooms-layout { grid-template-columns: 1fr; } }
-        @media (max-width: 640px) { .detail-grid, .occupant-meta { grid-template-columns: 1fr; } }
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+          --navy:     #0D1B2A;
+          --navy-mid: #1A2E42;
+          --navy-lt:  #243B55;
+          --gold:     #C9A84C;
+          --gold-dim: rgba(201,168,76,0.16);
+          --gold-b:   rgba(201,168,76,0.25);
+          --cream:    #FAF7F0;
+          --white:    #ffffff;
+          --muted:    #8A9BAD;
+          --border:   rgba(13,27,42,0.09);
+          --bg:       #F0EDE8;
+          --sidebar-w: 240px;
+        }
+
+        .rm-shell {
+          display: block; min-height: 0;
+          background: transparent;
+          font-family: 'DM Sans', sans-serif;
+        }
+
+        /* ── SIDEBAR ── */
+        .rm-sidebar {
+          display: none;
+          width: var(--sidebar-w); flex-shrink: 0;
+          background: var(--navy); min-height: 100vh;
+          position: fixed; top: 0; left: 0; bottom: 0;
+          border-right: 1px solid var(--gold-b);
+          display: flex; flex-direction: column; z-index: 40;
+        }
+        .rm-brand {
+          padding: 22px 18px 18px;
+          display: flex; align-items: center; gap: 11px;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .rm-wordmark {
+          font-family: 'Fraunces', serif;
+          font-size: 20px; font-weight: 600; color: #fff; letter-spacing: -0.2px;
+        }
+        .rm-wordmark span { color: var(--gold); }
+        .rm-role-chip {
+          padding: 14px 18px 4px;
+          font-size: 10px; font-weight: 500; letter-spacing: 0.12em;
+          text-transform: uppercase; color: rgba(255,255,255,0.28);
+        }
+        .rm-nav { flex: 1; padding: 4px 10px 16px; display: flex; flex-direction: column; gap: 2px; }
+        .rm-nav-item {
+          display: flex; align-items: center; gap: 11px;
+          padding: 9px 11px; border-radius: 8px;
+          text-decoration: none; transition: background 0.15s;
+        }
+        .rm-nav-item:hover { background: rgba(255,255,255,0.05); }
+        .rm-nav-icon { color: var(--muted); flex-shrink: 0; display: flex; }
+        .rm-nav-label { font-size: 13px; font-weight: 400; color: rgba(255,255,255,0.5); flex: 1; }
+        .rm-nav-badge {
+          font-size: 10px; font-weight: 600;
+          background: var(--gold); color: var(--navy);
+          border-radius: 100px; padding: 1px 7px;
+        }
+        .rm-nav-item--active { background: var(--gold-dim) !important; }
+        .rm-nav-item--active .rm-nav-label { color: var(--gold) !important; font-weight: 500; }
+        .rm-nav-item--active .rm-nav-icon  { color: var(--gold) !important; }
+        .rm-sidebar-footer { padding: 14px 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+        .rm-btn-logout {
+          display: flex; align-items: center; gap: 11px;
+          padding: 9px 11px; border-radius: 8px; border: none;
+          background: transparent; cursor: pointer; width: 100%;
+          transition: background 0.15s;
+        }
+        .rm-btn-logout:hover { background: rgba(220,50,50,0.1); }
+        .rm-btn-logout .rm-nav-icon { color: rgba(240,80,80,0.65); }
+        .rm-btn-logout span { font-size: 13px; color: rgba(240,80,80,0.75); }
+
+        /* ── MAIN ── */
+        .rm-main { margin-left: 0; }
+
+        /* ── TOPBAR ── */
+        .rm-topbar {
+          display: none;
+          background: var(--white); border-bottom: 1px solid var(--border);
+          padding: 0 28px; height: 60px;
+          display: flex; align-items: center; justify-content: space-between;
+          position: sticky; top: 0; z-index: 30;
+        }
+        .rm-tb-left {}
+        .rm-tb-title {
+          font-family: 'Fraunces', serif;
+          font-size: 17px; font-weight: 600; color: var(--navy); letter-spacing: -0.2px;
+        }
+        .rm-tb-bread { font-size: 11px; color: var(--muted); margin-top: 1px; }
+        .rm-tb-right { display: flex; align-items: center; gap: 10px; }
+        .rm-tb-bell {
+          width: 34px; height: 34px; border-radius: 8px;
+          border: 1px solid var(--border); background: transparent;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer; color: var(--muted); position: relative;
+        }
+        .rm-tb-bell:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+        .rm-tb-dot {
+          position: absolute; top: 7px; right: 7px;
+          width: 5px; height: 5px; border-radius: 50%;
+          background: var(--gold); border: 1.5px solid var(--white);
+        }
+        .rm-tb-avatar {
+          width: 34px; height: 34px; border-radius: 9px;
+          background: var(--navy); border: 1.5px solid var(--gold-b);
+          display: flex; align-items: center; justify-content: center;
+          font-family: 'Fraunces', serif; font-size: 13px; font-weight: 600;
+          color: var(--gold); cursor: pointer;
+        }
+
+        /* ── PAGE BODY ── */
+        .rm-body { padding: 0; }
+
+        /* ── STAT ROW ── */
+        .rm-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+        .rm-stat {
+          background: var(--white); border: 1px solid var(…2148 tokens truncated…        background: rgba(239,68,68,.09);
+          color: #b91c1c;
+        }
+        .rm-btn-del:hover svg { stroke: #b91c1c; }
+
+        /* ── EMPTY / LOADING ── */
+        .rm-empty {
+          padding: 56px 20px; text-align: center;
+        }
+        .rm-empty__icon {
+          width: 44px; height: 44px; border-radius: 10px;
+          background: #F5F3EF; display: flex; align-items: center;
+          justify-content: center; margin: 0 auto 14px; color: var(--muted);
+        }
+        .rm-empty__title {
+          font-family: 'Fraunces', serif;
+          font-size: 16px; font-weight: 600; color: var(--navy); margin-bottom: 5px;
+        }
+        .rm-empty__sub { font-size: 13px; color: var(--muted); }
+
+        /* ── SKELETON ── */
+        .rm-sk {
+          display: inline-block; border-radius: 4px;
+          background: linear-gradient(90deg, #F0EDE8 25%, #E8E4DE 50%, #F0EDE8 75%);
+          background-size: 400% 100%;
+          animation: rmShimmer 1.4s ease infinite;
+        }
+        @keyframes rmShimmer {
+          0%   { background-position: 100% 0; }
+          100% { background-position: -100% 0; }
+        }
+
+        /* ── MODAL OVERLAY ── */
+        .rm-overlay {
+          position: fixed; inset: 0; z-index: 200;
+          background: rgba(13,27,42,.55);
+          display: flex; align-items: center; justify-content: center;
+          padding: 20px;
+          backdrop-filter: blur(3px);
+        }
+        .rm-modal {
+          background: var(--white); border-radius: 16px;
+          padding: 32px 28px; max-width: 380px; width: 100%;
+          border: 1px solid var(--border);
+          box-shadow: 0 24px 60px rgba(13,27,42,.18);
+          animation: rmModalIn .2s ease;
+        }
+        @keyframes rmModalIn {
+          from { opacity: 0; transform: scale(.95) translateY(8px); }
+          to   { opacity: 1; transform: scale(1)  translateY(0); }
+        }
+        .rm-modal__icon-wrap {
+          width: 44px; height: 44px; border-radius: 10px;
+          background: rgba(239,68,68,.08); display: flex; align-items: center;
+          justify-content: center; margin-bottom: 16px; color: #ef4444;
+        }
+        .rm-modal__title {
+          font-family: 'Fraunces', serif;
+          font-size: 19px; font-weight: 700; color: var(--navy); margin-bottom: 10px;
+        }
+        .rm-modal__desc { font-size: 13.5px; color: #4A6580; line-height: 1.65; margin-bottom: 24px; }
+        .rm-modal__desc strong { color: var(--navy); }
+        .rm-modal__actions { display: flex; gap: 10px; }
+        .rm-btn-cancel {
+          flex: 1; padding: 10px;
+          border: 1px solid var(--border); border-radius: 8px;
+          background: transparent; cursor: pointer;
+          font-family: 'DM Sans', sans-serif; font-size: 13.5px;
+          color: var(--navy); transition: background .15s;
+        }
+        .rm-btn-cancel:hover { background: #F5F3EF; }
+        .rm-btn-delete-confirm {
+          flex: 1; padding: 10px;
+          background: #ef4444; border: none; border-radius: 8px; cursor: pointer;
+          font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 500;
+          color: #fff; transition: background .15s;
+        }
+        .rm-btn-delete-confirm:hover { background: #dc2626; }
+        .rm-btn-delete-confirm:disabled { opacity: .6; cursor: not-allowed; }
+
+        /* ── GLOBAL TOAST ── */
+        .rm-toast {
+          position: fixed; bottom: 28px; right: 28px; z-index: 300;
+          display: flex; align-items: center; gap: 10px;
+          padding: 12px 16px; border-radius: 10px;
+          font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 400;
+          box-shadow: 0 8px 28px rgba(13,27,42,.15);
+          animation: rmToastIn .25s ease;
+          max-width: 340px;
+        }
+        @keyframes rmToastIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .rm-toast--success { background: #fff; color: #15803d; border: 1px solid rgba(34,197,94,.25); }
+        .rm-toast--error   { background: #fff; color: #b91c1c; border: 1px solid rgba(239,68,68,.25);  }
+        .rm-toast__icon { display: flex; flex-shrink: 0; }
+        .rm-toast__text { flex: 1; color: var(--navy); }
+        .rm-toast__close {
+          display: flex; align-items: center; justify-content: center;
+          background: none; border: none; cursor: pointer; color: var(--muted); padding: 2px;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 1100px) {
+          .rm-grid { grid-template-columns: 1fr; }
+          .rm-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+          .rm-sidebar { transform: translateX(-100%); }
+          .rm-main { margin-left: 0; }
+          .rm-body { padding: 18px 14px 40px; }
+        }
+        @media (max-width: 480px) {
+          .rm-stats { grid-template-columns: 1fr; }
+        }
       `}</style>
 
-      <div className="rooms-hero">
-        <div className="text-xs uppercase tracking-[0.2em] text-white/55 font-semibold">Quản trị phòng ở</div>
-        <h1 className="text-3xl font-bold mt-3">Toàn bộ phòng và cư dân trong hệ thống</h1>
-        <p className="text-sm text-white/75 mt-2 max-w-3xl">Màn hình này cho phép quản trị viên xem, thêm và xóa các phòng. Quản lý danh sách occupants và thông tin chi tiết.</p>
+      <div className="rm-shell">
+
+        {/* ─── Sidebar ────────────────────────────────────────────────────── */}
+        <aside className="rm-sidebar">
+          <div className="rm-brand">
+            <DormifyLogoMark size={36} />
+            <span className="rm-wordmark">Dorm<span>ify</span></span>
+          </div>
+          <div className="rm-role-chip">Quản trị viên</div>
+          <nav className="rm-nav">
+            <NavItem icon={Icons.chart}   label="Tổng quan"     href="/admin" />
+            <NavItem icon={Icons.home}    label="Quản lý phòng" href="/admin/rooms" active />
+            <NavItem icon={Icons.users}   label="Sinh viên"     href="/admin/students" />
+            <NavItem icon={Icons.doc}     label="Hợp đồng"      href="/admin/contracts" />
+            <NavItem icon={Icons.invoice} label="Hóa đơn"       href="/admin/invoices" />
+            <NavItem icon={Icons.wrench}  label="Bảo trì"       href="/admin/maintenance" badge={3} />
+          </nav>
+          <div className="rm-sidebar-footer">
+            <button className="rm-btn-logout" type="button" onClick={handleLogout}>
+              <span className="rm-nav-icon">{Icons.logout}</span>
+              <span>Đăng xuất</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* ─── Main ───────────────────────────────────────────────────────── */}
+        <div className="rm-main">
+
+          {/* Topbar */}
+          <header className="rm-topbar">
+            <div className="rm-tb-left">
+              <div className="rm-tb-title">Quản lý Phòng</div>
+              <div className="rm-tb-bread">Dormify · Admin · Phòng</div>
+            </div>
+            <div className="rm-tb-right">
+              <button className="rm-tb-bell" type="button" aria-label="Thông báo">
+                {Icons.bell}
+                <span className="rm-tb-dot" />
+              </button>
+              <div className="rm-tb-avatar">A</div>
+            </div>
+          </header>
+
+          {/* Body */}
+          <main className="rm-body">
+
+            {/* Stats */}
+            <div className="rm-stats">
+              <div className="rm-stat rm-stat--accent">
+                <div className="rm-stat__lbl">Tổng số phòng</div>
+                <div className="rm-stat__val">{loading ? "—" : rooms.length}</div>
+                <div className="rm-stat__sub">Trong hệ thống</div>
+              </div>
+              <div className="rm-stat">
+                <div className="rm-stat__lbl">Còn trống</div>
+                <div className="rm-stat__val">{loading ? "—" : countByStatus("AVAILABLE")}</div>
+                <div className="rm-stat__sub">Sẵn sàng nhận sinh viên</div>
+              </div>
+              <div className="rm-stat">
+                <div className="rm-stat__lbl">Đã đầy</div>
+                <div className="rm-stat__val">{loading ? "—" : countByStatus("FULL")}</div>
+                <div className="rm-stat__sub">Không còn chỗ trống</div>
+              </div>
+              <div className="rm-stat">
+                <div className="rm-stat__lbl">Đang bảo trì</div>
+                <div className="rm-stat__val">{loading ? "—" : countByStatus("MAINTENANCE")}</div>
+                <div className="rm-stat__sub">Tạm ngừng hoạt động</div>
+              </div>
+            </div>
+
+            {/* Grid: Form + Table */}
+            <div className="rm-grid">
+
+              {/* ─ Form ─ */}
+              <div className="rm-panel">
+                <div className="rm-panel__head">
+                  <div className="rm-panel__title">Thêm phòng mới</div>
+                  <div className="rm-panel__sub">Điền thông tin để tạo phòng trong hệ thống</div>
+                </div>
+                <div className="rm-panel__body">
+                  <form onSubmit={handleSubmit}>
+                    <div className="rm-form-rows">
+                      <Field label="Tên phòng" hint="Ví dụ: A1-101">
+                        <input
+                          className="rm-input" required
+                          name="name" value={formData.name}
+                          placeholder="A1-101"
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        />
+                      </Field>
+
+                      <div className="rm-form-grid2">
+                        <Field label="Tòa nhà">
+                          <input
+                            className="rm-input" required
+                            name="building" value={formData.building}
+                            placeholder="VD: A1"
+                            onChange={(e) => setFormData({ ...formData, building: e.target.value })}
+                          />
+                        </Field>
+                        <Field label="Tầng">
+                          <input
+                            className="rm-input" required type="number" min="1"
+                            name="floor" value={formData.floor}
+                            placeholder="1"
+                            onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
+                          />
+                        </Field>
+                      </div>
+
+                      <div className="rm-form-grid2">
+                        <Field label="Sức chứa" hint="Số người">
+                          <input
+                            className="rm-input" required type="number" min="1"
+                            name="capacity" value={formData.capacity}
+                            placeholder="4"
+                            onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                          />
+                        </Field>
+                        <Field label="Giá thuê" hint="VNĐ / tháng">
+                          <input
+                            className="rm-input" required type="number" min="0"
+                            name="price" value={formData.price}
+                            placeholder="500000"
+                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                          />
+                        </Field>
+                      </div>
+
+                      <Field label="Cơ sở vật chất" hint="Cách nhau bằng dấu phẩy">
+                        <input
+                          className="rm-input"
+                          name="facilities" value={formData.facilities}
+                          placeholder="Điều hòa, Máy lạnh, Tủ lạnh"
+                          onChange={(e) => setFormData({ ...formData, facilities: e.target.value })}
+                        />
+                      </Field>
+
+                      <button className="rm-btn-submit" type="submit" disabled={submitting}>
+                        {Icons.plus}
+                        {submitting ? "Đang tạo…" : "Tạo phòng mới"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              {/* ─ Table ─ */}
+              <div className="rm-panel">
+                <div className="rm-table-head">
+                  <div className="rm-table-head-l">
+                    <div className="rm-panel__title">Danh sách phòng</div>
+                    {!loading && (
+                      <div className="rm-panel__sub">{filtered.length} / {rooms.length} phòng</div>
+                    )}
+                  </div>
+                  <div className="rm-table-head-r">
+                    <span className="rm-count-badge">{loading ? "—" : rooms.length} phòng</span>
+                    <select
+                      className="rm-filter-select"
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+                    >
+                      <option value="ALL">Tất cả</option>
+                      <option value="AVAILABLE">Còn trống</option>
+                      <option value="FULL">Đã đầy</option>
+                      <option value="MAINTENANCE">Bảo trì</option>
+                    </select>
+                    <div className="rm-search-wrap">
+                      <span className="rm-search-ic">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </span>
+                      <input
+                        type="text" className="rm-search"
+                        placeholder="Tìm tên, tòa nhà…"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ overflowX: "auto" }}>
+                  <table className="rm-table">
+                    <thead>
+                      <tr>
+                        <th>Phòng</th>
+                        <th>Tòa / Tầng</th>
+                        <th>Sức chứa</th>
+                        <th>Giá / tháng</th>
+                        <th>Tiện nghi</th>
+                        <th>Trạng thái</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loading ? (
+                        [1,2,3,4].map((i) => (
+                          <tr key={i}>
+                            <td><span className="rm-sk" style={{ width: 64,  height: 14 }} /></td>
+                            <td><span className="rm-sk" style={{ width: 80,  height: 14 }} /></td>
+                            <td><span className="rm-sk" style={{ width: 48,  height: 14 }} /></td>
+                            <td><span className="rm-sk" style={{ width: 90,  height: 14 }} /></td>
+                            <td><span className="rm-sk" style={{ width: 120, height: 14 }} /></td>
+                            <td><span className="rm-sk" style={{ width: 70,  height: 20, borderRadius: 100 }} /></td>
+                            <td></td>
+                          </tr>
+                        ))
+                      ) : filtered.length > 0 ? (
+                        filtered.map((room) => (
+                          <tr key={room._id}>
+                            <td className="rm-cell-name">{room.name}</td>
+                            <td className="rm-cell-build">
+                              {room.building} <span>· Tầng {room.floor}</span>
+                            </td>
+                            <td className="rm-cell-cap">
+                              {room.currentOccupancy} <span style={{ color: "var(--muted)", fontSize: 12 }}>/ {room.capacity}</span>
+                            </td>
+                            <td className="rm-cell-price">
+                              {room.price.toLocaleString("vi-VN")}
+                              <span style={{ color: "var(--muted)", fontSize: 11, fontWeight: 400 }}>đ</span>
+                            </td>
+                            <td>
+                              <div className="rm-cell-fac">
+                                {(room.facilities ?? []).slice(0, 2).map((f) => (
+                                  <span key={f} className="rm-fac-tag">{f}</span>
+                                ))}
+                                {(room.facilities ?? []).length > 2 && (
+                                  <span className="rm-fac-tag">+{room.facilities!.length - 2}</span>
+                                )}
+                              </div>
+                            </td>
+                            <td><StatusBadge status={room.status} /></td>
+                            <td>
+                              <button
+                                className="rm-btn-del"
+                                type="button"
+                                onClick={() => setDeleteTarget(room)}
+                                disabled={deletingId === room._id}
+                              >
+                                {Icons.trash}
+                                Xóa
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={7}>
+                            <div className="rm-empty">
+                              <div className="rm-empty__icon">{Icons.home}</div>
+                              <div className="rm-empty__title">
+                                {search || statusFilter !== "ALL" ? "Không tìm thấy kết quả" : "Chưa có phòng nào"}
+                              </div>
+                              <div className="rm-empty__sub">
+                                {search || statusFilter !== "ALL"
+                                  ? "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm."
+                                  : "Hãy thêm phòng đầu tiên bằng form bên trái."}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
 
-      {error && <div className="p-4 rounded-xl bg-red-100 text-red-800 border border-red-200 font-medium">{error}</div>}
-
-      {loading ? (
-        <div className="rooms-panel p-8 text-center text-slate-500">Đang tải dữ liệu phòng...</div>
-      ) : (
-        <div className="rooms-layout">
-          {/* CỘT TRÁI: DANH SÁCH PHÒNG */}
-          <section className="rooms-panel p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-[#0D1B2A]">Danh sách phòng</h2>
-              <div className="flex gap-2">
-                <button onClick={() => setIsAddModalOpen(true)} className="px-3 py-2 rounded-lg bg-[#0D1B2A] text-white hover:bg-[#1a365d] text-sm font-semibold transition-colors">
-                  + Thêm phòng
-                </button>
-                <button onClick={fetchRooms} className="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition-colors">
-                  Tải lại
-                </button>
-              </div>
-            </div>
-
-            <div className="rooms-list">
-              {rooms.map((room, index) => {
-                const safeId = room.roomId || room._id || `room-${index}`;
-                const isSelected = selectedRoomId === safeId;
-
-                return (
-                  <button key={safeId} type="button" onClick={() => setSelectedRoomId(safeId)} className={`room-card text-left ${isSelected ? "room-card--active" : ""}`}>
-                    <div className="room-card__top">
-                      <div>
-                        <div className="room-name">Phòng {room.roomNumber || room.name}</div>
-                        <div className="room-sub">Tòa {room.building} · Tầng {room.floor} · {room.roomType || "Tiêu chuẩn"}</div>
-                      </div>
-                      <span className={`tag ${room.status === "AVAILABLE" ? "tag--available" : room.status === "FULL" ? "tag--full" : "tag--maintenance"}`}>{room.availabilityStatus || room.status}</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-4 text-sm text-slate-600">
-                      <span>Sức chứa: <strong>{room.currentOccupancy} / {room.capacity}</strong></span>
-                      <span>Giá: <strong>{room.price.toLocaleString("vi-VN")} đ</strong></span>
-                    </div>
-                    <div className="chip-row">
-                      {room.facilities.slice(0, 4).map((facility) => <span key={facility} className="chip">{facility}</span>)}
-                    </div>
-                    {/* Cụm avatar sinh viên đang ở trong phòng */}
-                    <div className="occ-stack">
-                      {room.occupants && room.occupants.length > 0 ? (
-                        <>
-                          {room.occupants.slice(0, 5).map((occ, i) => (
-                            <AvatarLightbox
-                              key={`${occ.userId || occ.mssv || "occ"}-${i}`}
-                              name={occ.fullName}
-                              avatar={occ.avatar}
-                              size={28}
-                              style={{ marginLeft: i === 0 ? 0 : -8, boxShadow: "0 0 0 2px #fff" }}
-                            />
-                          ))}
-                          {room.occupants.length > 5 && (
-                            <span className="occ-stack__more">+{room.occupants.length - 5}</span>
-                          )}
-                        </>
-                      ) : (
-                        <span className="occ-stack__empty">Chưa có sinh viên</span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-              {rooms.length === 0 && <div className="text-center text-sm text-slate-500 py-6">Chưa có phòng nào trong hệ thống.</div>}
-            </div>
-          </section>
-
-          {/* CỘT PHẢI: CHI TIẾT PHÒNG ĐƯỢC CHỌN */}
-          <aside className="rooms-panel p-5">
-            {selectedRoom ? (
-              <>
-                <div className="flex items-start justify-between gap-4 mb-4 border-b border-slate-100 pb-4">
-                  <div>
-                    <h2 className="text-2xl font-bold text-[#0D1B2A]">Phòng {selectedRoom.roomNumber || selectedRoom.name}</h2>
-                    <p className="text-sm text-slate-500 mt-1">Chi tiết phòng và toàn bộ cư dân đang được gắn với phòng này.</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <span className={`tag ${selectedRoom.status === "AVAILABLE" ? "tag--available" : selectedRoom.status === "FULL" ? "tag--full" : "tag--maintenance"}`}>{selectedRoom.availabilityStatus || selectedRoom.status}</span>
-                    {/* NÚT XÓA PHÒNG NẰM Ở ĐÂY */}
-                    <button onClick={handleDeleteRoom} className="text-xs px-2 py-1 bg-red-50 text-red-600 font-semibold border border-red-200 rounded-md hover:bg-red-100 transition-colors">
-                      Xóa phòng
-                    </button>
-                  </div>
-                </div>
-
-                <div className="detail-grid">
-                  <div className="detail-item"><span>Loại phòng</span><span>{selectedRoom.roomType || "Tiêu chuẩn"}</span></div>
-                  <div className="detail-item"><span>Hệ thống</span><span>Tòa {selectedRoom.building} / Tầng {selectedRoom.floor}</span></div>
-                  <div className="detail-item"><span>Sức chứa</span><span>{selectedRoom.currentOccupancy} / {selectedRoom.capacity}</span></div>
-                  <div className="detail-item"><span>Trạng thái</span><span>{selectedRoom.status}</span></div>
-                  <div className="detail-item"><span>Giá thuê</span><span>{selectedRoom.price.toLocaleString("vi-VN")} đ/tháng</span></div>
-                  <div className="detail-item"><span>Tiện ích</span><span>{selectedRoom.facilities.length} món</span></div>
-                </div>
-
-                <div className="mt-5">
-                  <div className="text-lg font-bold text-[#0D1B2A] mb-3">Danh sách Occupants</div>
-                  {selectedRoom.occupants && selectedRoom.occupants.length > 0 ? (
-                    selectedRoom.occupants.map((occupant, idx) => (
-                      <div key={`${occupant.userId || occupant.mssv || "occ"}-${idx}`} className="occupant">
-                        <div className="occupant-head">
-                          <div className="occupant-identity">
-                            <AvatarLightbox name={occupant.fullName} avatar={occupant.avatar} size={46} />
-                            <div style={{ minWidth: 0 }}>
-                              <div className="occupant-name">{occupant.fullName}</div>
-                              <div className="text-sm text-slate-500">MSSV: {occupant.mssv}</div>
-                            </div>
-                          </div>
-                          <span className={`tag ${occupant.roomStatus === "CONFIRMED" ? "tag--available" : "tag--maintenance"}`}>{occupant.roomStatus || "CONFIRMED"}</span>
-                        </div>
-                        <div className="occupant-meta">
-                          <div><strong>Ngày sinh:</strong> {occupant.dateOfBirth ? new Date(occupant.dateOfBirth).toLocaleDateString("vi-VN") : "N/A"}</div>
-                          <div><strong>Check-in:</strong> {occupant.checkInDate ? new Date(occupant.checkInDate).toLocaleDateString("vi-VN") : "N/A"}</div>
-                          <div><strong>Email:</strong> {occupant.contactInfo?.email || "Không công khai"}</div>
-                          <div><strong>Điện thoại:</strong> {occupant.contactInfo?.phone || "Không công khai"}</div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-sm text-slate-500 italic px-4 py-6 border border-dashed border-slate-300 rounded-xl bg-slate-50">
-                      Chưa có cư dân nào được phân bổ vào phòng này.
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="p-8 text-center text-slate-500">Chưa chọn phòng nào.</div>
-            )}
-          </aside>
-        </div>
+      {/* ─── Delete Modal ───────────────────────────────────────────────── */}
+      {deleteTarget && (
+        <DeleteModal
+          room={deleteTarget}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteTarget(null)}
+          loading={deletingId === deleteTarget._id}
+        />
       )}
 
-      {/* MODAL THÊM PHÒNG */}
-      {isAddModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2 className="text-xl font-bold text-[#0D1B2A] mb-4">Thêm phòng mới</h2>
-            <form onSubmit={handleAddRoom}>
-              <div className="form-group">
-                <label>Tên / Số phòng (*)</label>
-                <input required placeholder="VD: P101" type="text" className="form-control" value={newRoom.name} onChange={e => setNewRoom({...newRoom, name: e.target.value})} />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="form-group">
-                  <label>Tòa nhà (*)</label>
-                  <input required placeholder="VD: A1" type="text" className="form-control" value={newRoom.building} onChange={e => setNewRoom({...newRoom, building: e.target.value})} />
-                </div>
-                <div className="form-group">
-                  <label>Tầng (*)</label>
-                  <input required type="number" min="1" className="form-control" value={newRoom.floor} onChange={e => setNewRoom({...newRoom, floor: parseInt(e.target.value)})} />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="form-group">
-                  <label>Sức chứa tối đa (*)</label>
-                  <input required type="number" min="1" className="form-control" value={newRoom.capacity} onChange={e => setNewRoom({...newRoom, capacity: parseInt(e.target.value)})} />
-                </div>
-                <div className="form-group">
-                  <label>Giá thuê (VNĐ) (*)</label>
-                  <input required type="number" min="0" className="form-control" value={newRoom.price} onChange={e => setNewRoom({...newRoom, price: parseInt(e.target.value)})} />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Tiện ích (Các món cách nhau bằng dấu phẩy)</label>
-                <input placeholder="VD: Máy lạnh, Tủ lạnh, Tủ đồ cá nhân" type="text" className="form-control" value={newRoom.facilities} onChange={e => setNewRoom({...newRoom, facilities: e.target.value})} />
-              </div>
-
-              <div className="flex gap-3 justify-end mt-6">
-                <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 rounded-lg font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200">
-                  Hủy
-                </button>
-                <button type="submit" disabled={isSubmitting} className="px-4 py-2 rounded-lg font-semibold text-white bg-[#0D1B2A] hover:bg-[#1a365d] disabled:opacity-50">
-                  {isSubmitting ? "Đang xử lý..." : "Lưu phòng"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {/* ─── Global Toast ────────────────────────────────────────────────── */}
+      {toast && (
+        <Toast
+          type={toast.type}
+          text={toast.text}
+          onClose={() => setToast(null)}
+        />
       )}
-    </div>
+    </RoleGuard>
   );
 }
