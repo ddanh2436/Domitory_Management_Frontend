@@ -346,19 +346,19 @@ export default function AdminInvoicesPage() {
             <RoomFilterBar rooms={invoices.map((inv) => inv.room)} value={roomFilter} onChange={setRoomFilter} />
             <button 
               onClick={handleTriggerOverdue}
-              className="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 font-bold transition-colors text-[13px] whitespace-nowrap"
+              className="px-5 py-2.5 bg-slate-100 text-slate-700 rounded hover:bg-slate-200 font-bold transition-colors text-[13px] whitespace-nowrap"
             >
               ↻ Quét Quá Hạn
             </button>
             <button
               onClick={() => setShowBulkModal(true)}
-              className="px-5 py-2.5 bg-[#C9A84C] text-[#0D1B2A] rounded-lg hover:bg-[#D9B85C] font-bold transition-colors text-[13px] shadow-sm whitespace-nowrap"
+              className="px-5 py-2.5 bg-[#C9A84C] text-[#0D1B2A] rounded hover:bg-[#D9B85C] font-bold transition-colors text-[13px] shadow-sm whitespace-nowrap"
             >
               ⚡ Sinh hàng loạt
             </button>
             <button
               onClick={() => setShowModal(true)}
-              className="px-5 py-2.5 bg-[#0D1B2A] text-white rounded-lg hover:bg-[#1A2E42] font-bold transition-colors text-[13px] shadow-sm whitespace-nowrap"
+              className="px-5 py-2.5 bg-[#0D1B2A] text-white rounded hover:bg-[#1A2E42] font-bold transition-colors text-[13px] shadow-sm whitespace-nowrap"
             >
               + Tạo hóa đơn mới
             </button>
@@ -415,7 +415,7 @@ export default function AdminInvoicesPage() {
                       {inv.status !== 'PAID' ? (
                         <button 
                           onClick={() => handleMarkAsPaid(inv._id)}
-                          className="px-4 py-2 bg-[#f0fdf4] text-[#16a34a] hover:bg-[#dcfce7] border border-[#bbf7d0] rounded-lg font-bold transition-colors text-[13px] whitespace-nowrap"
+                          className="px-4 py-2 bg-[#f0fdf4] text-[#16a34a] hover:bg-[#dcfce7] border border-[#bbf7d0] rounded font-bold transition-colors text-[13px] whitespace-nowrap"
                         >
                           Xác nhận Thu
                         </button>
@@ -434,7 +434,7 @@ export default function AdminInvoicesPage() {
       {/* MODAL TẠO HÓA ĐƠN */}
       {showModal && (
         <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden animate-drop-down">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-xl overflow-hidden animate-drop-down">
             
             <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-start">
               <div>
@@ -454,7 +454,7 @@ export default function AdminInvoicesPage() {
                 <label className="block text-[13.5px] font-bold text-[#0D1B2A] mb-2">Chọn Phòng</label>
                 <select 
                   required
-                  className="w-full border border-slate-200 rounded-lg px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"
+                  className="w-full border border-slate-200 rounded-md px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"
                   value={formData.roomId}
                   onChange={(e) => setFormData({...formData, roomId: e.target.value})}
                 >
@@ -468,29 +468,29 @@ export default function AdminInvoicesPage() {
               <div className="grid grid-cols-2 gap-5">
                 <div>
                   <label className="block text-[13.5px] font-bold text-[#0D1B2A] mb-2">Tháng</label>
-                  <input type="number" min="1" max="12" required value={formData.month} onChange={(e) => setFormData({...formData, month: Number(e.target.value)})} className="w-full border border-slate-200 rounded-lg px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"/>
+                  <input type="number" min="1" max="12" required value={formData.month} onChange={(e) => setFormData({...formData, month: Number(e.target.value)})} className="w-full border border-slate-200 rounded-md px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"/>
                 </div>
                 <div>
                   <label className="block text-[13.5px] font-bold text-[#0D1B2A] mb-2">Năm</label>
-                  <input type="number" min="2020" required value={formData.year} onChange={(e) => setFormData({...formData, year: Number(e.target.value)})} className="w-full border border-slate-200 rounded-lg px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"/>
+                  <input type="number" min="2020" required value={formData.year} onChange={(e) => setFormData({...formData, year: Number(e.target.value)})} className="w-full border border-slate-200 rounded-md px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"/>
                 </div>
               </div>
 
               <div>
                 <label className="block text-[13.5px] font-bold text-[#0D1B2A] mb-2">Tiền Điện (VNĐ)</label>
-                <input type="number" min="0" required value={formData.electricityFee} onChange={(e) => setFormData({...formData, electricityFee: Number(e.target.value)})} className="w-full border border-slate-200 rounded-lg px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"/>
+                <input type="number" min="0" required value={formData.electricityFee} onChange={(e) => setFormData({...formData, electricityFee: Number(e.target.value)})} className="w-full border border-slate-200 rounded-md px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"/>
               </div>
 
               <div>
                 <label className="block text-[13.5px] font-bold text-[#0D1B2A] mb-2">Tiền Nước (VNĐ)</label>
-                <input type="number" min="0" required value={formData.waterFee} onChange={(e) => setFormData({...formData, waterFee: Number(e.target.value)})} className="w-full border border-slate-200 rounded-lg px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"/>
+                <input type="number" min="0" required value={formData.waterFee} onChange={(e) => setFormData({...formData, waterFee: Number(e.target.value)})} className="w-full border border-slate-200 rounded-md px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"/>
               </div>
 
               <div className="pt-5 flex gap-3">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 font-bold text-[14px] transition-colors">
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded hover:bg-slate-50 font-bold text-[14px] transition-colors">
                   Hủy bỏ
                 </button>
-                <button type="submit" disabled={isSubmitting} className="flex-1 px-5 py-2.5 bg-[#0D1B2A] text-white rounded-lg hover:bg-[#1A2E42] disabled:opacity-50 font-bold text-[14px] transition-colors shadow-sm">
+                <button type="submit" disabled={isSubmitting} className="flex-1 px-5 py-2.5 bg-[#0D1B2A] text-white rounded hover:bg-[#1A2E42] disabled:opacity-50 font-bold text-[14px] transition-colors shadow-sm">
                   {isSubmitting ? "Đang xử lý..." : "Lưu hóa đơn"}
                 </button>
               </div>
@@ -502,7 +502,7 @@ export default function AdminInvoicesPage() {
       {/* MODAL SINH HÓA ĐƠN HÀNG LOẠT */}
       {showBulkModal && (
         <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden animate-drop-down max-h-[92vh] flex flex-col">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl overflow-hidden animate-drop-down max-h-[92vh] flex flex-col">
             <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-start shrink-0">
               <div>
                 <h3 className="text-2xl font-bold text-[#0D1B2A] mb-1" style={{ fontFamily: "'Fraunces', serif" }}>Sinh hóa đơn hàng loạt</h3>
@@ -521,23 +521,23 @@ export default function AdminInvoicesPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                   <div>
                     <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Tháng</label>
-                    <input type="text" inputMode="numeric" required value={bulkConfig.month} onChange={(e) => setBulkConfig({ ...bulkConfig, month: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
+                    <input type="text" inputMode="numeric" required value={bulkConfig.month} onChange={(e) => setBulkConfig({ ...bulkConfig, month: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-md px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
                   </div>
                   <div>
                     <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Năm</label>
-                    <input type="text" inputMode="numeric" required value={bulkConfig.year} onChange={(e) => setBulkConfig({ ...bulkConfig, year: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
+                    <input type="text" inputMode="numeric" required value={bulkConfig.year} onChange={(e) => setBulkConfig({ ...bulkConfig, year: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-md px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
                   </div>
                   <div>
                     <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Hạn đóng</label>
-                    <input type="datetime-local" required value={bulkConfig.dueDate} onChange={(e) => setBulkConfig({ ...bulkConfig, dueDate: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[12.5px]" />
+                    <input type="datetime-local" required value={bulkConfig.dueDate} onChange={(e) => setBulkConfig({ ...bulkConfig, dueDate: e.target.value })} className="w-full border border-slate-200 rounded-md px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[12.5px]" />
                   </div>
                   <div>
                     <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Giá điện (đ/kWh)</label>
-                    <input type="text" inputMode="numeric" required value={bulkConfig.electricityUnitPrice} onChange={(e) => setBulkConfig({ ...bulkConfig, electricityUnitPrice: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
+                    <input type="text" inputMode="numeric" required value={bulkConfig.electricityUnitPrice} onChange={(e) => setBulkConfig({ ...bulkConfig, electricityUnitPrice: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-md px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
                   </div>
                   <div>
                     <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Giá nước (đ/m³)</label>
-                    <input type="text" inputMode="numeric" required value={bulkConfig.waterUnitPrice} onChange={(e) => setBulkConfig({ ...bulkConfig, waterUnitPrice: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
+                    <input type="text" inputMode="numeric" required value={bulkConfig.waterUnitPrice} onChange={(e) => setBulkConfig({ ...bulkConfig, waterUnitPrice: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-md px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
                   </div>
                 </div>
               </div>
@@ -579,7 +579,7 @@ export default function AdminInvoicesPage() {
                                 placeholder="0"
                                 value={reading.kwh}
                                 onChange={(e) => setBulkReadings({ ...bulkReadings, [room._id]: { ...reading, kwh: sanitizeDigits(e.target.value) } })}
-                                className="w-20 border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-[#C9A84C] text-[13px] text-slate-800"
+                                className="w-20 border border-slate-200 rounded-md px-2.5 py-1.5 outline-none focus:border-[#C9A84C] text-[13px] text-slate-800"
                               />
                             </td>
                             <td className="px-4 py-2.5">
@@ -589,7 +589,7 @@ export default function AdminInvoicesPage() {
                                 placeholder="0"
                                 value={reading.m3}
                                 onChange={(e) => setBulkReadings({ ...bulkReadings, [room._id]: { ...reading, m3: sanitizeDigits(e.target.value) } })}
-                                className="w-20 border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-[#C9A84C] text-[13px] text-slate-800"
+                                className="w-20 border border-slate-200 rounded-md px-2.5 py-1.5 outline-none focus:border-[#C9A84C] text-[13px] text-slate-800"
                               />
                             </td>
                             <td className="px-4 py-2.5 text-right font-bold text-[#2563eb] text-[13.5px] whitespace-nowrap">{total.toLocaleString("vi-VN")} đ</td>
@@ -602,10 +602,10 @@ export default function AdminInvoicesPage() {
               </div>
 
               <div className="px-8 py-5 border-t border-slate-100 flex gap-3 shrink-0">
-                <button type="button" onClick={() => setShowBulkModal(false)} disabled={bulkSubmitting} className="flex-1 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 font-bold text-[14px] transition-colors">
+                <button type="button" onClick={() => setShowBulkModal(false)} disabled={bulkSubmitting} className="flex-1 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded hover:bg-slate-50 font-bold text-[14px] transition-colors">
                   Hủy bỏ
                 </button>
-                <button type="submit" disabled={bulkSubmitting || occupiedRooms.length === 0} className="flex-[2] px-5 py-2.5 bg-[#0D1B2A] text-white rounded-lg hover:bg-[#1A2E42] disabled:opacity-50 font-bold text-[14px] transition-colors shadow-sm">
+                <button type="submit" disabled={bulkSubmitting || occupiedRooms.length === 0} className="flex-[2] px-5 py-2.5 bg-[#0D1B2A] text-white rounded hover:bg-[#1A2E42] disabled:opacity-50 font-bold text-[14px] transition-colors shadow-sm">
                   {bulkSubmitting ? "Đang sinh hóa đơn..." : `Sinh hóa đơn cho ${occupiedRooms.length} phòng`}
                 </button>
               </div>

@@ -464,7 +464,10 @@ export default function StudentMaintenancePage() {
 
         /* ── MODAL ── */
         .mn-overlay { position:fixed; inset:0; z-index:200; background:rgba(13,27,42,.6); display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px); }
-        .mn-modal { background:var(--white); border-radius:18px; width:100%; max-width:520px; overflow:hidden; box-shadow:0 28px 60px rgba(13,27,42,.22); animation:mnModalIn .22s ease; }
+        /* max-height + flex để form dài (có ảnh preview) tự cuộn phần thân thay vì tràn khỏi màn hình */
+        .mn-modal { background:var(--white); border-radius:18px; width:100%; max-width:520px; max-height:90vh; overflow:hidden; box-shadow:0 28px 60px rgba(13,27,42,.22); animation:mnModalIn .22s ease; display:flex; flex-direction:column; }
+        .mn-modal-head { flex-shrink:0; }
+        .mn-modal form { display:flex; flex-direction:column; min-height:0; flex:1; }
         @keyframes mnModalIn { from{opacity:0;transform:scale(.96) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
 
         .mn-modal-head { padding:20px 24px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
@@ -476,7 +479,7 @@ export default function StudentMaintenancePage() {
         .mn-modal-close { width:32px; height:32px; border-radius:8px; border:1px solid var(--border); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted); transition:all .15s; }
         .mn-modal-close:hover { background:#F5F3EF; color:var(--navy); border-color:var(--navy); }
 
-        .mn-modal-body { padding:22px 24px; display:flex; flex-direction:column; gap:18px; }
+        .mn-modal-body { padding:22px 24px; display:flex; flex-direction:column; gap:18px; overflow-y:auto; flex:1; min-height:0; }
 
         /* form field */
         .mn-field { display:flex; flex-direction:column; gap:5px; }
@@ -512,7 +515,7 @@ export default function StudentMaintenancePage() {
         .mn-priority-opt-label { font-size:11px; font-weight:500; color:var(--navy); text-align:center; line-height:1.3; }
 
         /* modal footer */
-        .mn-modal-foot { display:flex; gap:10px; padding:0 24px 22px; }
+        .mn-modal-foot { display:flex; gap:10px; padding:14px 24px 22px; flex-shrink:0; border-top:1px solid var(--border); }
         .mn-btn-cancel {
           flex:1; padding:11px; border:1px solid var(--border); border-radius:8px;
           background:transparent; cursor:pointer; font-family:'DM Sans',sans-serif;
