@@ -13,6 +13,7 @@ interface MaintenanceRequest {
   _id: string;
   user: { _id: string; fullName: string; mssv?: string; phone?: string };
   room: { _id: string; name: string; building: string; floor?: number };
+  assignedTo?: { _id: string; fullName: string } | null;
   title: string;
   description: string;
   imageUrl?: string;
@@ -157,11 +158,17 @@ function RatingStars({ value }: { value: number }) {
 }
 
 // ─── Request Card ─────────────────────────────────────────────────────────────
-function RequestCard({ req, onAction }: { req: MaintenanceRequest; onAction: (payload: ConfirmPayload) => void; }) {
+interface StaffOption {
+  _id: string;
+  fullName: string;
+}
+
+function RequestCard({ req, onAction, staffList, onAssign }: { req: MaintenanceRequest; onAction: (payload: ConfirmPayload) => void; staffList: StaffOption[]; onAssign: (requestId: string, staffId: string) => void; }) {
   const p = PRIORITY_CFG[req.priority];
   const s = STATUS_CFG[req.status];
   const actions = NEXT_ACTIONS[req.status] ?? [];
   const isUrgent = req.priority === "URGENT";
+  const isClosed = req.status === "RESOLVED" || req.status === "REJECTED";
 
   return (
     <div className={`am-card ${isUrgent ? "am-card--urgent" : ""}`} style={{ borderLeftColor: p.bar }}>
@@ -181,6 +188,23 @@ function RequestCard({ req, onAction }: { req: MaintenanceRequest; onAction: (pa
       <div className="am-card-sender">
         <span className="am-sender-item">{I.user} {req.user?.fullName}</span>
         {req.user?.mssv && <span className="am-sender-mssv">MSSV: {req.user.mssv}</span>}
+        <span className="am-assign">
+          <span className="am-assign-label">Phụ trách:</span>
+          {isClosed ? (
+            <span className="am-assign-name">{req.assignedTo?.fullName || "Chưa phân công"}</span>
+          ) : (
+            <select
+              className="am-assign-select"
+              value={req.assignedTo?._id ?? ""}
+              onChange={(e) => e.target.value && onAssign(req._id, e.target.value)}
+            >
+              <option value="">— Giao việc cho —</option>
+              {staffList.map((staff) => (
+                <option key={staff._id} value={staff._id}>{staff.fullName}</option>
+              ))}
+            </select>
+          )}
+        </span>
       </div>
 
       <div className="am-card-title">{req.title}</div>
@@ -257,6 +281,7 @@ export default function AdminMaintenancePage() {
   const [activeFilter, setActiveFilter] = useState<"ALL" | Status>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [roomFilter, setRoomFilter] = useState<RoomFilterValue>(EMPTY_ROOM_FILTER);
+  const [staffList, setStaffList] = useState<StaffOption[]>([]);
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
@@ -278,6 +303,32 @@ export default function AdminMaintenancePage() {
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests]);
+
+  // Danh sách nhân viên bảo trì để phân công việc
+  useEffect(() => {
+    apiClient
+      .get("/users/maintenance-staff")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setStaffList(data);
+      })
+      .catch((err) => console.error("Lỗi tải danh sách nhân viên bảo trì:", err));
+  }, []);
+
+  const handleAssign = async (requestId: string, staffId: string) => {
+    try {
+      const res = await apiClient.patch(`/maintenance/${requestId}/assign`, { staffId });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message || "Đã phân công công việc.", "Giao việc thành công 🛠️");
+        void fetchRequests();
+      } else {
+        toast.error(data.message || "Không phân công được, vui lòng thử lại.");
+      }
+    } catch {
+      toast.error("Không thể kết nối đến máy chủ.");
+    }
+  };
 
   const handleConfirm = async () => {
     if (!confirm) return;
@@ -385,7 +436,12 @@ export default function AdminMaintenancePage() {
         .am-urgent-dot { width:5px; height:5px; border-radius:50%; background:#ef4444; animation:amPulse 1.4s infinite; flex-shrink:0; }
         @keyframes amPulse { 0%,100%{opacity:1} 50%{opacity:.3} }
         .am-status-badge { display:inline-flex; align-items:center; padding:4px 12px; border-radius:100px; font-size:11.5px; font-weight:500; white-space:nowrap; }
-        .am-card-sender { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+        .am-card-sender { display:flex; align-items:center; gap:12px; margin-bottom:10px; flex-wrap:wrap; }
+        .am-assign { display:inline-flex; align-items:center; gap:7px; margin-left:auto; }
+        .am-assign-label { font-size:12px; color:var(--muted); font-weight:600; }
+        .am-assign-name { font-size:12.5px; color:var(--navy); font-weight:700; }
+        .am-assign-select { height:32px; padding:0 8px; border:1px solid var(--border); border-radius:8px; background:var(--white); color:var(--navy); font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; cursor:pointer; outline:none; transition:border-color .15s; }
+        .am-assign-select:focus { border-color:#C9A84C; }
         .am-sender-item { display:flex; align-items:center; gap:5px; font-size:12.5px; color:#4A6580; }
         .am-sender-item svg { width:11px; height:11px; stroke:currentColor; }
         .am-sender-mssv { font-size:11.5px; font-weight:500; color:var(--gold); background:var(--gold-dim); border:1px solid var(--gold-b); border-radius:4px; padding:1px 7px; font-variant-numeric:tabular-nums; }
@@ -501,7 +557,7 @@ export default function AdminMaintenancePage() {
             <div className="am-empty-sub">{searchQuery || activeFilter !== "ALL" ? "Thử thay đổi từ khóa hoặc bộ lọc trạng thái." : "Hiện chưa có yêu cầu sửa chữa nào từ sinh viên."}</div>
           </div>
         ) : (
-          filtered.map((req) => <RequestCard key={req._id} req={req} onAction={setConfirm} />)
+          filtered.map((req) => <RequestCard key={req._id} req={req} onAction={setConfirm} staffList={staffList} onAssign={handleAssign} />)
         )}
       </div>
 
