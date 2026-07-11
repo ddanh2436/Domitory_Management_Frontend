@@ -22,7 +22,14 @@ function decodeTokenPayload(token: string): TokenPayload | null {
   }
 }
 
-const ADMIN_ROLES = ["ADMIN", "DORMITORY_MANAGER", "FLOOR_MANAGER", "MAINTENANCE_STAFF"];
+const ADMIN_ROLES = ["ADMIN", "DORMITORY_MANAGER", "FLOOR_MANAGER"];
+
+// Dashboard mặc định theo vai trò — dùng khi người dùng vào nhầm khu vực
+function dashboardFor(role?: string): string {
+  if (role === "STUDENT") return "/student";
+  if (role === "MAINTENANCE_STAFF") return "/staff";
+  return "/admin";
+}
 
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -40,15 +47,18 @@ export default function proxy(request: NextRequest) {
 
   // Sai khu vực theo vai trò → đưa về dashboard đúng của họ
   if (pathname.startsWith("/admin") && !ADMIN_ROLES.includes(payload.role ?? "")) {
-    return NextResponse.redirect(new URL("/student", request.url));
+    return NextResponse.redirect(new URL(dashboardFor(payload.role), request.url));
   }
   if (pathname.startsWith("/student") && payload.role !== "STUDENT") {
-    return NextResponse.redirect(new URL("/admin", request.url));
+    return NextResponse.redirect(new URL(dashboardFor(payload.role), request.url));
+  }
+  if (pathname.startsWith("/staff") && payload.role !== "MAINTENANCE_STAFF") {
+    return NextResponse.redirect(new URL(dashboardFor(payload.role), request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/admin", "/student/:path*", "/student"],
+  matcher: ["/admin/:path*", "/admin", "/student/:path*", "/student", "/staff/:path*", "/staff"],
 };

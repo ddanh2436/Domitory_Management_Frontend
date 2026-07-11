@@ -25,6 +25,14 @@ interface Room {
   _id: string;
   name: string;
   building: string;
+  floor?: number;
+  price?: number;
+  currentOccupancy?: number;
+}
+
+// Chỉ giữ chữ số, bỏ số 0 thừa ở đầu — tránh bug input số của controlled component
+function sanitizeDigits(value: string): string {
+  return value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
 }
 
 function toDateTimeLocalValue(date: Date) {
@@ -52,6 +60,18 @@ export default function AdminInvoicesPage() {
   // Modal State
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Modal sinh hóa đơn hàng loạt theo chỉ số điện nước
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
+  const [bulkConfig, setBulkConfig] = useState({
+    month: String(new Date().getMonth() + 1),
+    year: String(new Date().getFullYear()),
+    dueDate: getDefaultDueDate(),
+    electricityUnitPrice: "3500",
+    waterUnitPrice: "15000",
+  });
+  const [bulkReadings, setBulkReadings] = useState<Record<string, { kwh: string; m3: string }>>({});
   const [formData, setFormData] = useState({
     roomId: "",
     month: new Date().getMonth() + 1,
@@ -118,6 +138,59 @@ export default function AdminInvoicesPage() {
       }
     } catch (error) {
       toast.error("Không thể kết nối đến máy chủ.");
+    }
+  };
+
+  // Sinh hóa đơn hàng loạt: gửi chỉ số điện nước từng phòng lên backend
+  const occupiedRooms = rooms.filter((r) => (r.currentOccupancy ?? 0) > 0);
+
+  const handleGenerateBulk = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const readings = occupiedRooms.map((room) => ({
+      roomId: room._id,
+      electricityKwh: Number(bulkReadings[room._id]?.kwh || 0),
+      waterM3: Number(bulkReadings[room._id]?.m3 || 0),
+    }));
+
+    if (readings.length === 0) {
+      toast.error("Không có phòng nào đang có người ở để sinh hóa đơn.");
+      return;
+    }
+
+    const ok = await confirmDialog({
+      title: `Sinh hóa đơn tháng ${bulkConfig.month}/${bulkConfig.year}?`,
+      message: `Hệ thống sẽ tạo hóa đơn cho ${readings.length} phòng đang có người ở (tiền phòng + điện nước theo chỉ số đã nhập) và gửi thông báo đến sinh viên. Phòng đã có hóa đơn kỳ này sẽ tự động được bỏ qua.`,
+      confirmLabel: "Sinh hóa đơn",
+    });
+    if (!ok) return;
+
+    setBulkSubmitting(true);
+    try {
+      const response = await apiClient.post("/invoices/generate-bulk", {
+        month: Number(bulkConfig.month),
+        year: Number(bulkConfig.year),
+        dueDate: new Date(bulkConfig.dueDate).toISOString(),
+        electricityUnitPrice: Number(bulkConfig.electricityUnitPrice || 0),
+        waterUnitPrice: Number(bulkConfig.waterUnitPrice || 0),
+        readings,
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message, "Sinh hóa đơn hàng loạt 🧾");
+        if (data.errors?.length > 0) {
+          toast.info(data.errors.slice(0, 3).join(" · "));
+        }
+        setShowBulkModal(false);
+        setBulkReadings({});
+        fetchData();
+      } else {
+        toast.error(data.message || "Không sinh được hóa đơn hàng loạt.");
+      }
+    } catch {
+      toast.error("Không thể kết nối đến máy chủ.");
+    } finally {
+      setBulkSubmitting(false);
     }
   };
 
@@ -277,7 +350,13 @@ export default function AdminInvoicesPage() {
             >
               ↻ Quét Quá Hạn
             </button>
-            <button 
+            <button
+              onClick={() => setShowBulkModal(true)}
+              className="px-5 py-2.5 bg-[#C9A84C] text-[#0D1B2A] rounded-lg hover:bg-[#D9B85C] font-bold transition-colors text-[13px] shadow-sm whitespace-nowrap"
+            >
+              ⚡ Sinh hàng loạt
+            </button>
+            <button
               onClick={() => setShowModal(true)}
               className="px-5 py-2.5 bg-[#0D1B2A] text-white rounded-lg hover:bg-[#1A2E42] font-bold transition-colors text-[13px] shadow-sm whitespace-nowrap"
             >
@@ -413,6 +492,121 @@ export default function AdminInvoicesPage() {
                 </button>
                 <button type="submit" disabled={isSubmitting} className="flex-1 px-5 py-2.5 bg-[#0D1B2A] text-white rounded-lg hover:bg-[#1A2E42] disabled:opacity-50 font-bold text-[14px] transition-colors shadow-sm">
                   {isSubmitting ? "Đang xử lý..." : "Lưu hóa đơn"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL SINH HÓA ĐƠN HÀNG LOẠT */}
+      {showBulkModal && (
+        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden animate-drop-down max-h-[92vh] flex flex-col">
+            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-start shrink-0">
+              <div>
+                <h3 className="text-2xl font-bold text-[#0D1B2A] mb-1" style={{ fontFamily: "'Fraunces', serif" }}>Sinh hóa đơn hàng loạt</h3>
+                <p className="text-[13.5px] text-[#8A9BAD]">Nhập chỉ số điện nước từng phòng — tiền phòng lấy theo giá phòng, phòng đã có hóa đơn kỳ này sẽ được bỏ qua.</p>
+              </div>
+              <button
+                onClick={() => !bulkSubmitting && setShowBulkModal(false)}
+                className="text-slate-400 hover:text-[#dc2626] text-2xl font-bold transition-colors"
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleGenerateBulk} className="flex flex-col overflow-hidden">
+              <div className="px-8 pt-6 pb-4 shrink-0">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                  <div>
+                    <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Tháng</label>
+                    <input type="text" inputMode="numeric" required value={bulkConfig.month} onChange={(e) => setBulkConfig({ ...bulkConfig, month: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Năm</label>
+                    <input type="text" inputMode="numeric" required value={bulkConfig.year} onChange={(e) => setBulkConfig({ ...bulkConfig, year: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Hạn đóng</label>
+                    <input type="datetime-local" required value={bulkConfig.dueDate} onChange={(e) => setBulkConfig({ ...bulkConfig, dueDate: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[12.5px]" />
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Giá điện (đ/kWh)</label>
+                    <input type="text" inputMode="numeric" required value={bulkConfig.electricityUnitPrice} onChange={(e) => setBulkConfig({ ...bulkConfig, electricityUnitPrice: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Giá nước (đ/m³)</label>
+                    <input type="text" inputMode="numeric" required value={bulkConfig.waterUnitPrice} onChange={(e) => setBulkConfig({ ...bulkConfig, waterUnitPrice: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-8 pb-4 overflow-y-auto grow">
+                {occupiedRooms.length === 0 ? (
+                  <div className="text-center py-10 text-[#8A9BAD] text-[13.5px] border border-dashed border-slate-200 rounded-xl">
+                    Chưa có phòng nào đang có người ở.
+                  </div>
+                ) : (
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50">
+                        <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#8A9BAD] rounded-l-lg">Phòng</th>
+                        <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#8A9BAD]">Tiền phòng</th>
+                        <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#8A9BAD]">Điện (kWh)</th>
+                        <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#8A9BAD]">Nước (m³)</th>
+                        <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#8A9BAD] text-right rounded-r-lg">Tổng dự kiến</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {occupiedRooms.map((room) => {
+                        const reading = bulkReadings[room._id] || { kwh: "", m3: "" };
+                        const total =
+                          (room.price ?? 0) +
+                          Number(reading.kwh || 0) * Number(bulkConfig.electricityUnitPrice || 0) +
+                          Number(reading.m3 || 0) * Number(bulkConfig.waterUnitPrice || 0);
+                        return (
+                          <tr key={room._id} className="border-b border-slate-100 last:border-0">
+                            <td className="px-4 py-2.5">
+                              <div className="font-bold text-[#0D1B2A] text-[13.5px]">{room.name}</div>
+                              <div className="text-[#8A9BAD] text-[11.5px]">Tòa {room.building}{room.floor ? ` · Tầng ${room.floor}` : ""}</div>
+                            </td>
+                            <td className="px-4 py-2.5 text-[13px] text-slate-600 whitespace-nowrap">{(room.price ?? 0).toLocaleString("vi-VN")} đ</td>
+                            <td className="px-4 py-2.5">
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                placeholder="0"
+                                value={reading.kwh}
+                                onChange={(e) => setBulkReadings({ ...bulkReadings, [room._id]: { ...reading, kwh: sanitizeDigits(e.target.value) } })}
+                                className="w-20 border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-[#C9A84C] text-[13px] text-slate-800"
+                              />
+                            </td>
+                            <td className="px-4 py-2.5">
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                placeholder="0"
+                                value={reading.m3}
+                                onChange={(e) => setBulkReadings({ ...bulkReadings, [room._id]: { ...reading, m3: sanitizeDigits(e.target.value) } })}
+                                className="w-20 border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-[#C9A84C] text-[13px] text-slate-800"
+                              />
+                            </td>
+                            <td className="px-4 py-2.5 text-right font-bold text-[#2563eb] text-[13.5px] whitespace-nowrap">{total.toLocaleString("vi-VN")} đ</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              <div className="px-8 py-5 border-t border-slate-100 flex gap-3 shrink-0">
+                <button type="button" onClick={() => setShowBulkModal(false)} disabled={bulkSubmitting} className="flex-1 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 font-bold text-[14px] transition-colors">
+                  Hủy bỏ
+                </button>
+                <button type="submit" disabled={bulkSubmitting || occupiedRooms.length === 0} className="flex-[2] px-5 py-2.5 bg-[#0D1B2A] text-white rounded-lg hover:bg-[#1A2E42] disabled:opacity-50 font-bold text-[14px] transition-colors shadow-sm">
+                  {bulkSubmitting ? "Đang sinh hóa đơn..." : `Sinh hóa đơn cho ${occupiedRooms.length} phòng`}
                 </button>
               </div>
             </form>

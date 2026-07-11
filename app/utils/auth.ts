@@ -9,7 +9,9 @@ export interface JwtPayload {
 
 // Đây chính là hàm bị thiếu gây ra lỗi đỏ của bạn
 export function getDashboardPath(role: UserRole) {
-  return role === 'STUDENT' ? '/student' : '/admin';
+  if (role === 'STUDENT') return '/student';
+  if (role === 'MAINTENANCE_STAFF') return '/staff';
+  return '/admin';
 }
 
 // Lưu token vào localStorage (cho apiClient/socket) và cookie (cho middleware.ts
