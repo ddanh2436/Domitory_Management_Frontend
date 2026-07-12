@@ -51,6 +51,8 @@ export default function AdminDashboard() {
   const [students, setStudents] = useState<Student[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [maintenanceCount, setMaintenanceCount] = useState(0);
+  const [pendingTransfers, setPendingTransfers] = useState(0);
+  const [pendingAbsences, setPendingAbsences] = useState(0);
   
   const [revenueData, setRevenueData] = useState<any[]>([]);
   const [maintenanceData, setMaintenanceData] = useState<any[]>([]);
@@ -64,13 +66,15 @@ export default function AdminDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      const [resStudents, resBookings, resMaint, revStatsRes, maintStatsRes, resRooms] = await Promise.all([
+      const [resStudents, resBookings, resMaint, revStatsRes, maintStatsRes, resRooms, resTransfers, resAbsences] = await Promise.all([
         apiClient.get('/users/students'),
         apiClient.get('/bookings'),
         apiClient.get('/maintenance'),
         apiClient.get('/invoices/stats/revenue'),
         apiClient.get('/maintenance/stats/status'),
-        apiClient.get('/rooms') 
+        apiClient.get('/rooms'),
+        apiClient.get('/transfers'),
+        apiClient.get('/absences')
       ]);
 
       // Hàm trích xuất mảng an toàn (phòng hờ Backend trả về { data: [...] } thay vì Array)
@@ -98,6 +102,14 @@ export default function AdminDashboard() {
       }
       if (revStatsRes.ok) setRevenueData(extractArray(await revStatsRes.json()));
       if (maintStatsRes.ok) setMaintenanceData(extractArray(await maintStatsRes.json()));
+      if (resTransfers.ok) {
+        const tList = extractArray(await resTransfers.json());
+        setPendingTransfers(tList.filter((t: { status: string }) => t.status === "PENDING").length);
+      }
+      if (resAbsences.ok) {
+        const aList = extractArray(await resAbsences.json());
+        setPendingAbsences(aList.filter((a: { status: string }) => a.status === "PENDING").length);
+      }
 
       // ─── TÍNH TOÁN SỨC CHỨA TỪNG PHÒNG CHÍNH XÁC 100% ───
       if (resRooms.ok) {
@@ -179,7 +191,8 @@ export default function AdminDashboard() {
         .page-title { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 700; color: #0D1B2A; margin-bottom: 6px; }
         .page-subtitle { font-size: 14px; color: #8A9BAD; margin-bottom: 28px; }
 
-        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+        @media (min-width: 1280px) { .stats-row { grid-template-columns: repeat(6, 1fr); } }
         .stat-card { background: #ffffff; border: 1px solid rgba(13,27,42,0.09); border-radius: 12px; padding: 22px 24px; transition: transform 0.15s, box-shadow 0.15s; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,27,42,0.07); }
         .stat-card--accent { background: #0D1B2A; border-color: rgba(201,168,76,0.25); }
@@ -229,6 +242,8 @@ export default function AdminDashboard() {
           <StatCard label="Đơn phòng chờ xử lý" value={loading ? "..." : pendingBookings.length} sub="Yêu cầu cần phê duyệt gấp" />
           <StatCard label="Tổng đơn đã đăng ký" value={loading ? "..." : bookings.length} sub="Bao gồm mọi trạng thái" />
           <StatCard label="Sự cố kỹ thuật" value={loading ? "..." : maintenanceCount} sub={maintenanceCount === 0 ? "Hệ thống ổn định" : "Cần phân công sửa chữa"} />
+          <StatCard label="Yêu cầu đổi phòng" value={loading ? "..." : pendingTransfers} sub={pendingTransfers === 0 ? "Không có yêu cầu chờ" : "Đang chờ phê duyệt"} />
+          <StatCard label="Đơn tạm trú / tạm vắng" value={loading ? "..." : pendingAbsences} sub={pendingAbsences === 0 ? "Không có đơn chờ" : "Đang chờ phê duyệt"} />
         </div>
 
         {!loading && (

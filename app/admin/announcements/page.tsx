@@ -1,9 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "../../components/ToastProvider";
 import { useConfirm } from "../../components/ConfirmProvider";
 import { apiClient } from "../../utils/apiClient";
+
+interface AnnouncementRecord {
+  _id: string;
+  title: string;
+  message: string;
+  sentBy?: { fullName?: string };
+  sentCount: number;
+  createdAt: string;
+}
 
 // Trang soạn thông báo chung gửi đến TOÀN BỘ sinh viên (realtime qua socket)
 export default function AdminAnnouncementsPage() {
@@ -13,6 +22,26 @@ export default function AdminAnnouncementsPage() {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [lastSent, setLastSent] = useState<{ title: string; sent: number; at: Date } | null>(null);
+  const [history, setHistory] = useState<AnnouncementRecord[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+
+  const loadHistory = async () => {
+    try {
+      const res = await apiClient.get("/notifications/broadcast/history");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) setHistory(data);
+      }
+    } catch (err) {
+      console.error("Lỗi tải lịch sử thông báo:", err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadHistory();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +61,7 @@ export default function AdminAnnouncementsPage() {
         setLastSent({ title, sent: data.sent ?? 0, at: new Date() });
         setTitle("");
         setMessage("");
+        void loadHistory();
       } else {
         toast.error(data.message || "Không gửi được thông báo.");
       }
@@ -82,6 +112,17 @@ export default function AdminAnnouncementsPage() {
         .an-preview-title { font-size: 13.5px; font-weight: 700; color: #0D1B2A; }
         .an-preview-msg { font-size: 12.5px; color: #64748b; margin-top: 3px; line-height: 1.6; white-space: pre-wrap; }
         .an-preview-time { font-size: 11.5px; color: #2563eb; font-weight: 600; margin-top: 5px; }
+
+        .an-history { margin-top: 22px; }
+        .an-history-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 14px 16px; border: 1px solid rgba(13,27,42,.08); border-radius: 10px; margin-bottom: 10px; background: #fff; }
+        .an-history-item:last-child { margin-bottom: 0; }
+        .an-history-title { font-size: 13.5px; font-weight: 700; color: #0D1B2A; }
+        .an-history-msg { font-size: 12.5px; color: #64748b; margin-top: 4px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .an-history-meta { font-size: 11.5px; color: #8A9BAD; margin-top: 7px; font-weight: 500; }
+        .an-history-count { flex-shrink: 0; text-align: center; padding: 8px 14px; border-radius: 8px; background: rgba(201,168,76,.1); border: 1px solid rgba(201,168,76,.25); }
+        .an-history-count-num { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; color: #9a7b2c; }
+        .an-history-count-label { font-size: 10px; color: #8A9BAD; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+        .an-history-empty { padding: 30px 20px; text-align: center; color: #8A9BAD; font-size: 13px; border: 1px dashed rgba(13,27,42,.15); border-radius: 10px; }
       `}</style>
 
       <div className="an-hero">
@@ -149,7 +190,7 @@ export default function AdminAnnouncementsPage() {
           )}
 
           {(title || message) && (
-            <div className="an-preview">
+            <div className="an-preview an-preview-block">
               <div className="an-preview-label">Xem trước trên chuông thông báo</div>
               <div className="an-preview-card">
                 <div className="an-preview-icon">
@@ -164,6 +205,35 @@ export default function AdminAnnouncementsPage() {
                 </div>
               </div>
             </div>
+          )}
+        </div>
+      </div>
+
+      {/* Lịch sử thông báo đã gửi */}
+      <div className="an-panel an-history">
+        <div className="an-panel-head">Lịch sử đã gửi ({history.length})</div>
+        <div className="an-panel-body">
+          {historyLoading ? (
+            <div className="an-history-empty">Đang tải lịch sử...</div>
+          ) : history.length === 0 ? (
+            <div className="an-history-empty">Chưa có thông báo chung nào được gửi.</div>
+          ) : (
+            history.map((item) => (
+              <div key={item._id} className="an-history-item">
+                <div style={{ minWidth: 0 }}>
+                  <div className="an-history-title">{item.title}</div>
+                  <div className="an-history-msg">{item.message}</div>
+                  <div className="an-history-meta">
+                    {item.sentBy?.fullName ? `Gửi bởi ${item.sentBy.fullName} · ` : ""}
+                    {new Date(item.createdAt).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </div>
+                </div>
+                <div className="an-history-count">
+                  <div className="an-history-count-num">{item.sentCount}</div>
+                  <div className="an-history-count-label">SV nhận</div>
+                </div>
+              </div>
+            ))
           )}
         </div>
       </div>

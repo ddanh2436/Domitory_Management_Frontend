@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiClient } from "../../utils/apiClient";
+import { exportInvoicePdf } from "../../utils/exportPdf";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Invoice {
@@ -70,7 +71,7 @@ function SkeletonInvoiceCard() {
 }
 
 // ─── Invoice Card ─────────────────────────────────────────────────────────────
-function InvoiceCard({ inv, onPay }: { inv: Invoice; onPay: (id: string) => void }) {
+function InvoiceCard({ inv, onPay, onExport }: { inv: Invoice; onPay: (id: string) => void; onExport: (inv: Invoice) => void }) {
   const s = STATUS_CFG[inv.status];
   const monthLabel = MONTH_NAMES_SHORT[inv.month] ?? `Tháng ${inv.month}`;
 
@@ -130,6 +131,9 @@ function InvoiceCard({ inv, onPay }: { inv: Invoice; onPay: (id: string) => void
           {inv.status === "OVERDUE" ? "Thanh toán ngay (đã trễ hạn)" : "Thanh toán hóa đơn"}
         </button>
       )}
+      <button type="button" className="iv-btn-pdf" onClick={() => onExport(inv)}>
+        📄 Xuất hóa đơn PDF
+      </button>
     </div>
   );
 }
@@ -139,6 +143,7 @@ export default function StudentInvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading]   = useState(true);
   const [hasRoom, setHasRoom]   = useState(true);
+  const [roomInfo, setRoomInfo] = useState<{ name: string; building?: string } | null>(null);
   const [activeFilter, setActiveFilter] = useState<"ALL" | Invoice["status"]>("ALL");
 
   useEffect(() => {
@@ -154,6 +159,7 @@ export default function StudentInvoicesPage() {
           setLoading(false);
           return;
         }
+        setRoomInfo({ name: profile.room.name, building: profile.room.building });
 
         // 2. Gọi API lấy danh sách hóa đơn theo ID phòng đó
         const invoiceRes = await apiClient.get(`/invoices/room/${profile.room._id}`);
@@ -171,6 +177,22 @@ export default function StudentInvoicesPage() {
 
     fetchMyInvoices();
   }, []);
+
+  const handleExportPdf = (inv: Invoice) => {
+    exportInvoicePdf({
+      roomName: roomInfo?.name || "—",
+      building: roomInfo?.building,
+      month: inv.month,
+      year: inv.year,
+      roomFee: inv.roomFee,
+      electricityFee: inv.electricityFee,
+      waterFee: inv.waterFee,
+      totalAmount: inv.totalAmount,
+      status: inv.status,
+      dueDate: inv.dueDate,
+      createdAt: inv.createdAt,
+    });
+  };
 
   const handlePayment = (invoiceId: string) => {
     window.location.href = `/student/payment/${invoiceId}`;
@@ -244,6 +266,8 @@ export default function StudentInvoicesPage() {
         .iv-btn-pay--active:hover { background:#1a334d; box-shadow:0 6px 18px rgba(13,27,42,.18); transform:translateY(-1px); }
         .iv-btn-pay--overdue { background:#dc2626; color:#fff; }
         .iv-btn-pay--overdue:hover { background:#b91c1c; box-shadow:0 6px 18px rgba(220,38,38,.22); transform:translateY(-1px); }
+        .iv-btn-pdf { width:100%; margin-top:8px; padding:11px; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; text-align:center; border:1px solid var(--border); background:var(--white); color:var(--navy); cursor:pointer; transition:all .15s; }
+        .iv-btn-pdf:hover { border-color:var(--gold); color:#9a7b2c; }
 
         /* ── EMPTY STATE ── */
         .iv-empty { text-align:center; padding:60px 24px; background:var(--white); border-radius:16px; border:1px solid var(--border); max-width:920px; }
@@ -327,7 +351,7 @@ export default function StudentInvoicesPage() {
       ) : (
         <div className="iv-list">
           {filtered.map((inv) => (
-            <InvoiceCard key={inv._id} inv={inv} onPay={handlePayment} />
+            <InvoiceCard key={inv._id} inv={inv} onPay={handlePayment} onExport={handleExportPdf} />
           ))}
         </div>
       )}

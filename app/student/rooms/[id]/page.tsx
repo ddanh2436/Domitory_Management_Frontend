@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { apiClient } from "../../../utils/apiClient";
 import RoleGuard from "../../../components/RoleGuard";
 import { useConfirm } from "../../../components/ConfirmProvider";
+import { useToast } from "../../../components/ToastProvider";
 import { 
   ArrowLeft, MapPin, CheckCircle2, Shield, 
   Wifi, Wind, Bed, Zap, Clock, Info, ShieldCheck, Sparkles
@@ -26,6 +27,7 @@ export default function RoomDetailPage() {
   const params = useParams();
   const router = useRouter();
   const confirmDialog = useConfirm();
+  const toast = useToast();
   
   const [room, setRoom] = useState<RoomData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,14 +76,14 @@ export default function RoomDetailPage() {
     try {
       const res = await apiClient.post('/bookings', { roomId: room._id });
       if (res.ok) {
-        alert("🎉 Đặt phòng thành công! Ban Quản Lý sẽ sớm liên hệ với bạn.");
+        toast.success("Ban Quản Lý sẽ sớm phê duyệt đơn của bạn.", "Đặt phòng thành công 🎉");
         router.push("/student");
       } else {
         const data = await res.json();
-        alert(data.message || "Đã xảy ra lỗi khi đặt phòng.");
+        toast.error(data.message || "Đã xảy ra lỗi khi đặt phòng.");
       }
-    } catch (error) {
-      alert("Lỗi kết nối máy chủ. Vui lòng thử lại sau.");
+    } catch {
+      toast.error("Lỗi kết nối máy chủ. Vui lòng thử lại sau.");
     } finally {
       setIsSubmitting(false);
     }

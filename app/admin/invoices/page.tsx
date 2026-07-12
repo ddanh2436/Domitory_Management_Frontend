@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "../../components/ToastProvider";
 import { useConfirm } from "../../components/ConfirmProvider";
 import { apiClient } from "../../utils/apiClient";
+import { exportInvoicePdf } from "../../utils/exportPdf";
 import RoomFilterBar, { EMPTY_ROOM_FILTER, matchRoomFilter, type RoomFilterValue } from "../../components/RoomFilterBar";
 
 interface Invoice {
@@ -412,16 +413,40 @@ export default function AdminInvoicesPage() {
                       </span>
                     </td>
                     <td className="whitespace-nowrap text-center">
-                      {inv.status !== 'PAID' ? (
-                        <button 
-                          onClick={() => handleMarkAsPaid(inv._id)}
-                          className="px-4 py-2 bg-[#f0fdf4] text-[#16a34a] hover:bg-[#dcfce7] border border-[#bbf7d0] rounded font-bold transition-colors text-[13px] whitespace-nowrap"
+                      <div className="flex items-center justify-center gap-2">
+                        {inv.status !== 'PAID' ? (
+                          <button
+                            onClick={() => handleMarkAsPaid(inv._id)}
+                            className="px-4 py-2 bg-[#f0fdf4] text-[#16a34a] hover:bg-[#dcfce7] border border-[#bbf7d0] rounded font-bold transition-colors text-[13px] whitespace-nowrap"
+                          >
+                            Xác nhận Thu
+                          </button>
+                        ) : (
+                          <span className="text-[#8A9BAD] italic text-[13px] font-medium">Đã hoàn tất</span>
+                        )}
+                        <button
+                          onClick={() =>
+                            exportInvoicePdf({
+                              roomName: inv.room?.name || "—",
+                              building: inv.room?.building,
+                              month: inv.month,
+                              year: inv.year,
+                              roomFee: inv.roomFee,
+                              electricityFee: inv.electricityFee,
+                              waterFee: inv.waterFee,
+                              totalAmount: inv.totalAmount,
+                              status: inv.status,
+                              dueDate: inv.dueDate,
+                              paidAt: inv.paidAt,
+                              createdAt: inv.createdAt,
+                            })
+                          }
+                          title="Xuất hóa đơn PDF"
+                          className="px-3 py-2 bg-white text-slate-600 hover:text-[#0D1B2A] hover:border-[#C9A84C] border border-slate-200 rounded font-bold transition-colors text-[13px] whitespace-nowrap"
                         >
-                          Xác nhận Thu
+                          📄 PDF
                         </button>
-                      ) : (
-                        <span className="text-[#8A9BAD] italic text-[13px] font-medium">Đã hoàn tất</span>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 ))
