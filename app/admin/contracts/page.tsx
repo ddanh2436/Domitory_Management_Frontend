@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiClient } from "../../utils/apiClient";
+import { exportContractPdf } from "../../utils/exportPdf";
 import RoomFilterBar, { EMPTY_ROOM_FILTER, matchRoomFilter, type RoomFilterValue } from "../../components/RoomFilterBar";
 
 type ContractStatus = "ACTIVE" | "EXPIRED" | "TERMINATED";
@@ -15,6 +16,7 @@ interface Contract {
   endDate: string;
   rentalFee: number;
   status: ContractStatus;
+  terms?: string;
   createdAt: string;
 }
 
@@ -151,14 +153,15 @@ export default function AdminContractsPage() {
                 <th>Thời hạn</th>
                 <th>Giá thuê</th>
                 <th>Trạng thái</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="text-center py-16 text-[#8A9BAD] font-medium text-sm">Đang tải dữ liệu...</td></tr>
+                <tr><td colSpan={7} className="text-center py-16 text-[#8A9BAD] font-medium text-sm">Đang tải dữ liệu...</td></tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-16 text-[#8A9BAD] font-medium text-sm">
+                  <td colSpan={7} className="text-center py-16 text-[#8A9BAD] font-medium text-sm">
                     {contracts.length === 0 ? "Chưa có hợp đồng nào trong hệ thống." : "Không có hợp đồng nào khớp bộ lọc."}
                   </td>
                 </tr>
@@ -198,6 +201,32 @@ export default function AdminContractsPage() {
                           <span className="badge-dot" />
                           {STATUS_LABEL[c.status] || c.status}
                         </span>
+                      </td>
+                      <td className="whitespace-nowrap">
+                        <button
+                          type="button"
+                          title="Xuất hợp đồng PDF"
+                          onClick={() =>
+                            exportContractPdf({
+                              contractNumber: c.contractNumber,
+                              studentName: c.user?.fullName,
+                              mssv: c.user?.mssv,
+                              email: c.user?.email,
+                              phone: c.user?.phone,
+                              roomName: c.room?.name,
+                              building: c.room?.building,
+                              floor: c.room?.floor,
+                              startDate: c.startDate,
+                              endDate: c.endDate,
+                              rentalFee: c.rentalFee,
+                              status: c.status,
+                              terms: c.terms,
+                            })
+                          }
+                          className="px-3 py-2 bg-white text-slate-600 hover:text-[#0D1B2A] hover:border-[#C9A84C] border border-slate-200 rounded font-bold transition-colors text-[12.5px]"
+                        >
+                          📄 PDF
+                        </button>
                       </td>
                     </tr>
                   );

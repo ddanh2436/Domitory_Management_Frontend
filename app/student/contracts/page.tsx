@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Playfair_Display, Inter } from "next/font/google";
 import { apiClient } from "../../utils/apiClient";
 import { useToast } from "../../components/ToastProvider";
+import { exportContractPdf } from "../../utils/exportPdf";
 
 const display = Playfair_Display({
   subsets: ["latin", "vietnamese"],
@@ -373,7 +374,24 @@ export default function StudentContractPage() {
             {/* ── KHỐI CÁC NÚT BUTTON (Nằm ngoài khung giấy A4) ── */}
             <div className="bg-white border border-slate-200 rounded p-4 shadow-sm flex flex-col sm:flex-row gap-4 print:hidden w-full max-w-[850px] mx-auto">
               <button
-                onClick={() => window.print()}
+                onClick={() =>
+                  exportContractPdf({
+                    contractNumber: contract.contractNumber,
+                    studentName: contract.user?.fullName,
+                    mssv: contract.user?.mssv,
+                    email: contract.user?.email,
+                    phone: contract.user?.phone,
+                    cccd: contract.user?.cccd,
+                    roomName: contract.room?.name,
+                    building: contract.room?.building,
+                    floor: contract.room?.floor,
+                    startDate: contract.startDate,
+                    endDate: contract.endDate,
+                    rentalFee: contract.rentalFee,
+                    status: contract.status,
+                    terms: contract.terms,
+                  })
+                }
                 className="flex-1 py-3 px-6 flex items-center justify-center gap-2 bg-slate-100 text-slate-800 border border-slate-300 rounded font-bold text-[14px] hover:bg-slate-200 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
               >
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
