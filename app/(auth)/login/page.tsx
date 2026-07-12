@@ -328,10 +328,13 @@ export default function AuthPage() {
               </div>
 
               <div className="ap-google-wrap">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => setMessage({ type: "error", text: "Cửa sổ đăng nhập Google bị lỗi" })}
-                />
+                {/* Chỉ render nút Google của panel đang mở — tránh google.accounts.id.initialize() bị gọi 2 lần */}
+                {isRegisterActive && (
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => setMessage({ type: "error", text: "Cửa sổ đăng nhập Google bị lỗi" })}
+                  />
+                )}
               </div>
             </form>
           </div>
@@ -380,10 +383,12 @@ export default function AuthPage() {
               </div>
 
               <div className="ap-google-wrap">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => setMessage({ type: "error", text: "Cửa sổ đăng nhập Google bị lỗi" })}
-                />
+                {!isRegisterActive && (
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => setMessage({ type: "error", text: "Cửa sổ đăng nhập Google bị lỗi" })}
+                  />
+                )}
               </div>
             </form>
           </div>
