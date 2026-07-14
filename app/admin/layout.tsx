@@ -134,6 +134,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [pendingBookings, setPendingBookings] = useState(0);
   const [pendingMaintenance, setPendingMaintenance] = useState(0);
   const [pendingTransfers, setPendingTransfers] = useState(0);
+  const [pendingCheckouts, setPendingCheckouts] = useState(0);
   const [pendingAbsences, setPendingAbsences] = useState(0);
 
   useEffect(() => {
@@ -161,6 +162,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         if (resTransfers.ok) {
           const tData = (await resTransfers.json()) as BookingSummary[];
           setPendingTransfers(tData.filter((transfer) => transfer.status === "PENDING").length);
+        }
+
+        const resCheckouts = await apiClient.get("/checkouts");
+        if (resCheckouts.ok) {
+          const cData = (await resCheckouts.json()) as BookingSummary[];
+          setPendingCheckouts(cData.filter((checkout) => checkout.status === "PENDING").length);
         }
 
         const resAbsences = await apiClient.get("/absences");
@@ -256,6 +263,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <NavItem href="/admin/permissions" icon={Icons.users} label="Phân quyền tài khoản" active={pathname.startsWith("/admin/permissions")} />
             <NavItem href="/admin/bookings" icon={Icons.doc} label="Duyệt đơn phòng" badge={pendingBookings} active={pathname.startsWith("/admin/bookings")} />
             <NavItem href="/admin/transfers" icon={Icons.transfer} label="Duyệt đổi phòng" badge={pendingTransfers} active={pathname.startsWith("/admin/transfers")} />
+            <NavItem href="/admin/checkouts" icon={Icons.logout} label="Duyệt trả phòng" badge={pendingCheckouts} active={pathname.startsWith("/admin/checkouts")} />
             <NavItem href="/admin/absences" icon={Icons.moon} label="Tạm trú / Tạm vắng" badge={pendingAbsences} active={pathname.startsWith("/admin/absences")} />
             <NavItem href="/admin/announcements" icon={Icons.megaphone} label="Gửi thông báo" active={pathname.startsWith("/admin/announcements")} />
             <NavItem href="/admin/invoices" icon={Icons.invoice} label="Hóa đơn" active={pathname.startsWith("/admin/invoices")} />
