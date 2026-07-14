@@ -274,6 +274,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             <NavItem icon={Icons.home} label="Tổng quan" href="/student" active={pathname === "/student"} />
             <NavItem icon={Icons.search} label="Tìm & Đặt phòng" href="/student/rooms" active={pathname.startsWith("/student/rooms")} />
             <NavItem icon={Icons.transfer} label="Đổi phòng" href="/student/transfers" active={pathname.startsWith("/student/transfers")} />
+            <NavItem icon={Icons.logout} label="Trả phòng" href="/student/checkout" active={pathname.startsWith("/student/checkout")} />
             <NavItem icon={Icons.moon} label="Tạm trú / Tạm vắng" href="/student/absences" active={pathname.startsWith("/student/absences")} />
             <NavItem icon={Icons.doc} label="Hợp đồng điện tử" href="/student/contracts" active={pathname.startsWith("/student/contracts")} />
             <NavItem icon={Icons.invoice} label="Hóa đơn" href="/student/invoices" active={pathname.startsWith("/student/invoices")} />
