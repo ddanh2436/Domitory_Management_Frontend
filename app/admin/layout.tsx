@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import RoleGuard from "../components/RoleGuard";
@@ -136,6 +136,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [pendingTransfers, setPendingTransfers] = useState(0);
   const [pendingCheckouts, setPendingCheckouts] = useState(0);
   const [pendingAbsences, setPendingAbsences] = useState(0);
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const avatarMenuRef = useRef<HTMLDivElement | null>(null);
+
+  // Đóng menu avatar khi bấm ra ngoài
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+    const onClickOutside = (e: MouseEvent) => {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target as Node)) {
+        setAvatarMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [avatarMenuOpen]);
 
   useEffect(() => {
     const loadLayoutData = async () => {
@@ -219,8 +233,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         .sidebar__wordmark { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; color: var(--white); letter-spacing: -0.2px; }
         .sidebar__wordmark span { color: var(--gold); }
         .sidebar__role-chip { margin: 16px 20px 4px; font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
-        .sidebar__nav { flex: 1; padding: 4px 12px 16px; display: flex; flex-direction: column; gap: 2px; }
-        .sidebar__footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.06); }
+        .sidebar__nav { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 12px 16px; display: flex; flex-direction: column; gap: 2px; }
+        .sidebar__nav::-webkit-scrollbar { width: 5px; }
+        .sidebar__nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 100px; }
+        .sidebar__nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+        .sidebar__footer { flex-shrink: 0; padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.06); }
         .nav-item { width: 100%; display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: 8px; border: none; background: transparent; cursor: pointer; transition: background 0.15s, color 0.15s; text-align: left; text-decoration: none; }
         .nav-item__icon { color: var(--muted); flex-shrink: 0; display: flex; }
         .nav-item__label { font-size: 13.5px; font-weight: 400; color: rgba(255,255,255,0.55); flex: 1; }
@@ -246,6 +263,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         .topbar__right { display: flex; align-items: center; gap: 12px; }
         .topbar__avatar { width: 36px; height: 36px; border-radius: 9px; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600; color: var(--gold); cursor: pointer; border: 1.5px solid var(--gold-border); transition: transform 0.1s; overflow: hidden; }
         .topbar__avatar:hover { transform: scale(1.05); border-color: var(--gold); }
+        .avatar-menu-wrap { position: relative; }
+        .avatar-menu { position: absolute; top: calc(100% + 8px); right: 0; min-width: 200px; background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 32px rgba(13,27,42,0.12); padding: 6px; z-index: 50; }
+        .avatar-menu__item { width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; border: none; background: transparent; cursor: pointer; text-align: left; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--navy); text-decoration: none; transition: background 0.15s; }
+        .avatar-menu__item:hover { background: rgba(13,27,42,0.05); }
+        .avatar-menu__item svg { flex-shrink: 0; color: var(--muted); }
+        .avatar-menu__item--logout { color: #dc2626; }
+        .avatar-menu__item--logout svg { color: #dc2626; }
+        .avatar-menu__item--logout:hover { background: rgba(220,38,38,0.07); }
+        .avatar-menu__divider { height: 1px; background: var(--border); margin: 5px 6px; }
         .page-body { padding: 32px; flex: 1; }
       `}</style>
 
@@ -292,6 +318,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {pathname.includes("/students") && "Quản lý danh sách sinh viên"}
                 {pathname.includes("/permissions") && "Phân quyền tài khoản quản trị"}
                 {pathname.includes("/bookings") && "Duyệt đơn lưu trú"}
+                {pathname.includes("/checkouts") && "Duyệt yêu cầu trả phòng"}
                 {pathname.includes("/invoices") && "Hệ thống hóa đơn"}
                 {pathname.includes("/profile") && "Hồ sơ cá nhân Admin"}
                 {pathname.includes("/maintenance") && "Quản lý yêu cầu bảo trì"}
@@ -300,11 +327,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <div className="topbar__right">
               <NotificationBell />
-              <div className="topbar__avatar" title="Bấm để xem/sửa hồ sơ" onClick={() => router.push('/admin/profile')}>
-                {adminProfile?.avatar ? (
-                  <img src={adminProfile.avatar} alt="Admin Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : (
-                  adminProfile?.fullName ? adminProfile.fullName.charAt(0).toUpperCase() : "A"
+              <div className="avatar-menu-wrap" ref={avatarMenuRef}>
+                <div className="topbar__avatar" title="Tài khoản" onClick={() => setAvatarMenuOpen((v) => !v)}>
+                  {adminProfile?.avatar ? (
+                    <img src={adminProfile.avatar} alt="Admin Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    adminProfile?.fullName ? adminProfile.fullName.charAt(0).toUpperCase() : "A"
+                  )}
+                </div>
+                {avatarMenuOpen && (
+                  <div className="avatar-menu">
+                    <button
+                      type="button"
+                      className="avatar-menu__item"
+                      onClick={() => { setAvatarMenuOpen(false); router.push("/admin/profile"); }}
+                    >
+                      {Icons.users}
+                      Hồ sơ cá nhân
+                    </button>
+                    <div className="avatar-menu__divider" />
+                    <button type="button" className="avatar-menu__item avatar-menu__item--logout" onClick={handleLogout}>
+                      {Icons.logout}
+                      Đăng xuất
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

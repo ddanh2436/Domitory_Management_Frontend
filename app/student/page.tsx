@@ -112,6 +112,11 @@ const Icons = {
       <circle cx="12" cy="12" r="3" strokeWidth={1.8} />
     </svg>
   ),
+  leave: (
+    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+    </svg>
+  ),
   arrowRight: (
     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
@@ -164,12 +169,14 @@ function metaForType(type?: string): { icon: React.ReactNode; color: ActivityCol
 
 interface BookingLite { _id: string; status: string; createdAt: string; room?: { name?: string } }
 interface MaintenanceLite { _id: string; title: string; status: string; createdAt: string; resolvedAt?: string; rating?: number; ratedAt?: string }
+interface CheckoutLite { _id: string; status: string; createdAt: string; processedAt?: string; refundAmount?: number; room?: { name?: string } }
 
 // Dựng danh sách hoạt động THẬT từ dữ liệu tài khoản
 function buildActivities(
   profile: Profile | null,
   bookings: BookingLite[],
   maintenance: MaintenanceLite[],
+  checkouts: CheckoutLite[],
 ): Activity[] {
   const items: Activity[] = [];
 
@@ -221,6 +228,38 @@ function buildActivities(
     }
   });
 
+  checkouts.forEach((c) => {
+    const roomLabel = c.room?.name ? `phòng ${c.room.name}` : "phòng";
+    items.push({
+      id: `checkout-new-${c._id}`,
+      icon: Icons.leave,
+      color: c.status === "CANCELLED" ? "muted" : "gold",
+      title:
+        c.status === "CANCELLED"
+          ? `Bạn đã hủy yêu cầu trả ${roomLabel}`
+          : `Đã gửi yêu cầu trả ${roomLabel}`,
+      time: new Date(c.createdAt).getTime(),
+    });
+    if (c.processedAt && c.status === "COMPLETED") {
+      items.push({
+        id: `checkout-done-${c._id}`,
+        icon: Icons.check,
+        color: "green",
+        title: `Trả ${roomLabel} hoàn tất — hoàn cọc ${(c.refundAmount ?? 0).toLocaleString("vi-VN")}đ`,
+        time: new Date(c.processedAt).getTime(),
+      });
+    }
+    if (c.processedAt && c.status === "REJECTED") {
+      items.push({
+        id: `checkout-rejected-${c._id}`,
+        icon: Icons.info,
+        color: "rose",
+        title: `Yêu cầu trả ${roomLabel} bị từ chối`,
+        time: new Date(c.processedAt).getTime(),
+      });
+    }
+  });
+
   return items.sort((a, b) => b.time - a.time);
 }
 
@@ -234,11 +273,12 @@ export default function StudentDashboard() {
   useEffect(() => {
     const load = async () => {
       try {
-        // Gọi song song hồ sơ + lịch sử đặt phòng + lịch sử sửa chữa
-        const [profileRes, bookingsRes, maintenanceRes] = await Promise.all([
+        // Gọi song song hồ sơ + lịch sử đặt phòng + lịch sử sửa chữa + lịch sử trả phòng
+        const [profileRes, bookingsRes, maintenanceRes, checkoutsRes] = await Promise.all([
           apiClient.get("/users/profile"),
           apiClient.get("/bookings/me"),
           apiClient.get("/maintenance/me"),
+          apiClient.get("/checkouts/me"),
         ]);
 
         let prof: Profile | null = null;
@@ -249,12 +289,14 @@ export default function StudentDashboard() {
 
         const bookings = bookingsRes.ok ? await bookingsRes.json() : [];
         const maintenance = maintenanceRes.ok ? await maintenanceRes.json() : [];
+        const checkouts = checkoutsRes.ok ? await checkoutsRes.json() : [];
 
         setActivities(
           buildActivities(
             prof,
             Array.isArray(bookings) ? bookings : [],
             Array.isArray(maintenance) ? maintenance : [],
+            Array.isArray(checkouts) ? checkouts : [],
           ),
         );
       } catch (e) {
