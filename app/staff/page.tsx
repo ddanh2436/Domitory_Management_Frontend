@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
 import { useToast } from "../components/ToastProvider";
 import { useConfirm } from "../components/ConfirmProvider";
 import { apiClient } from "../utils/apiClient";
@@ -36,12 +37,25 @@ const STATUS_CFG: Record<Status, { label: string; color: string; bg: string }> =
   REJECTED: { label: "Từ chối", color: "#dc2626", bg: "rgba(220,38,38,.1)" },
 };
 
+type FilterKey = "ALL" | Status;
+
+const FILTER_TABS: { key: FilterKey; label: string }[] = [
+  { key: "ALL", label: "Tất cả" },
+  { key: "PENDING", label: "Chờ xử lý" },
+  { key: "IN_PROGRESS", label: "Đang sửa" },
+  { key: "RESOLVED", label: "Hoàn thành" },
+  { key: "REJECTED", label: "Từ chối" },
+];
+
 export default function StaffDashboardPage() {
   const toast = useToast();
   const confirmDialog = useConfirm();
   const [requests, setRequests] = useState<AssignedRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<FilterKey>("ALL");
+  const [search, setSearch] = useState("");
+  const socketRef = useRef<Socket | null>(null);
 
   // Không setLoading(true) ở đây: lần đầu state đã là true, còn refetch sau
   // hành động thì giữ danh sách cũ hiển thị cho mượt thay vì nháy skeleton.
@@ -61,6 +75,27 @@ export default function StaffDashboardPage() {
 
   useEffect(() => {
     void fetchAssigned();
+  }, []);
+
+  // Realtime: khi được phân công việc mới (thông báo MAINTENANCE), tự tải lại danh sách
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const socketUrl = rawApiUrl.replace(/\/api$/, "");
+    socketRef.current = io(socketUrl, { auth: { token } });
+
+    socketRef.current.on("newNotification", (n: { type?: string }) => {
+      if ((n?.type || "").toUpperCase() === "MAINTENANCE") {
+        void fetchAssigned();
+      }
+    });
+
+    return () => {
+      socketRef.current?.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleUpdateStatus = async (req: AssignedRequest, nextStatus: Status) => {
@@ -92,8 +127,29 @@ export default function StaffDashboardPage() {
   };
 
   const countByStatus = (s: Status) => requests.filter((r) => r.status === s).length;
-  const active = requests.filter((r) => r.status === "PENDING" || r.status === "IN_PROGRESS");
-  const done = requests.filter((r) => r.status === "RESOLVED" || r.status === "REJECTED");
+
+  // Điểm đánh giá trung bình từ các việc đã hoàn thành được sinh viên chấm sao
+  const rated = requests.filter((r) => r.status === "RESOLVED" && r.rating);
+  const avgRating = rated.length > 0
+    ? (rated.reduce((sum, r) => sum + (r.rating ?? 0), 0) / rated.length).toFixed(1)
+    : null;
+
+  // Áp bộ lọc trạng thái + từ khóa tìm kiếm (tiêu đề, mô tả, tên phòng)
+  const filtered = useMemo(() => {
+    const kw = search.trim().toLowerCase();
+    return requests.filter((r) => {
+      if (filter !== "ALL" && r.status !== filter) return false;
+      if (!kw) return true;
+      return (
+        r.title.toLowerCase().includes(kw) ||
+        r.description.toLowerCase().includes(kw) ||
+        (r.room?.name ?? "").toLowerCase().includes(kw)
+      );
+    });
+  }, [requests, filter, search]);
+
+  const active = filtered.filter((r) => r.status === "PENDING" || r.status === "IN_PROGRESS");
+  const done = filtered.filter((r) => r.status === "RESOLVED" || r.status === "REJECTED");
 
   const renderCard = (req: AssignedRequest) => {
     const p = PRIORITY_CFG[req.priority];
@@ -185,6 +241,14 @@ export default function StaffDashboardPage() {
         .sf-btn--done:hover:not(:disabled) { background: rgba(34,197,94,0.2); }
 
         .sf-empty { background: #fff; border: 1px dashed rgba(13,27,42,0.15); border-radius: 12px; padding: 44px 24px; text-align: center; color: #8A9BAD; font-size: 13.5px; }
+
+        .sf-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+        .sf-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+        .sf-tab { padding: 8px 15px; border-radius: 100px; border: 1px solid rgba(13,27,42,0.13); background: #fff; color: #5c6f82; font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all .15s; }
+        .sf-tab:hover { border-color: #C9A84C; color: #0D1B2A; }
+        .sf-tab--active { background: #0D1B2A; border-color: #0D1B2A; color: #fff; }
+        .sf-search { min-width: 240px; height: 40px; padding: 0 14px; border: 1px solid rgba(13,27,42,0.13); border-radius: 9px; background: #fff; color: #0D1B2A; outline: none; font-size: 13px; font-family: 'DM Sans', sans-serif; transition: border-color .15s; }
+        .sf-search:focus { border-color: #C9A84C; }
       `}</style>
 
       <div className="sf-hero">
@@ -207,7 +271,34 @@ export default function StaffDashboardPage() {
             <div className="sf-stat-num" style={{ color: "#4ade80" }}>{loading ? "—" : countByStatus("RESOLVED")}</div>
             <div className="sf-stat-label">Hoàn thành</div>
           </div>
+          <div className="sf-stat">
+            <div className="sf-stat-num" style={{ color: "#C9A84C" }}>{loading ? "—" : avgRating ? `${avgRating}★` : "—"}</div>
+            <div className="sf-stat-label">Đánh giá trung bình{rated.length > 0 ? ` (${rated.length} lượt)` : ""}</div>
+          </div>
         </div>
+      </div>
+
+      {/* Bộ lọc + tìm kiếm */}
+      <div className="sf-toolbar">
+        <div className="sf-tabs">
+          {FILTER_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              className={`sf-tab ${filter === tab.key ? "sf-tab--active" : ""}`}
+              onClick={() => setFilter(tab.key)}
+            >
+              {tab.label}
+              {tab.key !== "ALL" && !loading ? ` (${countByStatus(tab.key)})` : ""}
+            </button>
+          ))}
+        </div>
+        <input
+          className="sf-search"
+          placeholder="Tìm theo tiêu đề, mô tả, phòng..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
       {loading ? (
@@ -216,12 +307,19 @@ export default function StaffDashboardPage() {
         <div className="sf-empty">
           Bạn chưa được phân công công việc nào.<br />Khi Ban quản lý giao việc, thông báo sẽ đổ chuông và công việc hiện ở đây.
         </div>
+      ) : filtered.length === 0 ? (
+        <div className="sf-empty">Không có công việc nào khớp bộ lọc / từ khóa hiện tại.</div>
       ) : (
         <>
-          <div className="sf-section">Cần xử lý ({active.length})</div>
-          <div className="sf-cards">
-            {active.length > 0 ? active.map(renderCard) : <div className="sf-empty">Không còn việc nào đang chờ — tuyệt vời! 🎉</div>}
-          </div>
+          {active.length > 0 && (
+            <>
+              <div className="sf-section">Cần xử lý ({active.length})</div>
+              <div className="sf-cards">{active.map(renderCard)}</div>
+            </>
+          )}
+          {active.length === 0 && filter === "ALL" && !search.trim() && (
+            <div className="sf-empty" style={{ marginTop: 8 }}>Không còn việc nào đang chờ — tuyệt vời! 🎉</div>
+          )}
 
           {done.length > 0 && (
             <>
