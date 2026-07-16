@@ -288,14 +288,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <NavItem href="/admin/students" icon={Icons.users} label="Sinh viên" badge={studentsCount} active={pathname.startsWith("/admin/students")} />
             <NavItem href="/admin/permissions" icon={Icons.users} label="Phân quyền tài khoản" active={pathname.startsWith("/admin/permissions")} />
             <NavItem href="/admin/bookings" icon={Icons.doc} label="Duyệt đơn phòng" badge={pendingBookings} active={pathname.startsWith("/admin/bookings")} />
+            <NavItem href="/admin/auto-assign" icon={Icons.home} label="Phân phòng tự động" active={pathname.startsWith("/admin/auto-assign")} />
             <NavItem href="/admin/transfers" icon={Icons.transfer} label="Duyệt đổi phòng" badge={pendingTransfers} active={pathname.startsWith("/admin/transfers")} />
             <NavItem href="/admin/checkouts" icon={Icons.logout} label="Duyệt trả phòng" badge={pendingCheckouts} active={pathname.startsWith("/admin/checkouts")} />
             <NavItem href="/admin/absences" icon={Icons.moon} label="Tạm trú / Tạm vắng" badge={pendingAbsences} active={pathname.startsWith("/admin/absences")} />
             <NavItem href="/admin/announcements" icon={Icons.megaphone} label="Gửi thông báo" active={pathname.startsWith("/admin/announcements")} />
             <NavItem href="/admin/invoices" icon={Icons.invoice} label="Hóa đơn" active={pathname.startsWith("/admin/invoices")} />
+            <NavItem href="/admin/debts" icon={Icons.invoice} label="Công nợ" active={pathname.startsWith("/admin/debts")} />
             <NavItem href="/admin/contracts" icon={Icons.contract} label="Hợp đồng" active={pathname.startsWith("/admin/contracts")} />
             <NavItem href="/admin/profile" icon={Icons.users} label="Hồ sơ cá nhân" active={pathname.startsWith("/admin/profile")} />
             <NavItem href="/admin/maintenance" icon={Icons.wrench} label="Bảo trì" badge={pendingMaintenance} active={pathname.startsWith("/admin/maintenance")} />
+            <NavItem href="/admin/audit-logs" icon={Icons.chart} label="Nhật ký hệ thống" active={pathname.startsWith("/admin/audit-logs")} />
           </nav>
           <div className="sidebar__footer">
             <Link href="/" className="btn-sidebar-action btn-sidebar-action--home">
@@ -319,6 +322,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {pathname.includes("/permissions") && "Phân quyền tài khoản quản trị"}
                 {pathname.includes("/bookings") && "Duyệt đơn lưu trú"}
                 {pathname.includes("/checkouts") && "Duyệt yêu cầu trả phòng"}
+                {pathname.includes("/auto-assign") && "Phân phòng tự động"}
+                {pathname.includes("/debts") && "Theo dõi công nợ"}
+                {pathname.includes("/audit-logs") && "Nhật ký hệ thống"}
                 {pathname.includes("/invoices") && "Hệ thống hóa đơn"}
                 {pathname.includes("/profile") && "Hồ sơ cá nhân Admin"}
                 {pathname.includes("/maintenance") && "Quản lý yêu cầu bảo trì"}
