@@ -6,6 +6,14 @@ import { apiClient } from "../../utils/apiClient"; // ĐÃ THÊM IMPORT apiClien
 import { useToast } from "../../components/ToastProvider";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+interface StatusHistoryEntry {
+  status: "PENDING" | "IN_PROGRESS" | "RESOLVED" | "REJECTED";
+  note?: string;
+  changedByName?: string;
+  changedByRole?: string;
+  at: string;
+}
+
 interface MaintenanceRequest {
   _id: string;
   title: string;
@@ -17,6 +25,9 @@ interface MaintenanceRequest {
   resolvedAt?: string;
   rating?: number;
   ratedAt?: string;
+  rejectionReason?: string;
+  resolutionNote?: string;
+  statusHistory?: StatusHistoryEntry[];
 }
 
 type Priority = MaintenanceRequest["priority"];
@@ -156,6 +167,46 @@ function RequestCard({
           </span>
         )}
       </div>
+
+      {/* Lý do từ chối / nội dung đã xử lý */}
+      {req.status === "REJECTED" && req.rejectionReason && (
+        <div className="mn-note mn-note--reject">
+          <span className="mn-note-label">{Icons.x} Lý do bị từ chối</span>
+          <span className="mn-note-text">{req.rejectionReason}</span>
+        </div>
+      )}
+      {req.status === "RESOLVED" && req.resolutionNote && (
+        <div className="mn-note mn-note--done">
+          <span className="mn-note-label">{Icons.wrench} Kỹ thuật viên đã xử lý</span>
+          <span className="mn-note-text">{req.resolutionNote}</span>
+        </div>
+      )}
+
+      {/* Nhật ký các lần đổi trạng thái */}
+      {req.statusHistory && req.statusHistory.length > 0 && (
+        <details className="mn-history">
+          <summary>Nhật ký xử lý ({req.statusHistory.length})</summary>
+          <ul className="mn-history-list">
+            {req.statusHistory.map((h, i) => {
+              const c = STATUS_CONFIG[h.status];
+              return (
+                <li key={i} className="mn-history-item">
+                  <span className="mn-history-dot" style={{ background: c.color }} />
+                  <div className="mn-history-body">
+                    <div className="mn-history-top">
+                      <span className="mn-history-status" style={{ color: c.color }}>{c.label}</span>
+                      <span className="mn-history-time">
+                        {new Date(h.at).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                    {h.note && <div className="mn-history-note">“{h.note}”</div>}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </details>
+      )}
 
       {/* Đánh giá sao — chỉ hiện khi yêu cầu đã hoàn thành sửa chữa */}
       {req.status === "RESOLVED" && (
@@ -428,6 +479,29 @@ export default function StudentMaintenancePage() {
         .mn-card-foot { display:flex; align-items:center; justify-content:space-between; padding-top:16px; border-top:1px solid var(--border); }
         .mn-card-resolved { display:flex; align-items:center; gap:6px; font-size:12.5px; color:#16a34a; font-weight:500; }
         .mn-card-resolved svg { width:13px; height:13px; stroke:currentColor; }
+
+        /* ── LÝ DO TỪ CHỐI / NỘI DUNG XỬ LÝ ── */
+        .mn-note { margin-top:16px; padding:12px 16px; border-radius:10px; display:flex; flex-direction:column; gap:5px; }
+        .mn-note--reject { background:rgba(239,68,68,.06); border:1px solid rgba(239,68,68,.18); }
+        .mn-note--done { background:rgba(34,197,94,.06); border:1px solid rgba(34,197,94,.18); }
+        .mn-note-label { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; letter-spacing:.01em; }
+        .mn-note-label svg { width:13px; height:13px; stroke:currentColor; }
+        .mn-note--reject .mn-note-label { color:#dc2626; }
+        .mn-note--done .mn-note-label { color:#16a34a; }
+        .mn-note-text { font-size:13px; color:#4A6580; line-height:1.65; }
+
+        /* ── NHẬT KÝ XỬ LÝ ── */
+        .mn-history { margin-top:16px; padding-top:16px; border-top:1px dashed var(--border); }
+        .mn-history summary { cursor:pointer; font-size:12.5px; font-weight:600; color:#4A6580; }
+        .mn-history summary:hover { color:var(--navy); }
+        .mn-history-list { list-style:none; margin:12px 0 0; padding:0; display:flex; flex-direction:column; gap:12px; }
+        .mn-history-item { display:flex; gap:10px; }
+        .mn-history-dot { width:9px; height:9px; border-radius:50%; margin-top:4px; flex-shrink:0; }
+        .mn-history-body { flex:1; }
+        .mn-history-top { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        .mn-history-status { font-size:12.5px; font-weight:600; }
+        .mn-history-time { font-size:11.5px; color:var(--muted); }
+        .mn-history-note { font-size:12.5px; color:#4A6580; font-style:italic; margin-top:2px; }
 
         /* ── ĐÁNH GIÁ SAO ── */
         .mn-rating-box { margin-top:16px; padding-top:16px; border-top:1px dashed var(--border); }
