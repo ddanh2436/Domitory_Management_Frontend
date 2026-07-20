@@ -9,6 +9,14 @@ import { apiClient } from "../utils/apiClient";
 type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 type Status = "PENDING" | "IN_PROGRESS" | "RESOLVED" | "REJECTED";
 
+interface StatusHistoryEntry {
+  status: Status;
+  note?: string;
+  changedByName?: string;
+  changedByRole?: string;
+  at: string;
+}
+
 interface AssignedRequest {
   _id: string;
   user?: { fullName?: string; mssv?: string; phone?: string };
@@ -21,6 +29,9 @@ interface AssignedRequest {
   createdAt: string;
   resolvedAt?: string;
   rating?: number;
+  rejectionReason?: string;
+  resolutionNote?: string;
+  statusHistory?: StatusHistoryEntry[];
 }
 
 const PRIORITY_CFG: Record<Priority, { label: string; color: string; bg: string }> = {
@@ -55,6 +66,9 @@ export default function StaffDashboardPage() {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterKey>("ALL");
   const [search, setSearch] = useState("");
+  // Modal nhập ghi chú: REJECT = lý do từ chối (bắt buộc), RESOLVE = nội dung xử lý (tùy chọn)
+  const [actionModal, setActionModal] = useState<{ req: AssignedRequest; type: "REJECT" | "RESOLVE" } | null>(null);
+  const [noteText, setNoteText] = useState("");
   const socketRef = useRef<Socket | null>(null);
 
   // Không setLoading(true) ở đây: lần đầu state đã là true, còn refetch sau
@@ -98,31 +112,70 @@ export default function StaffDashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleUpdateStatus = async (req: AssignedRequest, nextStatus: Status) => {
-    const isDone = nextStatus === "RESOLVED";
-    const ok = await confirmDialog({
-      title: isDone ? "Xác nhận hoàn thành sửa chữa?" : "Tiếp nhận công việc này?",
-      message: isDone
-        ? `Sự cố "${req.title}" sẽ được đánh dấu hoàn thành và sinh viên nhận được thông báo để đánh giá chất lượng.`
-        : `Yêu cầu "${req.title}" sẽ chuyển sang trạng thái "Đang sửa chữa".`,
-      confirmLabel: isDone ? "Hoàn thành" : "Tiếp nhận",
-    });
-    if (!ok) return;
-
+  // Gọi API đổi trạng thái (kèm lý do/ghi chú nếu có). Không tự confirm — caller quyết định.
+  const performUpdate = async (
+    req: AssignedRequest,
+    nextStatus: Status,
+    extra?: { rejectionReason?: string; note?: string },
+  ) => {
     setProcessingId(req._id);
     try {
-      const res = await apiClient.patch(`/maintenance/${req._id}/status`, { status: nextStatus });
+      const res = await apiClient.patch(`/maintenance/${req._id}/status`, {
+        status: nextStatus,
+        ...extra,
+      });
       const data = await res.json();
       if (res.ok) {
-        toast.success(isDone ? "Đã đánh dấu hoàn thành. Cảm ơn bạn!" : "Đã tiếp nhận công việc.", "Cập nhật thành công");
+        const msg =
+          nextStatus === "RESOLVED"
+            ? "Đã đánh dấu hoàn thành. Cảm ơn bạn!"
+            : nextStatus === "REJECTED"
+              ? "Đã từ chối yêu cầu và gửi lý do cho sinh viên."
+              : "Đã tiếp nhận công việc.";
+        toast.success(msg, "Cập nhật thành công");
         void fetchAssigned();
-      } else {
-        toast.error(data.message || "Không cập nhật được trạng thái.");
+        return true;
       }
+      toast.error(data.message || "Không cập nhật được trạng thái.");
+      return false;
     } catch {
       toast.error("Không thể kết nối đến máy chủ.");
+      return false;
     } finally {
       setProcessingId(null);
+    }
+  };
+
+  // Tiếp nhận (PENDING -> IN_PROGRESS): xác nhận đơn giản, không cần ghi chú
+  const handleAccept = async (req: AssignedRequest) => {
+    const ok = await confirmDialog({
+      title: "Tiếp nhận công việc này?",
+      message: `Yêu cầu "${req.title}" sẽ chuyển sang trạng thái "Đang sửa chữa".`,
+      confirmLabel: "Tiếp nhận",
+    });
+    if (!ok) return;
+    await performUpdate(req, "IN_PROGRESS");
+  };
+
+  // Mở modal nhập ghi chú cho Hoàn thành / Từ chối
+  const openActionModal = (req: AssignedRequest, type: "REJECT" | "RESOLVE") => {
+    setNoteText("");
+    setActionModal({ req, type });
+  };
+
+  const submitActionModal = async () => {
+    if (!actionModal) return;
+    const { req, type } = actionModal;
+    if (type === "REJECT") {
+      if (!noteText.trim()) {
+        toast.error("Vui lòng nhập lý do từ chối.");
+        return;
+      }
+      const ok = await performUpdate(req, "REJECTED", { rejectionReason: noteText.trim() });
+      if (ok) setActionModal(null);
+    } else {
+      const ok = await performUpdate(req, "RESOLVED", { note: noteText.trim() || undefined });
+      if (ok) setActionModal(null);
     }
   };
 
@@ -180,6 +233,39 @@ export default function StaffDashboardPage() {
           {req.rating ? <span className="sf-meta-item">⭐ {req.rating}/5</span> : null}
         </div>
 
+        {/* Lý do từ chối / nội dung đã xử lý / nhật ký */}
+        {req.status === "REJECTED" && req.rejectionReason && (
+          <div className="sf-note sf-note--reject">
+            <span className="sf-note-label">✕ Lý do từ chối</span>
+            <span className="sf-note-text">{req.rejectionReason}</span>
+          </div>
+        )}
+        {req.status === "RESOLVED" && req.resolutionNote && (
+          <div className="sf-note sf-note--done">
+            <span className="sf-note-label">✓ Đã xử lý</span>
+            <span className="sf-note-text">{req.resolutionNote}</span>
+          </div>
+        )}
+        {req.statusHistory && req.statusHistory.length > 0 && (
+          <details className="sf-history">
+            <summary>Nhật ký xử lý ({req.statusHistory.length})</summary>
+            <ul className="sf-history-list">
+              {req.statusHistory.map((h, i) => (
+                <li key={i} className="sf-history-item">
+                  <span className="sf-chip" style={{ color: STATUS_CFG[h.status].color, background: STATUS_CFG[h.status].bg }}>
+                    {STATUS_CFG[h.status].label}
+                  </span>
+                  <span className="sf-history-meta">
+                    {new Date(h.at).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    {h.changedByName ? ` · ${h.changedByName}` : ""}
+                  </span>
+                  {h.note && <span className="sf-history-note">“{h.note}”</span>}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+
         {(req.status === "PENDING" || req.status === "IN_PROGRESS") && (
           <div className="sf-actions">
             {req.status === "PENDING" && (
@@ -187,7 +273,7 @@ export default function StaffDashboardPage() {
                 type="button"
                 className="sf-btn sf-btn--accept"
                 disabled={processingId === req._id}
-                onClick={() => void handleUpdateStatus(req, "IN_PROGRESS")}
+                onClick={() => void handleAccept(req)}
               >
                 🔧 Tiếp nhận sửa chữa
               </button>
@@ -197,11 +283,19 @@ export default function StaffDashboardPage() {
                 type="button"
                 className="sf-btn sf-btn--done"
                 disabled={processingId === req._id}
-                onClick={() => void handleUpdateStatus(req, "RESOLVED")}
+                onClick={() => openActionModal(req, "RESOLVE")}
               >
                 ✓ Hoàn thành
               </button>
             )}
+            <button
+              type="button"
+              className="sf-btn sf-btn--reject"
+              disabled={processingId === req._id}
+              onClick={() => openActionModal(req, "REJECT")}
+            >
+              ✕ Từ chối
+            </button>
           </div>
         )}
       </div>
@@ -239,6 +333,46 @@ export default function StaffDashboardPage() {
         .sf-btn--accept:hover:not(:disabled) { background: #1A2E42; }
         .sf-btn--done { background: rgba(34,197,94,0.12); color: #15803d; border: 1px solid rgba(34,197,94,0.3); }
         .sf-btn--done:hover:not(:disabled) { background: rgba(34,197,94,0.2); }
+        .sf-btn--reject { background: rgba(220,38,38,0.08); color: #b91c1c; border: 1px solid rgba(220,38,38,0.28); margin-left: auto; }
+        .sf-btn--reject:hover:not(:disabled) { background: rgba(220,38,38,0.16); }
+
+        /* ghi chú (lý do từ chối / nội dung xử lý) */
+        .sf-note { margin-top: 12px; padding: 10px 14px; border-radius: 9px; display: flex; flex-direction: column; gap: 3px; }
+        .sf-note--reject { background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.18); }
+        .sf-note--done { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.18); }
+        .sf-note-label { font-size: 11.5px; font-weight: 700; letter-spacing: .02em; }
+        .sf-note--reject .sf-note-label { color: #b91c1c; }
+        .sf-note--done .sf-note-label { color: #15803d; }
+        .sf-note-text { font-size: 13px; color: #3f4a57; line-height: 1.6; }
+
+        /* nhật ký xử lý */
+        .sf-history { margin-top: 12px; }
+        .sf-history summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: #5c6f82; padding: 4px 0; }
+        .sf-history summary:hover { color: #0D1B2A; }
+        .sf-history-list { list-style: none; margin: 8px 0 0; padding: 0 0 0 4px; display: flex; flex-direction: column; gap: 8px; }
+        .sf-history-item { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .sf-history-meta { font-size: 11.5px; color: #8A9BAD; }
+        .sf-history-note { font-size: 12px; color: #3f4a57; font-style: italic; width: 100%; }
+
+        /* modal ghi chú */
+        .sf-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(13,27,42,.6); display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px); }
+        .sf-modal { background: #fff; border-radius: 14px; width: 100%; max-width: 460px; box-shadow: 0 24px 56px rgba(13,27,42,.24); overflow: hidden; }
+        .sf-modal-head { padding: 18px 22px; border-bottom: 1px solid rgba(13,27,42,.08); }
+        .sf-modal-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; color: #0D1B2A; }
+        .sf-modal-sub { font-size: 12.5px; color: #8A9BAD; margin-top: 3px; }
+        .sf-modal-body { padding: 18px 22px; }
+        .sf-modal-textarea { width: 100%; min-height: 92px; padding: 11px 13px; border: 1px solid rgba(13,27,42,.15); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: #0D1B2A; outline: none; resize: vertical; line-height: 1.6; }
+        .sf-modal-textarea:focus { border-color: #C9A84C; }
+        .sf-modal-count { text-align: right; font-size: 11px; color: #8A9BAD; margin-top: 4px; }
+        .sf-modal-foot { display: flex; gap: 10px; padding: 0 22px 20px; }
+        .sf-modal-cancel { flex: 1; padding: 11px; border: 1px solid rgba(13,27,42,.15); border-radius: 8px; background: #fff; color: #0D1B2A; font-family: 'DM Sans', sans-serif; font-size: 13.5px; cursor: pointer; }
+        .sf-modal-cancel:hover { background: #F5F3EF; }
+        .sf-modal-confirm { flex: 2; padding: 11px; border: none; border-radius: 8px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+        .sf-modal-confirm:disabled { opacity: .6; cursor: not-allowed; }
+        .sf-modal-confirm--reject { background: #dc2626; }
+        .sf-modal-confirm--reject:hover:not(:disabled) { background: #b91c1c; }
+        .sf-modal-confirm--done { background: #16a34a; }
+        .sf-modal-confirm--done:hover:not(:disabled) { background: #15803d; }
 
         .sf-empty { background: #fff; border: 1px dashed rgba(13,27,42,0.15); border-radius: 12px; padding: 44px 24px; text-align: center; color: #8A9BAD; font-size: 13.5px; }
 
@@ -328,6 +462,52 @@ export default function StaffDashboardPage() {
             </>
           )}
         </>
+      )}
+
+      {/* Modal nhập lý do từ chối / nội dung đã xử lý */}
+      {actionModal && (
+        <div className="sf-overlay" onClick={(e) => { if (e.target === e.currentTarget) setActionModal(null); }}>
+          <div className="sf-modal">
+            <div className="sf-modal-head">
+              <div className="sf-modal-title">
+                {actionModal.type === "REJECT" ? "Từ chối yêu cầu" : "Hoàn thành sửa chữa"}
+              </div>
+              <div className="sf-modal-sub">
+                {actionModal.type === "REJECT"
+                  ? `Nêu rõ lý do để sinh viên hiểu vì sao "${actionModal.req.title}" bị từ chối.`
+                  : `Ghi ngắn gọn nội dung đã xử lý cho "${actionModal.req.title}" (tùy chọn).`}
+              </div>
+            </div>
+            <div className="sf-modal-body">
+              <textarea
+                className="sf-modal-textarea"
+                maxLength={500}
+                autoFocus
+                placeholder={
+                  actionModal.type === "REJECT"
+                    ? "VD: Báo sai, thiết bị vẫn hoạt động bình thường…"
+                    : "VD: Đã thay bóng đèn LED 9W, kiểm tra lại công tắc…"
+                }
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+              />
+              <div className="sf-modal-count">{noteText.length}/500</div>
+            </div>
+            <div className="sf-modal-foot">
+              <button type="button" className="sf-modal-cancel" onClick={() => setActionModal(null)}>
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                className={`sf-modal-confirm ${actionModal.type === "REJECT" ? "sf-modal-confirm--reject" : "sf-modal-confirm--done"}`}
+                disabled={processingId === actionModal.req._id || (actionModal.type === "REJECT" && !noteText.trim())}
+                onClick={() => void submitActionModal()}
+              >
+                {actionModal.type === "REJECT" ? "Xác nhận từ chối" : "Xác nhận hoàn thành"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

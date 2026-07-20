@@ -9,6 +9,14 @@ import RoomFilterBar, { EMPTY_ROOM_FILTER, matchRoomFilter, type RoomFilterValue
 type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 type Status = "PENDING" | "IN_PROGRESS" | "RESOLVED" | "REJECTED";
 
+interface StatusHistoryEntry {
+  status: Status;
+  note?: string;
+  changedByName?: string;
+  changedByRole?: string;
+  at: string;
+}
+
 interface MaintenanceRequest {
   _id: string;
   user: { _id: string; fullName: string; mssv?: string; phone?: string };
@@ -23,6 +31,9 @@ interface MaintenanceRequest {
   resolvedAt?: string;
   rating?: number;
   ratedAt?: string;
+  rejectionReason?: string;
+  resolutionNote?: string;
+  statusHistory?: StatusHistoryEntry[];
 }
 
 type NextAction = {
@@ -110,8 +121,12 @@ interface ConfirmPayload {
   variant: "accept" | "done" | "reject";
 }
 
-function ConfirmModal({ payload, onConfirm, onCancel, loading }: { payload: ConfirmPayload; onConfirm: () => void; onCancel: () => void; loading: boolean; }) {
+function ConfirmModal({ payload, onConfirm, onCancel, loading }: { payload: ConfirmPayload; onConfirm: (reason?: string) => void; onCancel: () => void; loading: boolean; }) {
   const isReject = payload.variant === "reject";
+  const isDone = payload.variant === "done";
+  // Lý do từ chối (bắt buộc) hoặc nội dung đã xử lý (tùy chọn khi hoàn thành)
+  const [reason, setReason] = useState("");
+  const needReason = isReject && !reason.trim();
   return (
     <div className="am-overlay">
       <div className="am-modal">
@@ -119,13 +134,28 @@ function ConfirmModal({ payload, onConfirm, onCancel, loading }: { payload: Conf
           {isReject ? I.warn : I.wrench}
         </div>
         <h3 className="am-modal-title">
-          {payload.variant === "accept" ? "Chuyển trạng thái?" : payload.variant === "done" ? "Xác nhận hoàn thành?" : "Từ chối yêu cầu?"}
+          {payload.variant === "accept" ? "Chuyển trạng thái?" : isDone ? "Xác nhận hoàn thành?" : "Từ chối yêu cầu?"}
         </h3>
         <p className="am-modal-desc">{payload.message}</p>
+        {(isReject || isDone) && (
+          <div style={{ textAlign: "left", marginBottom: 16 }}>
+            <label className="am-modal-reason-label">
+              {isReject ? "Lý do từ chối *" : "Nội dung đã xử lý (tùy chọn)"}
+            </label>
+            <textarea
+              className="am-modal-reason"
+              maxLength={500}
+              autoFocus
+              placeholder={isReject ? "VD: Báo sai, thiết bị vẫn hoạt động bình thường…" : "VD: Đã thay bóng đèn LED 9W…"}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </div>
+        )}
         <div className="am-modal-actions">
           <button className="am-modal-btn-cancel" onClick={onCancel} disabled={loading}>Hủy bỏ</button>
-          <button className={`am-modal-btn-confirm ${isReject ? "am-modal-btn-confirm--red" : "am-modal-btn-confirm--blue"}`} onClick={onConfirm} disabled={loading}>
-            {loading ? "Đang xử lý…" : payload.variant === "accept" ? "Chuyển trạng thái" : payload.variant === "done" ? "Xác nhận xong" : "Từ chối"}
+          <button className={`am-modal-btn-confirm ${isReject ? "am-modal-btn-confirm--red" : "am-modal-btn-confirm--blue"}`} onClick={() => onConfirm(reason.trim() || undefined)} disabled={loading || needReason}>
+            {loading ? "Đang xử lý…" : payload.variant === "accept" ? "Chuyển trạng thái" : isDone ? "Xác nhận xong" : "Từ chối"}
           </button>
         </div>
       </div>
@@ -209,6 +239,19 @@ function RequestCard({ req, onAction, staffList, onAssign }: { req: MaintenanceR
 
       <div className="am-card-title">{req.title}</div>
       <div className="am-card-desc">{req.description}</div>
+
+      {req.status === "REJECTED" && req.rejectionReason && (
+        <div className="am-card-note am-card-note--reject">
+          <span className="am-card-note-label">✕ Lý do từ chối</span>
+          <span className="am-card-note-text">{req.rejectionReason}</span>
+        </div>
+      )}
+      {req.status === "RESOLVED" && req.resolutionNote && (
+        <div className="am-card-note am-card-note--done">
+          <span className="am-card-note-label">✓ Nội dung đã xử lý</span>
+          <span className="am-card-note-text">{req.resolutionNote}</span>
+        </div>
+      )}
 
       {req.imageUrl && (
         <a className="am-card-image-link" href={req.imageUrl} target="_blank" rel="noreferrer">
@@ -330,16 +373,20 @@ export default function AdminMaintenancePage() {
     }
   };
 
-  const handleConfirm = async () => {
+  const handleConfirm = async (reason?: string) => {
     if (!confirm) return;
     setProcessing(true);
     try {
-      // ĐÃ SỬA: Sử dụng apiClient
-      const res = await apiClient.patch(`/maintenance/${confirm.requestId}/status`, {
-        status: confirm.nextStatus
-      });
+      // Gửi kèm lý do từ chối (REJECTED) hoặc nội dung đã xử lý (RESOLVED)
+      const body: { status: Status; rejectionReason?: string; note?: string } = {
+        status: confirm.nextStatus,
+      };
+      if (confirm.nextStatus === "REJECTED") body.rejectionReason = reason;
+      if (confirm.nextStatus === "RESOLVED") body.note = reason;
+
+      const res = await apiClient.patch(`/maintenance/${confirm.requestId}/status`, body);
       const data = await res.json();
-      
+
       if (res.ok) {
         if (confirm.nextStatus === "RESOLVED") {
           toast.success("Đã đánh dấu hoàn thành và gửi thông báo cho sinh viên.", "Sửa chữa hoàn tất 🛠️");
@@ -348,7 +395,13 @@ export default function AdminMaintenancePage() {
         } else {
           toast.success("Cập nhật tiến độ yêu cầu thành công!");
         }
-        setRequests((prev) => prev.map((r) => r._id === confirm.requestId ? { ...r, status: confirm.nextStatus, resolvedAt: confirm.nextStatus === "RESOLVED" ? new Date().toISOString() : r.resolvedAt } : r ));
+        setRequests((prev) => prev.map((r) => r._id === confirm.requestId ? {
+          ...r,
+          status: confirm.nextStatus,
+          resolvedAt: confirm.nextStatus === "RESOLVED" ? new Date().toISOString() : r.resolvedAt,
+          rejectionReason: confirm.nextStatus === "REJECTED" ? reason : r.rejectionReason,
+          resolutionNote: confirm.nextStatus === "RESOLVED" ? (reason ?? r.resolutionNote) : r.resolutionNote,
+        } : r ));
       } else {
         toast.error(data.message || "Có lỗi xảy ra, vui lòng thử lại.");
       }
@@ -489,6 +542,16 @@ export default function AdminMaintenancePage() {
         .am-modal-icon-wrap--blue { background:rgba(2,132,199,.1); color:#0284c7; }
         .am-modal-title { font-family:'Fraunces',serif; font-size:19px; font-weight:700; color:var(--navy); margin-bottom:10px; }
         .am-modal-desc { font-size:13.5px; color:#4A6580; line-height:1.65; margin-bottom:24px; }
+        .am-modal-reason-label { display:block; font-size:12px; font-weight:600; color:var(--navy); margin-bottom:6px; }
+        .am-modal-reason { width:100%; min-height:82px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--navy); background:#F9F8F6; outline:none; resize:vertical; line-height:1.6; }
+        .am-modal-reason:focus { border-color:#C9A84C; background:#fff; }
+        .am-card-note { margin-bottom:16px; padding:11px 14px; border-radius:8px; display:flex; flex-direction:column; gap:4px; }
+        .am-card-note--reject { background:rgba(239,68,68,.06); border:1px solid rgba(239,68,68,.18); }
+        .am-card-note--done { background:rgba(34,197,94,.06); border:1px solid rgba(34,197,94,.18); }
+        .am-card-note-label { font-size:11.5px; font-weight:700; }
+        .am-card-note--reject .am-card-note-label { color:#dc2626; }
+        .am-card-note--done .am-card-note-label { color:#16a34a; }
+        .am-card-note-text { font-size:12.5px; color:#4A6580; line-height:1.6; }
         .am-modal-actions { display:flex; gap:10px; }
         .am-modal-btn-cancel { flex:1; padding:11px; border:1px solid var(--border); border-radius:8px; background:transparent; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13.5px; color:var(--navy); transition:background .15s; }
         .am-modal-btn-cancel:hover { background:#F5F3EF; }
