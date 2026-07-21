@@ -8,7 +8,7 @@ import { exportContractPdf } from "../../utils/exportPdf";
 
 const archivo = Archivo({
   subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "600", "800"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -34,44 +34,21 @@ interface ConfirmState {
   onConfirm: () => void;
 }
 
-// ─── Modernist design tokens (shared with the rest of the redesign) ──────────
+// ─── Design tokens (Đã đồng bộ với dự án Navy / Gold) ──────────
 const tokens = {
-  "--color-bg": "#f3f2f2",
-  "--color-surface": "#eae9e9",
-  "--color-text": "#201e1d",
-  "--color-accent": "#ec3013",
-  "--color-accent-100": "#fff2ef",
-  "--color-accent-700": "#ae1800",
-  "--color-neutral-600": "#7d7979",
-  "--color-neutral-700": "#605d5d",
-  "--color-neutral-800": "#444141",
-  "--color-neutral-900": "#2d2b2b",
-  "--color-divider": "color-mix(in srgb, #201e1d 40%, transparent)",
-  "--shadow-lg": "0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent)",
+  "--color-bg": "#F9F8F6",
+  "--color-surface": "#ffffff",
+  "--color-text": "#0D1B2A",       // Navy
+  "--color-accent": "#C9A84C",     // Gold
+  "--color-accent-100": "rgba(201,168,76,0.14)",
+  "--color-accent-700": "#7A5E1A",
+  "--color-neutral-600": "#8A9BAD",
+  "--color-neutral-700": "#4A6580",
+  "--color-neutral-800": "#1e293b",
+  "--color-neutral-900": "#0f172a",
+  "--color-divider": "rgba(13,27,42,0.15)",
+  "--shadow-lg": "0 12px 32px rgba(13,27,42,0.08)",
 } as CSSProperties;
-
-const kicker: CSSProperties = {
-  fontSize: 10,
-  textTransform: "uppercase",
-  letterSpacing: "0.1em",
-  color: "var(--color-neutral-600)",
-  marginBottom: 4,
-};
-const metaValue: CSSProperties = { fontWeight: 800, fontSize: 15 };
-const cellLabel: CSSProperties = {
-  fontSize: 10,
-  textTransform: "uppercase",
-  letterSpacing: "0.09em",
-  color: "var(--color-neutral-600)",
-  marginBottom: 4,
-};
-const cellValue: CSSProperties = { fontWeight: 600, fontSize: 15 };
-const articleNo: CSSProperties = {
-  fontWeight: 800,
-  fontSize: 13,
-  color: "var(--color-accent)",
-  letterSpacing: "0.06em",
-};
 
 // ─── Con dấu / chữ ký số ─────────────────────────────────────────────────────
 function Seal({
@@ -90,16 +67,21 @@ function Seal({
   return (
     <svg width="128" height="128" viewBox="0 0 128 128" style={{ transform: `rotate(${rotate}deg)` }}>
       <defs>
-        <path id={id} d="M64 64 m-46 0 a46 46 0 1 1 92 0" />
+        {/* Đã sửa path: Vẽ 1 vòng tròn hoàn chỉnh để chữ không bị cắt */}
+        <path id={id} d="M 18, 64 a 46,46 0 1,1 92,0 a 46,46 0 1,1 -92,0" />
       </defs>
       <circle cx="64" cy="64" r="58" fill="none" stroke={color} strokeWidth="2.5" />
       <circle cx="64" cy="64" r="48" fill="none" stroke={color} strokeWidth="1" strokeDasharray="2 3" />
-      <text fontFamily="Archivo, sans-serif" fontWeight="800" fontSize="9.5" letterSpacing="1.3" fill={color}>
-        <textPath href={`#${id}`} startOffset="50%" textAnchor="middle">
+      
+      {/* Giảm nhẹ fontSize và điều chỉnh startOffset về 25% (đỉnh vòng tròn) */}
+      <text fontFamily="Archivo, sans-serif" fontWeight="800" fontSize="8.5" letterSpacing="1.2" fill={color}>
+        <textPath href={`#${id}`} startOffset="25%" textAnchor="middle">
           {arc}
         </textPath>
       </text>
+      
       <path d="M46 66 L58 78 L83 50" fill="none" stroke={color} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+      
       <text x="64" y="98" fontFamily="Archivo, sans-serif" fontWeight="800" fontSize="8.5" letterSpacing="1.5" fill={color} textAnchor="middle">
         {bottom}
       </text>
@@ -123,7 +105,7 @@ function ConfirmDialog({ state, busy, onCancel }: { state: ConfirmState | null; 
         display: "grid",
         placeItems: "center",
         padding: 16,
-        background: "color-mix(in srgb, var(--color-neutral-900) 50%, transparent)",
+        background: "rgba(13,27,42,0.5)", // Nền mờ Navy
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget && !busy) onCancel();
@@ -139,6 +121,7 @@ function ConfirmDialog({ state, busy, onCancel }: { state: ConfirmState | null; 
           background: "#fff",
           border: "2px solid var(--color-text)",
           boxShadow: "var(--shadow-lg)",
+          borderRadius: 8,
         }}
       >
         <div
@@ -149,6 +132,7 @@ function ConfirmDialog({ state, busy, onCancel }: { state: ConfirmState | null; 
             placeItems: "center",
             background: "var(--color-accent-100)",
             color: "var(--color-accent-700)",
+            borderRadius: 8,
           }}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -167,12 +151,13 @@ function ConfirmDialog({ state, busy, onCancel }: { state: ConfirmState | null; 
             disabled={busy}
             style={{
               padding: "10px 16px",
-              fontWeight: 800,
+              fontWeight: 700,
               fontSize: 14,
               cursor: busy ? "not-allowed" : "pointer",
               color: "var(--color-text)",
               background: "transparent",
               border: "1px solid var(--color-divider)",
+              borderRadius: 6,
               opacity: busy ? 0.5 : 1,
             }}
           >
@@ -183,12 +168,13 @@ function ConfirmDialog({ state, busy, onCancel }: { state: ConfirmState | null; 
             disabled={busy}
             style={{
               padding: "10px 16px",
-              fontWeight: 800,
+              fontWeight: 700,
               fontSize: 14,
               cursor: busy ? "not-allowed" : "pointer",
-              color: "var(--color-bg)",
-              background: "var(--color-accent)",
-              border: "1px solid var(--color-accent)",
+              color: state.variant === "danger" ? "#fff" : "var(--color-bg)",
+              background: state.variant === "danger" ? "#dc2626" : "var(--color-text)",
+              border: `1px solid ${state.variant === "danger" ? "#dc2626" : "var(--color-text)"}`,
+              borderRadius: 6,
               display: "inline-flex",
               alignItems: "center",
               gap: 8,
@@ -202,9 +188,7 @@ function ConfirmDialog({ state, busy, onCancel }: { state: ConfirmState | null; 
       </div>
       <style jsx>{`
         @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </div>
@@ -215,9 +199,9 @@ function ConfirmDialog({ state, busy, onCancel }: { state: ConfirmState | null; 
 function DocumentSkeleton() {
   return (
     <div style={{ width: "100%", maxWidth: 860 }}>
-      <div style={{ background: "#fff", border: "2px solid var(--color-text)", boxShadow: "var(--shadow-lg)", padding: "60px 68px", minHeight: 600, display: "flex", flexDirection: "column", gap: 24 }}>
+      <div style={{ background: "#fff", border: "1px solid var(--color-divider)", borderRadius: 12, boxShadow: "var(--shadow-lg)", padding: "60px 68px", minHeight: 600, display: "flex", flexDirection: "column", gap: 24 }}>
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} style={{ height: 16, background: "var(--color-surface)", width: `${90 - i * 6}%`, animation: "pulse 1.4s ease-in-out infinite" }} />
+          <div key={i} style={{ height: 16, background: "var(--color-bg)", width: `${90 - i * 6}%`, animation: "pulse 1.4s ease-in-out infinite", borderRadius: 4 }} />
         ))}
       </div>
       <style jsx>{`
@@ -352,24 +336,23 @@ export default function StudentContractPage() {
             gap: 8,
             textDecoration: "none",
             color: "var(--color-neutral-700)",
-            fontWeight: 800,
-            fontSize: 13,
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
-            marginBottom: 18,
+            fontWeight: 700,
+            fontSize: 14,
+            marginBottom: 20,
+            transition: "color 0.2s"
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
           </svg>
-          Trở về Tổng quan
+          Quay lại
         </Link>
 
         {loading ? (
           <DocumentSkeleton />
         ) : loadError ? (
-          <div style={{ background: "#fff", border: "2px solid var(--color-text)", boxShadow: "var(--shadow-lg)", padding: "64px 40px", textAlign: "center" }}>
-            <div style={{ width: 56, height: 56, background: "var(--color-accent-100)", color: "var(--color-accent-700)", display: "grid", placeItems: "center", margin: "0 auto 22px" }}>
+          <div style={{ background: "#fff", border: "1px solid var(--color-divider)", borderRadius: 12, boxShadow: "var(--shadow-lg)", padding: "64px 40px", textAlign: "center" }}>
+            <div style={{ width: 56, height: 56, background: "var(--color-accent-100)", color: "var(--color-accent-700)", borderRadius: 12, display: "grid", placeItems: "center", margin: "0 auto 22px" }}>
               <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-2.99L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L3.34 16.01C2.57 17.33 3.53 19 5.07 19z" />
               </svg>
@@ -383,7 +366,7 @@ export default function StudentContractPage() {
                 setLoading(true);
                 fetchContract();
               }}
-              style={{ padding: "12px 24px", background: "var(--color-accent)", color: "var(--color-bg)", fontWeight: 800, fontSize: 14, border: "none", cursor: "pointer" }}
+              style={{ padding: "12px 24px", background: "var(--color-text)", color: "#fff", fontWeight: 700, fontSize: 14, border: "none", borderRadius: 8, cursor: "pointer" }}
             >
               Thử lại
             </button>
@@ -396,186 +379,141 @@ export default function StudentContractPage() {
               style={{
                 position: "relative",
                 background: "#fff",
-                border: "2px solid var(--color-text)",
+                border: "1px solid var(--color-divider)",
+                borderRadius: 12,
                 boxShadow: "var(--shadow-lg)",
-                padding: "60px 68px 56px",
+                padding: "60px 68px",
                 overflow: "hidden",
+                fontFamily: '"Times New Roman", Times, serif', // Ép font Serif chuẩn pháp lý
+                color: "#000", // Đen tuyền in ấn
+                lineHeight: 1.6
               }}
             >
               {terminated && (
                 <div aria-hidden="true" style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", pointerEvents: "none", zIndex: 2 }}>
-                  <div style={{ transform: "rotate(-16deg)", fontWeight: 800, fontSize: 110, letterSpacing: "0.04em", color: "var(--color-accent)", opacity: 0.11, whiteSpace: "nowrap" }}>
+                  <div style={{ transform: "rotate(-16deg)", fontWeight: 800, fontSize: 110, letterSpacing: "0.04em", color: "#dc2626", opacity: 0.1, whiteSpace: "nowrap" }}>
                     ĐÃ THANH LÝ
                   </div>
                 </div>
               )}
 
-              {/* Letterhead */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+              {/* Header: Logo Dormify & Mã hợp đồng */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 30 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ flex: "none", width: 36, height: 36, background: "var(--color-accent)", color: "#fff", fontWeight: 800, fontSize: 20, display: "grid", placeItems: "center" }}>D</div>
+                  <img src="/Dormify.png" alt="Dormify Logo" style={{ height: 48, width: "auto", objectFit: "contain" }} />
                   <div>
-                    <div style={{ fontWeight: 800, fontSize: 19, letterSpacing: "0.04em", lineHeight: 1 }}>DORMIFY</div>
-                    <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--color-neutral-600)", marginTop: 3 }}>Hệ thống ký túc xá thông minh</div>
+                    <div style={{ fontWeight: "bold", fontSize: 16, color: "var(--color-text)", fontFamily: "Archivo, sans-serif" }}>DORMIFY HCMUS</div>
+                    <div style={{ fontSize: 11, color: "var(--color-neutral-600)", fontFamily: "Archivo, sans-serif" }}>Hệ thống quản lý Ký túc xá</div>
                   </div>
                 </div>
-                {terminated ? (
-                  <span style={{ flex: "none", display: "inline-flex", alignItems: "center", gap: 7, background: "var(--color-accent)", color: "#fff", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", padding: "6px 12px" }}>
-                    <span style={{ width: 7, height: 7, background: "#fff" }} />
-                    Đã thanh lý
-                  </span>
-                ) : (
-                  <span style={{ flex: "none", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 7, border: "1.5px solid var(--color-accent)", color: "var(--color-accent-700)", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", padding: "5px 11px" }}>
-                    <span style={{ width: 7, height: 7, background: "var(--color-accent)" }} />
-                    Đang hiệu lực
-                  </span>
-                )}
-              </div>
-
-              <hr style={{ height: 2, border: 0, background: "var(--color-text)", margin: "20px 0 26px" }} />
-
-              {/* Quốc hiệu */}
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.02em" }}>Cộng hòa xã hội chủ nghĩa Việt Nam</div>
-                <div style={{ display: "inline-block", fontWeight: 600, fontSize: 14, borderBottom: "1.5px solid var(--color-text)", paddingBottom: 2, marginTop: 4 }}>Độc lập – Tự do – Hạnh phúc</div>
-              </div>
-
-              {/* Title */}
-              <h1 style={{ fontWeight: 800, fontSize: 42, lineHeight: 1.02, letterSpacing: "-0.02em", textTransform: "uppercase", margin: "34px 0 0", maxWidth: "11ch" }}>Hợp đồng thuê phòng ký túc xá</h1>
-
-              {/* Meta strip */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 36, borderTop: "1px solid var(--color-divider)", borderBottom: "1px solid var(--color-divider)", padding: "14px 0", marginTop: 24 }}>
-                <div>
-                  <div style={kicker}>Số hợp đồng</div>
-                  <div style={metaValue}>{contract.contractNumber} / HĐ-DORMIFY</div>
-                </div>
-                <div>
-                  <div style={kicker}>Ngày lập</div>
-                  <div style={metaValue}>{formatDate(today.toISOString())}</div>
-                </div>
-                <div>
-                  <div style={kicker}>Hiệu lực đến</div>
-                  <div style={metaValue}>{formatDate(contract.endDate)}</div>
+                <div style={{ textAlign: "right", fontFamily: "Archivo, sans-serif" }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, color: "var(--color-text)" }}>Mã HĐ: {contract.contractNumber}</div>
+                  <div style={{ fontSize: 12, color: terminated ? "#dc2626" : "var(--color-accent)", fontWeight: 600 }}>
+                    Trạng thái: {terminated ? "Đã thanh lý" : "Đang hiệu lực"}
+                  </div>
                 </div>
               </div>
 
-              <p style={{ fontSize: 14, color: "var(--color-neutral-700)", margin: "22px 0 0" }}>
-                Hôm nay, ngày {today.getDate()} tháng {today.getMonth() + 1} năm {today.getFullYear()}, chúng tôi gồm có:
+              {/* Quốc hiệu - Tiêu ngữ */}
+              <div style={{ textAlign: "center", marginBottom: 24 }}>
+                <h1 style={{ fontSize: 18, fontWeight: "bold", textTransform: "uppercase", margin: 0 }}>
+                  Cộng hòa xã hội chủ nghĩa Việt Nam
+                </h1>
+                <h2 style={{ fontSize: 16, fontWeight: "bold", margin: "4px 0 0" }}>
+                  Độc lập - Tự do - Hạnh phúc
+                </h2>
+                <div style={{ width: 120, height: 1, background: "#000", margin: "10px auto 24px" }}></div>
+                <h1 style={{ fontSize: 20, fontWeight: "bold", textTransform: "uppercase", margin: 0 }}>
+                  HỢP ĐỒNG THUÊ CHỖ Ở KÝ TÚC XÁ
+                </h1>
+              </div>
+
+              <p style={{ fontSize: 15, marginBottom: 16, fontStyle: "italic" }}>
+                Hôm nay, ngày {today.getDate()} tháng {today.getMonth() + 1} năm {today.getFullYear()}, tại Ban Quản lý Ký túc xá, chúng tôi gồm có:
               </p>
 
-              {/* Parties */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 22, marginTop: 20 }}>
-                <div style={{ display: "flex", gap: 18 }}>
-                  <div style={{ flex: "none", width: 42, height: 42, background: "var(--color-text)", color: "#fff", fontWeight: 800, fontSize: 20, display: "grid", placeItems: "center" }}>A</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--color-neutral-600)" }}>Bên cho thuê — Bên A</div>
-                    <div style={{ fontWeight: 800, fontSize: 18, marginTop: 2 }}>Ban Quản Lý KTX Dormify</div>
-                    <div style={{ fontSize: 14, lineHeight: 1.65, color: "var(--color-neutral-800)", marginTop: 4 }}>
-                      Đại diện ban điều hành và quản lý hạ tầng nội trú sinh viên thông minh.
-                      <br />
-                      Địa chỉ: Khu đô thị Đại học Quốc gia TP.HCM.
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ display: "flex", gap: 18 }}>
-                  <div style={{ flex: "none", width: 42, height: 42, background: "var(--color-accent)", color: "#fff", fontWeight: 800, fontSize: 20, display: "grid", placeItems: "center" }}>B</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--color-neutral-600)" }}>Bên thuê — Bên B</div>
-                    <div style={{ fontWeight: 800, fontSize: 18, marginTop: 2 }}>Sinh viên đăng ký lưu trú</div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderTop: "2px solid var(--color-text)", marginTop: 12 }}>
-                      <div style={{ padding: "11px 16px 11px 0", borderBottom: "1px solid var(--color-divider)", borderRight: "1px solid var(--color-divider)" }}>
-                        <div style={cellLabel}>Họ và tên</div>
-                        <div style={cellValue}>{contract.user?.fullName}</div>
-                      </div>
-                      <div style={{ padding: "11px 0 11px 16px", borderBottom: "1px solid var(--color-divider)" }}>
-                        <div style={cellLabel}>Mã số sinh viên</div>
-                        <div style={cellValue}>{contract.user?.mssv || "Không có"}</div>
-                      </div>
-                      <div style={{ padding: "11px 16px 11px 0", borderBottom: "1px solid var(--color-divider)", borderRight: "1px solid var(--color-divider)" }}>
-                        <div style={cellLabel}>Số CCCD / CMND</div>
-                        <div style={cellValue}>{contract.user?.cccd || "Không có"}</div>
-                      </div>
-                      <div style={{ padding: "11px 0 11px 16px", borderBottom: "1px solid var(--color-divider)" }}>
-                        <div style={cellLabel}>Số điện thoại</div>
-                        <div style={{ ...cellValue, color: contract.user?.phone ? undefined : "var(--color-neutral-600)" }}>{contract.user?.phone || "Không có"}</div>
-                      </div>
-                      <div style={{ gridColumn: "1 / -1", padding: "11px 0", borderBottom: "1px solid var(--color-divider)" }}>
-                        <div style={cellLabel}>Email</div>
-                        <div style={cellValue}>{contract.user?.email}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {/* Các Bên (A & B) */}
+              <div style={{ marginBottom: 20 }}>
+                <h3 style={{ fontWeight: "bold", fontSize: 15, marginBottom: 8 }}>BÊN CHO THUÊ (BÊN A): BAN QUẢN LÝ KÝ TÚC XÁ DORMIFY HCMUS</h3>
+                <p style={{ fontSize: 15, marginBottom: 4 }}><strong>Đại diện:</strong> Ông/Bà Nguyễn Văn Đại Diện</p>
+                <p style={{ fontSize: 15, marginBottom: 4 }}><strong>Chức vụ:</strong> Trưởng Ban Quản lý Ký túc xá</p>
+                <p style={{ fontSize: 15, marginBottom: 4 }}><strong>Địa chỉ:</strong> Khu đô thị ĐHQG-HCM, Thủ Đức, TP. Hồ Chí Minh</p>
+                <p style={{ fontSize: 15, marginBottom: 4 }}><strong>Điện thoại:</strong> 028 3896 6666</p>
               </div>
 
-              <p style={{ fontSize: 14, fontStyle: "italic", color: "var(--color-neutral-700)", margin: "24px 0 0" }}>Hai bên cùng thống nhất ký kết Hợp đồng thuê phòng với các điều khoản sau đây:</p>
-
-              {/* Điều 1 */}
-              <div style={{ marginTop: 30 }}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 14, borderBottom: "2px solid var(--color-text)", paddingBottom: 8 }}>
-                  <span style={articleNo}>ĐIỀU 1</span>
-                  <h2 style={{ fontWeight: 800, fontSize: 17, textTransform: "uppercase", letterSpacing: "0.01em", margin: 0 }}>Nội dung thỏa thuận &amp; chi phí</h2>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "190px 1fr", marginTop: 6 }}>
-                  <div style={{ padding: "12px 16px 12px 0", borderBottom: "1px solid var(--color-divider)", fontWeight: 800, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.04em" }}>Tài sản cho thuê</div>
-                  <div style={{ padding: "12px 0", borderBottom: "1px solid var(--color-divider)", fontSize: 15 }}>
-                    Bên A đồng ý cho Bên B thuê một vị trí giường tại Phòng <strong>{contract.room?.name}</strong>, Tòa nhà <strong>{contract.room?.building}</strong> (Tầng {contract.room?.floor}).
-                  </div>
-                  <div style={{ padding: "12px 16px 12px 0", borderBottom: "1px solid var(--color-divider)", fontWeight: 800, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.04em" }}>Phí nội trú</div>
-                  <div style={{ padding: "12px 0", borderBottom: "1px solid var(--color-divider)", fontSize: 15 }}>
-                    <strong>{contract.rentalFee?.toLocaleString("vi-VN")} VNĐ</strong> / tháng.
-                  </div>
-                  <div style={{ padding: "12px 16px 12px 0", borderBottom: "1px solid var(--color-divider)", fontWeight: 800, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.04em" }}>Thời hạn hợp đồng</div>
-                  <div style={{ padding: "12px 0", borderBottom: "1px solid var(--color-divider)", fontSize: 15 }}>
-                    Có hiệu lực kể từ ngày <strong>{formatDate(contract.startDate)}</strong> đến hết ngày <strong>{formatDate(contract.endDate)}</strong>.
-                  </div>
-                </div>
+              <div style={{ marginBottom: 24 }}>
+                <h3 style={{ fontWeight: "bold", fontSize: 15, marginBottom: 8 }}>BÊN THUÊ (BÊN B): SINH VIÊN LƯU TRÚ</h3>
+                <p style={{ fontSize: 15, marginBottom: 4 }}><strong>Họ và tên:</strong> {contract.user?.fullName}</p>
+                <p style={{ fontSize: 15, marginBottom: 4 }}><strong>Mã số sinh viên:</strong> {contract.user?.mssv || "Không có"}</p>
+                <p style={{ fontSize: 15, marginBottom: 4 }}>
+                  <strong>CCCD/CMND số:</strong> {contract.user?.cccd || "Không có"} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  <strong>Số điện thoại:</strong> {contract.user?.phone || "Không có"}
+                </p>
+                <p style={{ fontSize: 15, marginBottom: 4 }}><strong>Email:</strong> {contract.user?.email}</p>
               </div>
 
-              {/* Điều 2 */}
-              <div style={{ marginTop: 28 }}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 14, borderBottom: "2px solid var(--color-text)", paddingBottom: 8 }}>
-                  <span style={articleNo}>ĐIỀU 2</span>
-                  <h2 style={{ fontWeight: 800, fontSize: 17, textTransform: "uppercase", letterSpacing: "0.01em", margin: 0 }}>Trách nhiệm &amp; nghĩa vụ</h2>
-                </div>
+              <p style={{ fontSize: 15, marginBottom: 16 }}>
+                Hai bên cùng thỏa thuận và thống nhất ký kết Hợp đồng thuê chỗ ở nội trú với các điều khoản sau đây:
+              </p>
+
+              {/* Điều khoản 1 */}
+              <div style={{ marginBottom: 16 }}>
+                <h3 style={{ fontWeight: "bold", fontSize: 15, marginBottom: 8 }}>Điều 1: Đối tượng hợp đồng và Thời hạn</h3>
+                <p style={{ fontSize: 15, marginBottom: 4 }}>1. Bên A đồng ý cho Bên B thuê 01 chỗ ở tại <strong>Phòng {contract.room?.name}</strong>, Tòa nhà <strong>{contract.room?.building}</strong> (Tầng {contract.room?.floor}) thuộc Ký túc xá Dormify HCMUS.</p>
+                <p style={{ fontSize: 15, marginBottom: 4 }}>2. Thời hạn thuê: Có hiệu lực kể từ ngày <strong>{formatDate(contract.startDate)}</strong> đến ngày <strong>{formatDate(contract.endDate)}</strong>.</p>
+              </div>
+
+              {/* Điều khoản 2 */}
+              <div style={{ marginBottom: 16 }}>
+                <h3 style={{ fontWeight: "bold", fontSize: 15, marginBottom: 8 }}>Điều 2: Giá thuê và Phương thức thanh toán</h3>
+                <p style={{ fontSize: 15, marginBottom: 4 }}>1. Tiền thuê chỗ ở: <strong>{contract.rentalFee?.toLocaleString("vi-VN")} VNĐ/tháng</strong> (Giá này không bao gồm các chi phí phụ trội như điện, nước, internet...).</p>
+                <p style={{ fontSize: 15, marginBottom: 4 }}>2. Phương thức thanh toán: Bên B có trách nhiệm thanh toán định kỳ hàng tháng qua cổng thanh toán trực tuyến của hệ thống Dormify trước ngày 05 hàng tháng.</p>
+              </div>
+
+              {/* Điều khoản 3 */}
+              <div style={{ marginBottom: 24 }}>
+                <h3 style={{ fontWeight: "bold", fontSize: 15, marginBottom: 8 }}>Điều 3: Quyền và Nghĩa vụ của các bên</h3>
                 {termLines.length > 0 ? (
-                  <ol style={{ listStyle: "none", margin: "14px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+                  <ul style={{ listStyleType: "disc", paddingLeft: 24, margin: 0, fontSize: 15 }}>
                     {termLines.map((line, i) => (
-                      <li key={i} style={{ display: "flex", gap: 14, fontSize: 15, lineHeight: 1.6 }}>
-                        <span style={{ flex: "none", fontWeight: 800, fontSize: 13, color: "var(--color-accent)", minWidth: 20 }}>{String(i + 1).padStart(2, "0")}</span>
-                        <span>{line}</span>
-                      </li>
+                      <li key={i} style={{ marginBottom: 4 }}>{line}</li>
                     ))}
-                  </ol>
+                  </ul>
                 ) : (
-                  <p style={{ marginTop: 14, fontSize: 15, color: "var(--color-neutral-700)" }}>Không có điều khoản bổ sung.</p>
+                  <>
+                    <p style={{ fontSize: 15, marginBottom: 4 }}>1. <strong>Bên A:</strong> Đảm bảo cơ sở vật chất, an ninh trật tự; Hướng dẫn và kiểm tra Bên B thực hiện đúng Nội quy Ký túc xá.</p>
+                    <p style={{ fontSize: 15, marginBottom: 4 }}>2. <strong>Bên B:</strong> Sử dụng trang thiết bị đúng mục đích; Đóng phí đầy đủ, đúng hạn; Chấp hành nghiêm chỉnh quy định pháp luật và Nội quy Ký túc xá sinh viên.</p>
+                  </>
                 )}
               </div>
 
+              <p style={{ fontSize: 15, marginBottom: 32 }}>Hợp đồng này được lập thành 02 bản có giá trị pháp lý như nhau, mỗi bên giữ 01 bản. Hợp đồng điện tử lưu trữ trên hệ thống có giá trị tương đương bản gốc.</p>
+
               {/* Signatures */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", marginTop: 44, borderTop: "2px solid var(--color-text)", breakInside: "avoid" }}>
-                <div style={{ textAlign: "center", padding: "24px 16px 8px", borderRight: "1px solid var(--color-divider)" }}>
-                  <div style={{ fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em" }}>Đại diện Bên A</div>
-                  <div style={{ fontSize: 12.5, fontStyle: "italic", color: "var(--color-neutral-600)", marginTop: 3 }}>(Ký, ghi rõ họ tên và đóng dấu)</div>
-                  <div style={{ display: "flex", justifyContent: "center", margin: "14px 0 6px" }}>
-                    <Seal id="seal-a" color="var(--color-accent)" arc="★ BAN QUẢN LÝ KTX DORMIFY ★" bottom="ĐÃ XÁC THỰC" rotate={-7} />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", breakInside: "avoid" }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontWeight: "bold", fontSize: 15 }}>ĐẠI DIỆN BÊN A</div>
+                  <div style={{ fontSize: 14, fontStyle: "italic", marginBottom: 16 }}>(Ký, ghi rõ họ tên và đóng dấu)</div>
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+                    {/* Dùng màu đỏ cho con dấu pháp lý bên A */}
+                    <Seal id="seal-a" color="#dc2626" arc="★ BAN QUẢN LÝ KTX DORMIFY ★" bottom="ĐÃ KÝ ĐÓNG DẤU" rotate={-7} />
                   </div>
-                  <div style={{ fontWeight: 800, fontSize: 15 }}>Ban Quản Lý</div>
+                  <div style={{ fontWeight: "bold", fontSize: 15 }}>Ban Quản Lý</div>
                 </div>
-                <div style={{ textAlign: "center", padding: "24px 16px 8px" }}>
-                  <div style={{ fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em" }}>Đại diện Bên B</div>
-                  <div style={{ fontSize: 12.5, fontStyle: "italic", color: "var(--color-neutral-600)", marginTop: 3 }}>(Ký, ghi rõ họ tên)</div>
-                  <div style={{ display: "flex", justifyContent: "center", margin: "14px 0 6px" }}>
-                    <Seal id="seal-b" color="var(--color-text)" arc="★ SINH VIÊN LƯU TRÚ ★" bottom="CHỮ KÝ SỐ" rotate={6} />
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontWeight: "bold", fontSize: 15 }}>ĐẠI DIỆN BÊN B</div>
+                  <div style={{ fontSize: 14, fontStyle: "italic", marginBottom: 16 }}>(Chữ ký số điện tử)</div>
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+                    {/* Dùng màu xanh biển cho con dấu điện tử bên B */}
+                    <Seal id="seal-b" color="#2563eb" arc="★ SINH VIÊN LƯU TRÚ ★" bottom="ĐÃ XÁC THỰC KÝ SỐ" rotate={6} />
                   </div>
-                  <div style={{ fontWeight: 800, fontSize: 15 }}>{contract.user?.fullName}</div>
+                  <div style={{ fontWeight: "bold", fontSize: 15 }}>{contract.user?.fullName}</div>
                 </div>
               </div>
             </div>
 
             {/* ── ACTION BAR ── */}
-            <div className="no-print" style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+            <div className="no-print" style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 8 }}>
               <button
                 onClick={() =>
                   exportContractPdf({
@@ -595,27 +533,27 @@ export default function StudentContractPage() {
                     terms: contract.terms,
                   })
                 }
-                style={{ flex: 1, minWidth: 200, display: "inline-flex", alignItems: "center", justifyContent: "flex-start", gap: 8, padding: "12px 16px", fontWeight: 800, fontSize: 14, color: "var(--color-text)", background: "transparent", border: "1px solid var(--color-divider)", cursor: "pointer" }}
+                style={{ flex: 1, minWidth: 200, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 16px", fontWeight: 700, fontSize: 14, color: "var(--color-text)", background: "#fff", border: "1px solid var(--color-divider)", borderRadius: 8, cursor: "pointer", transition: "all 0.2s" }}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 9V2h12v7" />
                   <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
                   <rect x="6" y="14" width="12" height="8" />
                 </svg>
-                In PDF / Tải xuống
+                In / Tải PDF Hợp đồng
               </button>
 
               {active && (
                 <>
                   <button
                     onClick={handleExtend}
-                    style={{ flex: 1, minWidth: 150, display: "inline-flex", alignItems: "center", justifyContent: "flex-start", padding: "12px 16px", fontWeight: 800, fontSize: 14, color: "var(--color-bg)", background: "var(--color-accent)", border: "1px solid var(--color-accent)", cursor: "pointer" }}
+                    style={{ flex: 1, minWidth: 150, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "12px 16px", fontWeight: 700, fontSize: 14, color: "#fff", background: "var(--color-text)", border: "1px solid var(--color-text)", borderRadius: 8, cursor: "pointer", transition: "all 0.2s" }}
                   >
                     Gia hạn hợp đồng
                   </button>
                   <button
                     onClick={handleTerminate}
-                    style={{ flex: 1, minWidth: 120, display: "inline-flex", alignItems: "center", justifyContent: "flex-start", padding: "12px 16px", fontWeight: 800, fontSize: 14, color: "var(--color-accent)", background: "transparent", border: "1px solid var(--color-accent)", cursor: "pointer" }}
+                    style={{ flex: 1, minWidth: 120, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "12px 16px", fontWeight: 700, fontSize: 14, color: "#dc2626", background: "transparent", border: "1px solid #dc2626", borderRadius: 8, cursor: "pointer", transition: "all 0.2s" }}
                   >
                     Thanh lý
                   </button>
@@ -624,8 +562,8 @@ export default function StudentContractPage() {
             </div>
           </div>
         ) : (
-          <div style={{ background: "#fff", border: "2px solid var(--color-text)", boxShadow: "var(--shadow-lg)", padding: "80px 40px", textAlign: "center" }}>
-            <div style={{ width: 56, height: 56, background: "var(--color-accent-100)", color: "var(--color-accent-700)", display: "grid", placeItems: "center", margin: "0 auto 22px" }}>
+          <div style={{ background: "#fff", border: "1px solid var(--color-divider)", borderRadius: 12, boxShadow: "var(--shadow-lg)", padding: "80px 40px", textAlign: "center" }}>
+            <div style={{ width: 56, height: 56, background: "var(--color-accent-100)", color: "var(--color-accent-700)", borderRadius: 12, display: "grid", placeItems: "center", margin: "0 auto 22px" }}>
               <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
               </svg>

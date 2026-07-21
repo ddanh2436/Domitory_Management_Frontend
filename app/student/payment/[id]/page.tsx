@@ -45,9 +45,9 @@ const METHODS: { id: PaymentMethod; label: string; sub: string; icon: React.Reac
 ];
 
 const EWALLET_OPTIONS = [
-  { id: "momo",    name: "MoMo",      color: "#A50064" },
-  { id: "zalopay",  name: "ZaloPay",   color: "#0068FF" },
-  { id: "viettel",  name: "ViettelPay",color: "#EE0033" },
+  { id: "momo",    name: "MoMo",      imgSrc: "/Momo.png" },
+  { id: "zalopay",  name: "ZaloPay",   imgSrc: "/ZaloPay.png" },
+  { id: "viettel",  name: "ViettelPay",imgSrc: "/ViettelPay.jpg" },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -308,7 +308,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
         .pm-ewallet-opt { display:flex; align-items:center; gap:12px; padding:14px 16px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; transition:all .15s; }
         .pm-ewallet-opt:hover { border-color:rgba(13,27,42,.2); }
         .pm-ewallet-opt--active { border-color:var(--gold); background:var(--gold-dim); }
-        .pm-ewallet-dot { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; color:#fff; font-family:'Fraunces',serif; font-weight:700; font-size:13px; flex-shrink:0; }
+        .pm-ewallet-logo { width:36px; height:36px; border-radius:9px; object-fit:contain; border:1px solid rgba(13,27,42,0.05); flex-shrink:0; background:var(--white); }
         .pm-ewallet-name { font-size:13.5px; font-weight:500; color:var(--navy); flex:1; }
         .pm-radio-dot { width:18px; height:18px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .pm-radio-dot--active { border-color:var(--gold); }
@@ -547,9 +547,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
                       className={`pm-ewallet-opt ${ewallet === w.id ? "pm-ewallet-opt--active" : ""}`}
                       onClick={() => setEwallet(w.id)}
                     >
-                      <span className="pm-ewallet-dot" style={{ background: w.color }}>
-                        {w.name[0]}
-                      </span>
+                      <img src={w.imgSrc} alt={w.name} className="pm-ewallet-logo" />
                       <span className="pm-ewallet-name">{w.name}</span>
                       <span className={`pm-radio-dot ${ewallet === w.id ? "pm-radio-dot--active" : ""}`} />
                     </div>

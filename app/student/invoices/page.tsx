@@ -218,7 +218,7 @@ export default function StudentInvoicesPage() {
         }
 
         /* ── STATS ── */
-        .iv-stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:24px; max-width:920px; }
+        .iv-stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:24px; width:100%; }
         .iv-stat { background:var(--white); border:1px solid var(--border); border-radius:11px; padding:16px 18px; transition:transform .15s, box-shadow .15s; }
         .iv-stat:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(13,27,42,.07); }
         .iv-stat--accent { background:var(--navy); border-color:var(--gold-b); }
@@ -228,7 +228,7 @@ export default function StudentInvoicesPage() {
         .iv-stat--accent .iv-stat-value { color:var(--gold); }
 
         /* ── FILTER TOOLBAR ── */
-        .iv-toolbar { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; max-width:920px; }
+        .iv-toolbar { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; width:100%; }
         .iv-filter-btn { padding:7px 14px; border-radius:8px; border:1px solid var(--border); background:var(--white); font-family:'DM Sans',sans-serif; font-size:12.5px; color:var(--muted); cursor:pointer; transition:all .15s; display:flex; align-items:center; gap:6px; }
         .iv-filter-btn:hover { border-color:var(--navy); color:var(--navy); }
         .iv-filter-btn--active { background:var(--navy); border-color:var(--navy); color:#fff; }
@@ -236,7 +236,7 @@ export default function StudentInvoicesPage() {
         .iv-filter-btn:not(.iv-filter-btn--active) .iv-fc { background:rgba(13,27,42,.07); color:var(--navy); }
 
         /* ── INVOICE LIST ── */
-        .iv-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(420px, 1fr)); gap:18px; align-items:start; max-width:920px; }
+        .iv-list { display:grid; grid-template-columns:1fr; gap:18px; align-items:start; width:100%; }
 
         /* ── INVOICE CARD ── */
         .iv-card { background:var(--white); border:1px solid var(--border); border-radius:16px; padding:24px; display:flex; flex-direction:column; position:relative; overflow:hidden; transition:transform .18s, box-shadow .18s; }
@@ -270,7 +270,7 @@ export default function StudentInvoicesPage() {
         .iv-btn-pdf:hover { border-color:var(--gold); color:#9a7b2c; }
 
         /* ── EMPTY STATE ── */
-        .iv-empty { text-align:center; padding:60px 24px; background:var(--white); border-radius:16px; border:1px solid var(--border); max-width:920px; }
+        .iv-empty { text-align:center; padding:60px 24px; background:var(--white); border-radius:16px; border:1px solid var(--border); width:100%; }
         .iv-empty--dashed { border-style:dashed; }
         .iv-empty-icon { color:var(--muted); margin-bottom:14px; display:flex; justify-content:center; }
         .iv-empty-title { font-weight:600; font-size:16px; color:var(--navy); }
