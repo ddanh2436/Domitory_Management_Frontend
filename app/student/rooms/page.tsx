@@ -166,7 +166,7 @@ export default function StudentRoomsPage() {
                 {Icons.back} Về tổng quan
               </Link>
               <h1 className="room-title">Phòng của tôi</h1>
-              <p className="room-subtitle">Chỉ hiển thị thôngত্তি tin phòng mà bạn đang được phân. Danh sách bên dưới là các cư dân cùng phòng với quyền riêng tư được giữ đúng theo chính sách.</p>
+              <p className="room-subtitle">Chỉ hiển thị thông tin phòng mà bạn đang được phân. Danh sách bên dưới là các cư dân cùng phòng với quyền riêng tư được giữ đúng theo chính sách.</p>
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <div className="room-chip">{Icons.room} Bảo mật theo vai trò</div>
