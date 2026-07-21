@@ -1,20 +1,14 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, CSSProperties } from "react";
 import Link from "next/link";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Archivo } from "next/font/google";
 import { apiClient } from "../../utils/apiClient";
 import { useToast } from "../../components/ToastProvider";
 import { exportContractPdf } from "../../utils/exportPdf";
 
-const display = Playfair_Display({
+const archivo = Archivo({
   subsets: ["latin", "vietnamese"],
-  weight: ["600", "700", "800"],
-  display: "swap",
-});
-
-const body = Inter({
-  subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "800"],
   display: "swap",
 });
 
@@ -40,110 +34,205 @@ interface ConfirmState {
   onConfirm: () => void;
 }
 
+// ─── Modernist design tokens (shared with the rest of the redesign) ──────────
+const tokens = {
+  "--color-bg": "#f3f2f2",
+  "--color-surface": "#eae9e9",
+  "--color-text": "#201e1d",
+  "--color-accent": "#ec3013",
+  "--color-accent-100": "#fff2ef",
+  "--color-accent-700": "#ae1800",
+  "--color-neutral-600": "#7d7979",
+  "--color-neutral-700": "#605d5d",
+  "--color-neutral-800": "#444141",
+  "--color-neutral-900": "#2d2b2b",
+  "--color-divider": "color-mix(in srgb, #201e1d 40%, transparent)",
+  "--shadow-lg": "0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent)",
+} as CSSProperties;
+
+const kicker: CSSProperties = {
+  fontSize: 10,
+  textTransform: "uppercase",
+  letterSpacing: "0.1em",
+  color: "var(--color-neutral-600)",
+  marginBottom: 4,
+};
+const metaValue: CSSProperties = { fontWeight: 800, fontSize: 15 };
+const cellLabel: CSSProperties = {
+  fontSize: 10,
+  textTransform: "uppercase",
+  letterSpacing: "0.09em",
+  color: "var(--color-neutral-600)",
+  marginBottom: 4,
+};
+const cellValue: CSSProperties = { fontWeight: 600, fontSize: 15 };
+const articleNo: CSSProperties = {
+  fontWeight: 800,
+  fontSize: 13,
+  color: "var(--color-accent)",
+  letterSpacing: "0.06em",
+};
+
+// ─── Con dấu / chữ ký số ─────────────────────────────────────────────────────
+function Seal({
+  id,
+  color,
+  arc,
+  bottom,
+  rotate,
+}: {
+  id: string;
+  color: string;
+  arc: string;
+  bottom: string;
+  rotate: number;
+}) {
+  return (
+    <svg width="128" height="128" viewBox="0 0 128 128" style={{ transform: `rotate(${rotate}deg)` }}>
+      <defs>
+        <path id={id} d="M64 64 m-46 0 a46 46 0 1 1 92 0" />
+      </defs>
+      <circle cx="64" cy="64" r="58" fill="none" stroke={color} strokeWidth="2.5" />
+      <circle cx="64" cy="64" r="48" fill="none" stroke={color} strokeWidth="1" strokeDasharray="2 3" />
+      <text fontFamily="Archivo, sans-serif" fontWeight="800" fontSize="9.5" letterSpacing="1.3" fill={color}>
+        <textPath href={`#${id}`} startOffset="50%" textAnchor="middle">
+          {arc}
+        </textPath>
+      </text>
+      <path d="M46 66 L58 78 L83 50" fill="none" stroke={color} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="64" y="98" fontFamily="Archivo, sans-serif" fontWeight="800" fontSize="8.5" letterSpacing="1.5" fill={color} textAnchor="middle">
+        {bottom}
+      </text>
+    </svg>
+  );
+}
+
 // ─── Confirm Dialog ─────────────────────────────────────────────────────────
 function ConfirmDialog({ state, busy, onCancel }: { state: ConfirmState | null; busy: boolean; onCancel: () => void }) {
   if (!state) return null;
-  const isDanger = state.variant === "danger";
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 print:hidden"
+      className="print:hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-title"
-      onClick={(e) => { if (e.target === e.currentTarget && !busy) onCancel(); }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 90,
+        display: "grid",
+        placeItems: "center",
+        padding: 16,
+        background: "color-mix(in srgb, var(--color-neutral-900) 50%, transparent)",
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !busy) onCancel();
+      }}
     >
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 space-y-5 animate-[dialog-in_0.2s_ease-out]">
+      <div
+        style={{
+          width: "min(440px, 100%)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+          padding: 24,
+          background: "#fff",
+          border: "2px solid var(--color-text)",
+          boxShadow: "var(--shadow-lg)",
+        }}
+      >
         <div
-          className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-            isDanger ? "bg-rose-50 text-rose-600" : "bg-blue-50 text-blue-600"
-          }`}
+          style={{
+            width: 44,
+            height: 44,
+            display: "grid",
+            placeItems: "center",
+            background: "var(--color-accent-100)",
+            color: "var(--color-accent-700)",
+          }}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86l-8.18 14.18A2 2 0 004 21h16a2 2 0 001.89-2.96L13.71 3.86a2 2 0 00-3.42 0z" />
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86l-8.18 14.18A2 2 0 0 0 4 21h16a2 2 0 0 0 1.89-2.96L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
         </div>
-        <div className="space-y-2">
-          <h3 id="confirm-title" className={`${display.className} text-xl font-bold text-slate-900`}>
-            {state.title}
-          </h3>
-          <p className="text-slate-500 text-[14.5px] leading-relaxed">{state.message}</p>
+        <div id="confirm-title" style={{ fontWeight: 800, fontSize: 20 }}>
+          {state.title}
         </div>
-        <div className="flex gap-3 pt-2">
+        <div style={{ fontSize: 14, opacity: 0.85, lineHeight: 1.55 }}>{state.message}</div>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
           <button
             onClick={onCancel}
             disabled={busy}
-            className="flex-1 py-3 rounded-lg font-bold text-[14px] text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors disabled:opacity-50"
+            style={{
+              padding: "10px 16px",
+              fontWeight: 800,
+              fontSize: 14,
+              cursor: busy ? "not-allowed" : "pointer",
+              color: "var(--color-text)",
+              background: "transparent",
+              border: "1px solid var(--color-divider)",
+              opacity: busy ? 0.5 : 1,
+            }}
           >
             Hủy bỏ
           </button>
           <button
             onClick={state.onConfirm}
             disabled={busy}
-            className={`flex-1 py-3 rounded-lg font-bold text-[14px] text-white transition-colors disabled:opacity-60 flex items-center justify-center gap-2 ${
-              isDanger ? "bg-rose-600 hover:bg-rose-700" : "bg-slate-900 hover:bg-slate-800"
-            }`}
+            style={{
+              padding: "10px 16px",
+              fontWeight: 800,
+              fontSize: 14,
+              cursor: busy ? "not-allowed" : "pointer",
+              color: "var(--color-bg)",
+              background: "var(--color-accent)",
+              border: "1px solid var(--color-accent)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              opacity: busy ? 0.6 : 1,
+            }}
           >
-            {busy && <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />}
+            {busy && <span style={{ height: 16, width: 16, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", animation: "spin 0.7s linear infinite" }} />}
             {state.confirmLabel}
           </button>
         </div>
       </div>
       <style jsx>{`
-        @keyframes dialog-in {
-          from { opacity: 0; transform: scale(0.96) translateY(4px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
         }
       `}</style>
     </div>
   );
 }
 
-// ─── Component Con Dấu Mộc Điển Tử ─────────────────────────────────────────────
-function Seal({ label, type }: { label: string; type: "red" | "blue" }) {
-  const color = type === "red" ? "#dc2626" : "#2563eb"; // Đỏ đô hoặc Xanh dương đậm
-  return (
-    <div className="inline-flex flex-col items-center -rotate-12 select-none opacity-90 mix-blend-multiply">
-      <svg width="100" height="100" viewBox="0 0 80 80" fill="none">
-        <circle cx="40" cy="40" r="36" stroke={color} strokeWidth="2" />
-        <circle cx="40" cy="40" r="32" stroke={color} strokeWidth="1" strokeDasharray="2 2" />
-        <path d="M25 40L35 50L55 30" stroke={color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-      <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-center max-w-[120px] leading-tight" style={{ color }}>
-        {label}
-      </p>
-    </div>
-  );
-}
-
-// ─── Trạng thái tải trang (skeleton) ─────────────────────────────────────────
+// ─── Skeleton ────────────────────────────────────────────────────────────────
 function DocumentSkeleton() {
   return (
-    <div className="w-full max-w-[850px] animate-pulse space-y-8">
-      <div className="h-5 w-32 bg-slate-200/70 rounded-full" />
-      <div className="bg-white rounded border border-slate-200 p-8 sm:p-16 space-y-8 min-h-[600px]">
-        <div className="space-y-4 flex flex-col items-center">
-          <div className="h-4 w-64 bg-slate-200/70 rounded-full" />
-          <div className="h-4 w-48 bg-slate-200/70 rounded-full" />
-          <div className="h-8 w-80 bg-slate-200/70 rounded-md mt-8" />
-        </div>
-        <div className="space-y-4 pt-12">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-4 bg-slate-100 rounded-full w-full" />
-          ))}
-        </div>
+    <div style={{ width: "100%", maxWidth: 860 }}>
+      <div style={{ background: "#fff", border: "2px solid var(--color-text)", boxShadow: "var(--shadow-lg)", padding: "60px 68px", minHeight: 600, display: "flex", flexDirection: "column", gap: 24 }}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} style={{ height: 16, background: "var(--color-surface)", width: `${90 - i * 6}%`, animation: "pulse 1.4s ease-in-out infinite" }} />
+        ))}
       </div>
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.45; }
+        }
+      `}</style>
     </div>
   );
 }
 
 // ─── Formatter ────────────────────────────────────────────────────────────────
-const formatDate = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
+const formatDate = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function StudentContractPage() {
@@ -154,7 +243,6 @@ export default function StudentContractPage() {
   const [actionBusy, setActionBusy] = useState(false);
   const notify = useToast();
 
-  // Chuyển pushToast sang hệ thống toast dùng chung (giữ nguyên chữ ký gọi sẵn có)
   const pushToast = useCallback(
     (kind: ToastKind, message: string) => {
       if (kind === "success") notify.success(message);
@@ -185,7 +273,9 @@ export default function StudentContractPage() {
     fetchContract();
   }, [fetchContract]);
 
-  const closeConfirm = () => { if (!actionBusy) setConfirmState(null); };
+  const closeConfirm = () => {
+    if (!actionBusy) setConfirmState(null);
+  };
 
   const runAction = async (action: () => Promise<Response>, successMsg: string, errorMsg: string) => {
     setActionBusy(true);
@@ -213,11 +303,7 @@ export default function StudentContractPage() {
       confirmLabel: "Gia hạn 6 tháng",
       variant: "default",
       onConfirm: () =>
-        runAction(
-          () => apiClient.post("/contracts/extend", { months: 6 }),
-          "Gia hạn hợp đồng thành công!",
-          "Có lỗi xảy ra khi gia hạn hợp đồng."
-        ),
+        runAction(() => apiClient.post("/contracts/extend", { months: 6 }), "Gia hạn hợp đồng thành công!", "Có lỗi xảy ra khi gia hạn hợp đồng."),
     });
   };
 
@@ -228,25 +314,53 @@ export default function StudentContractPage() {
       confirmLabel: "Thanh lý ngay",
       variant: "danger",
       onConfirm: () =>
-        runAction(
-          () => apiClient.post("/contracts/terminate", {}),
-          "Thanh lý hợp đồng thành công!",
-          "Có lỗi xảy ra khi thanh lý hợp đồng."
-        ),
+        runAction(() => apiClient.post("/contracts/terminate", {}), "Thanh lý hợp đồng thành công!", "Có lỗi xảy ra khi thanh lý hợp đồng."),
     });
   };
 
+  const today = new Date();
+  const terminated = contract?.status === "TERMINATED";
+  const active = contract?.status === "ACTIVE";
+  const termLines = contract?.terms
+    ? contract.terms.split("\n").map((s) => s.trim()).filter(Boolean)
+    : [];
+
   return (
-    <div className={`${body.className} w-full min-h-screen bg-slate-100 py-10 px-4 print:p-0 print:bg-white flex flex-col items-center`}>
+    <div
+      className={archivo.className}
+      style={{
+        ...tokens,
+        width: "100%",
+        minHeight: "100vh",
+        background: "var(--color-bg)",
+        color: "var(--color-text)",
+        padding: "40px 20px 64px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
       <ConfirmDialog state={confirmState} busy={actionBusy} onCancel={closeConfirm} />
 
-      <div className="w-full max-w-[850px] flex flex-col">
+      <div style={{ width: "100%", maxWidth: 860 }}>
         <Link
           href="/student"
-          className="text-slate-500 no-underline text-sm font-semibold inline-flex items-center gap-2 mb-6 print:hidden hover:text-slate-900 transition-colors group self-start"
+          className="no-print"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            textDecoration: "none",
+            color: "var(--color-neutral-700)",
+            fontWeight: 800,
+            fontSize: 13,
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            marginBottom: 18,
+          }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="transform group-hover:-translate-x-1 transition-transform">
-            <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
           </svg>
           Trở về Tổng quan
         </Link>
@@ -254,125 +368,214 @@ export default function StudentContractPage() {
         {loading ? (
           <DocumentSkeleton />
         ) : loadError ? (
-          <div className="bg-white border border-slate-200 p-16 text-center shadow-sm w-full">
-            <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6 text-rose-500">
-              <svg width="30" height="30" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-2.99L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L3.34 16.01C2.57 17.33 3.53 19 5.07 19z" />
+          <div style={{ background: "#fff", border: "2px solid var(--color-text)", boxShadow: "var(--shadow-lg)", padding: "64px 40px", textAlign: "center" }}>
+            <div style={{ width: 56, height: 56, background: "var(--color-accent-100)", color: "var(--color-accent-700)", display: "grid", placeItems: "center", margin: "0 auto 22px" }}>
+              <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-2.99L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L3.34 16.01C2.57 17.33 3.53 19 5.07 19z" />
               </svg>
             </div>
-            <h2 className={`${display.className} text-xl font-bold text-slate-900 mb-2`}>Không thể tải hợp đồng</h2>
-            <p className="text-slate-500 text-[14.5px] leading-relaxed mb-6">
+            <h2 style={{ fontWeight: 800, fontSize: 22, marginBottom: 8 }}>Không thể tải hợp đồng</h2>
+            <p style={{ color: "var(--color-neutral-700)", fontSize: 14.5, lineHeight: 1.6, marginBottom: 24 }}>
               Đã có lỗi khi kết nối tới máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.
             </p>
             <button
-              onClick={() => { setLoading(true); fetchContract(); }}
-              className="px-6 py-3 bg-slate-900 text-white rounded font-bold text-sm hover:bg-slate-800 transition-colors"
+              onClick={() => {
+                setLoading(true);
+                fetchContract();
+              }}
+              style={{ padding: "12px 24px", background: "var(--color-accent)", color: "var(--color-bg)", fontWeight: 800, fontSize: 14, border: "none", cursor: "pointer" }}
             >
               Thử lại
             </button>
           </div>
         ) : contract ? (
-          <div className="space-y-6 w-full">
-            
-            {/* ── TỜ GIẤY HỢP ĐỒNG (KHỔ A4) ── */}
-            <div 
-              id="printable-contract" 
-              className="bg-white p-10 md:p-16 lg:p-20 shadow-xl border border-slate-300 text-black mx-auto print:shadow-none print:border-none print:m-0 print:p-0 print:w-full"
-              style={{ minHeight: "297mm", maxWidth: "210mm" }}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* ── TỜ HỢP ĐỒNG ── */}
+            <div
+              id="printable-contract"
+              style={{
+                position: "relative",
+                background: "#fff",
+                border: "2px solid var(--color-text)",
+                boxShadow: "var(--shadow-lg)",
+                padding: "60px 68px 56px",
+                overflow: "hidden",
+              }}
             >
-              {contract.status === "TERMINATED" && (
-                <div className="flex items-center justify-center gap-2 bg-red-50 text-red-700 border border-red-200 p-3 mb-8 text-center font-bold text-sm tracking-widest uppercase print:hidden">
-                  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
-                  Hợp đồng này đã được thanh lý
+              {terminated && (
+                <div aria-hidden="true" style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", pointerEvents: "none", zIndex: 2 }}>
+                  <div style={{ transform: "rotate(-16deg)", fontWeight: 800, fontSize: 110, letterSpacing: "0.04em", color: "var(--color-accent)", opacity: 0.11, whiteSpace: "nowrap" }}>
+                    ĐÃ THANH LÝ
+                  </div>
                 </div>
               )}
 
-              {/* Header Quốc hiệu */}
-              <div className="text-center mb-12">
-                <h3 className="uppercase text-[15px] font-bold">
-                  Cộng hòa xã hội chủ nghĩa Việt Nam
-                </h3>
-                <p className="text-[14px] font-bold underline underline-offset-4 mt-1 mb-8">
-                  Độc lập - Tự do - Hạnh phúc
-                </p>
+              {/* Letterhead */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ flex: "none", width: 36, height: 36, background: "var(--color-accent)", color: "#fff", fontWeight: 800, fontSize: 20, display: "grid", placeItems: "center" }}>D</div>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 19, letterSpacing: "0.04em", lineHeight: 1 }}>DORMIFY</div>
+                    <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--color-neutral-600)", marginTop: 3 }}>Hệ thống ký túc xá thông minh</div>
+                  </div>
+                </div>
+                {terminated ? (
+                  <span style={{ flex: "none", display: "inline-flex", alignItems: "center", gap: 7, background: "var(--color-accent)", color: "#fff", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", padding: "6px 12px" }}>
+                    <span style={{ width: 7, height: 7, background: "#fff" }} />
+                    Đã thanh lý
+                  </span>
+                ) : (
+                  <span style={{ flex: "none", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 7, border: "1.5px solid var(--color-accent)", color: "var(--color-accent-700)", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", padding: "5px 11px" }}>
+                    <span style={{ width: 7, height: 7, background: "var(--color-accent)" }} />
+                    Đang hiệu lực
+                  </span>
+                )}
+              </div>
 
-                <h2 className={`${display.className} text-2xl md:text-3xl font-bold uppercase mt-12 mb-2`}>
-                  Hợp đồng thuê phòng ký túc xá
-                </h2>
-                <p className="italic text-sm text-gray-600">
-                  Số: {contract.contractNumber} / HĐ-DORMIFY
-                </p>
-                <div className="mt-2 text-sm italic">
-                  Hôm nay, ngày {new Date().getDate()} tháng {new Date().getMonth() + 1} năm {new Date().getFullYear()}, chúng tôi gồm có:
+              <hr style={{ height: 2, border: 0, background: "var(--color-text)", margin: "20px 0 26px" }} />
+
+              {/* Quốc hiệu */}
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.02em" }}>Cộng hòa xã hội chủ nghĩa Việt Nam</div>
+                <div style={{ display: "inline-block", fontWeight: 600, fontSize: 14, borderBottom: "1.5px solid var(--color-text)", paddingBottom: 2, marginTop: 4 }}>Độc lập – Tự do – Hạnh phúc</div>
+              </div>
+
+              {/* Title */}
+              <h1 style={{ fontWeight: 800, fontSize: 42, lineHeight: 1.02, letterSpacing: "-0.02em", textTransform: "uppercase", margin: "34px 0 0", maxWidth: "11ch" }}>Hợp đồng thuê phòng ký túc xá</h1>
+
+              {/* Meta strip */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 36, borderTop: "1px solid var(--color-divider)", borderBottom: "1px solid var(--color-divider)", padding: "14px 0", marginTop: 24 }}>
+                <div>
+                  <div style={kicker}>Số hợp đồng</div>
+                  <div style={metaValue}>{contract.contractNumber} / HĐ-DORMIFY</div>
+                </div>
+                <div>
+                  <div style={kicker}>Ngày lập</div>
+                  <div style={metaValue}>{formatDate(today.toISOString())}</div>
+                </div>
+                <div>
+                  <div style={kicker}>Hiệu lực đến</div>
+                  <div style={metaValue}>{formatDate(contract.endDate)}</div>
                 </div>
               </div>
 
-              {/* Phần thông tin các bên */}
-              <div className="space-y-6 text-[15px] leading-relaxed text-justify">
-                <div>
-                  <h4 className="font-bold text-base uppercase mb-2">Bên Cho Thuê (Bên A): Ban Quản Lý KTX Dormify</h4>
-                  <p>- Đại diện ban điều hành và quản lý hạ tầng nội trú sinh viên thông minh.</p>
-                  <p>- Địa chỉ: Khu đô thị Đại học Quốc gia TP.HCM.</p>
-                </div>
+              <p style={{ fontSize: 14, color: "var(--color-neutral-700)", margin: "22px 0 0" }}>
+                Hôm nay, ngày {today.getDate()} tháng {today.getMonth() + 1} năm {today.getFullYear()}, chúng tôi gồm có:
+              </p>
 
-                <div>
-                  <h4 className="font-bold text-base uppercase mb-2">Bên Thuê (Bên B): Sinh Viên Đăng Ký Lưu Trú</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2">
-                    <p>- <strong>Họ và tên:</strong> {contract.user?.fullName}</p>
-                    <p>- <strong>Mã số sinh viên:</strong> {contract.user?.mssv || "Không có"}</p>
-                    <p>- <strong>Số CCCD/CMND:</strong> {contract.user?.cccd || "Không có"}</p>
-                    <p>- <strong>Số điện thoại:</strong> {contract.user?.phone || "Không có"}</p>
-                    <p className="md:col-span-2">- <strong>Email:</strong> {contract.user?.email}</p>
+              {/* Parties */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 22, marginTop: 20 }}>
+                <div style={{ display: "flex", gap: 18 }}>
+                  <div style={{ flex: "none", width: 42, height: 42, background: "var(--color-text)", color: "#fff", fontWeight: 800, fontSize: 20, display: "grid", placeItems: "center" }}>A</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--color-neutral-600)" }}>Bên cho thuê — Bên A</div>
+                    <div style={{ fontWeight: 800, fontSize: 18, marginTop: 2 }}>Ban Quản Lý KTX Dormify</div>
+                    <div style={{ fontSize: 14, lineHeight: 1.65, color: "var(--color-neutral-800)", marginTop: 4 }}>
+                      Đại diện ban điều hành và quản lý hạ tầng nội trú sinh viên thông minh.
+                      <br />
+                      Địa chỉ: Khu đô thị Đại học Quốc gia TP.HCM.
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <p className="italic">Hai bên cùng thống nhất ký kết Hợp đồng thuê phòng với các điều khoản sau đây:</p>
-                </div>
-
-                {/* Các Điều khoản */}
-                <div className="space-y-4 pt-4">
-                  <h4 className="font-bold text-base uppercase">Điều 1: Nội dung thỏa thuận và Chi phí</h4>
-                  <ul className="list-disc list-inside space-y-2 pl-2">
-                    <li>
-                      <strong>Tài sản cho thuê:</strong> Bên A đồng ý cho Bên B thuê một vị trí giường tại Phòng {contract.room?.name}, Tòa nhà {contract.room?.building} (Tầng {contract.room?.floor}).
-                    </li>
-                    <li>
-                      <strong>Phí nội trú:</strong> {contract.rentalFee?.toLocaleString("vi-VN")} VNĐ/tháng.
-                    </li>
-                    <li>
-                      <strong>Thời hạn hợp đồng:</strong> Có hiệu lực kể từ ngày {formatDate(contract.startDate)} đến hết ngày {formatDate(contract.endDate)}.
-                    </li>
-                  </ul>
-
-                  <h4 className="font-bold text-base uppercase pt-4">Điều 2: Điều khoản trách nhiệm & nghĩa vụ</h4>
-                  <div className="pl-2 whitespace-pre-line">
-                    {contract.terms}
+                <div style={{ display: "flex", gap: 18 }}>
+                  <div style={{ flex: "none", width: 42, height: 42, background: "var(--color-accent)", color: "#fff", fontWeight: 800, fontSize: 20, display: "grid", placeItems: "center" }}>B</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--color-neutral-600)" }}>Bên thuê — Bên B</div>
+                    <div style={{ fontWeight: 800, fontSize: 18, marginTop: 2 }}>Sinh viên đăng ký lưu trú</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderTop: "2px solid var(--color-text)", marginTop: 12 }}>
+                      <div style={{ padding: "11px 16px 11px 0", borderBottom: "1px solid var(--color-divider)", borderRight: "1px solid var(--color-divider)" }}>
+                        <div style={cellLabel}>Họ và tên</div>
+                        <div style={cellValue}>{contract.user?.fullName}</div>
+                      </div>
+                      <div style={{ padding: "11px 0 11px 16px", borderBottom: "1px solid var(--color-divider)" }}>
+                        <div style={cellLabel}>Mã số sinh viên</div>
+                        <div style={cellValue}>{contract.user?.mssv || "Không có"}</div>
+                      </div>
+                      <div style={{ padding: "11px 16px 11px 0", borderBottom: "1px solid var(--color-divider)", borderRight: "1px solid var(--color-divider)" }}>
+                        <div style={cellLabel}>Số CCCD / CMND</div>
+                        <div style={cellValue}>{contract.user?.cccd || "Không có"}</div>
+                      </div>
+                      <div style={{ padding: "11px 0 11px 16px", borderBottom: "1px solid var(--color-divider)" }}>
+                        <div style={cellLabel}>Số điện thoại</div>
+                        <div style={{ ...cellValue, color: contract.user?.phone ? undefined : "var(--color-neutral-600)" }}>{contract.user?.phone || "Không có"}</div>
+                      </div>
+                      <div style={{ gridColumn: "1 / -1", padding: "11px 0", borderBottom: "1px solid var(--color-divider)" }}>
+                        <div style={cellLabel}>Email</div>
+                        <div style={cellValue}>{contract.user?.email}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Chữ ký */}
-              <div className="grid grid-cols-2 text-center mt-16 pt-8 break-inside-avoid">
-                <div className="flex flex-col items-center">
-                  <strong className="block uppercase text-[15px] mb-1">Đại Diện Bên A</strong>
-                  <p className="italic text-sm text-gray-500 mb-6">(Ký, ghi rõ họ tên và đóng dấu)</p>
-                  <Seal label="Dormify Verified" type="red" />
-                  <p className="mt-8 font-bold">Ban Quản Lý</p>
+              <p style={{ fontSize: 14, fontStyle: "italic", color: "var(--color-neutral-700)", margin: "24px 0 0" }}>Hai bên cùng thống nhất ký kết Hợp đồng thuê phòng với các điều khoản sau đây:</p>
+
+              {/* Điều 1 */}
+              <div style={{ marginTop: 30 }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 14, borderBottom: "2px solid var(--color-text)", paddingBottom: 8 }}>
+                  <span style={articleNo}>ĐIỀU 1</span>
+                  <h2 style={{ fontWeight: 800, fontSize: 17, textTransform: "uppercase", letterSpacing: "0.01em", margin: 0 }}>Nội dung thỏa thuận &amp; chi phí</h2>
                 </div>
-                <div className="flex flex-col items-center">
-                  <strong className="block uppercase text-[15px] mb-1">Đại Diện Bên B</strong>
-                  <p className="italic text-sm text-gray-500 mb-6">(Ký, ghi rõ họ tên)</p>
-                  <Seal label="Digital Signature" type="blue" />
-                  <p className="mt-8 font-bold">{contract.user?.fullName}</p>
+                <div style={{ display: "grid", gridTemplateColumns: "190px 1fr", marginTop: 6 }}>
+                  <div style={{ padding: "12px 16px 12px 0", borderBottom: "1px solid var(--color-divider)", fontWeight: 800, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.04em" }}>Tài sản cho thuê</div>
+                  <div style={{ padding: "12px 0", borderBottom: "1px solid var(--color-divider)", fontSize: 15 }}>
+                    Bên A đồng ý cho Bên B thuê một vị trí giường tại Phòng <strong>{contract.room?.name}</strong>, Tòa nhà <strong>{contract.room?.building}</strong> (Tầng {contract.room?.floor}).
+                  </div>
+                  <div style={{ padding: "12px 16px 12px 0", borderBottom: "1px solid var(--color-divider)", fontWeight: 800, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.04em" }}>Phí nội trú</div>
+                  <div style={{ padding: "12px 0", borderBottom: "1px solid var(--color-divider)", fontSize: 15 }}>
+                    <strong>{contract.rentalFee?.toLocaleString("vi-VN")} VNĐ</strong> / tháng.
+                  </div>
+                  <div style={{ padding: "12px 16px 12px 0", borderBottom: "1px solid var(--color-divider)", fontWeight: 800, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.04em" }}>Thời hạn hợp đồng</div>
+                  <div style={{ padding: "12px 0", borderBottom: "1px solid var(--color-divider)", fontSize: 15 }}>
+                    Có hiệu lực kể từ ngày <strong>{formatDate(contract.startDate)}</strong> đến hết ngày <strong>{formatDate(contract.endDate)}</strong>.
+                  </div>
+                </div>
+              </div>
+
+              {/* Điều 2 */}
+              <div style={{ marginTop: 28 }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 14, borderBottom: "2px solid var(--color-text)", paddingBottom: 8 }}>
+                  <span style={articleNo}>ĐIỀU 2</span>
+                  <h2 style={{ fontWeight: 800, fontSize: 17, textTransform: "uppercase", letterSpacing: "0.01em", margin: 0 }}>Trách nhiệm &amp; nghĩa vụ</h2>
+                </div>
+                {termLines.length > 0 ? (
+                  <ol style={{ listStyle: "none", margin: "14px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+                    {termLines.map((line, i) => (
+                      <li key={i} style={{ display: "flex", gap: 14, fontSize: 15, lineHeight: 1.6 }}>
+                        <span style={{ flex: "none", fontWeight: 800, fontSize: 13, color: "var(--color-accent)", minWidth: 20 }}>{String(i + 1).padStart(2, "0")}</span>
+                        <span>{line}</span>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p style={{ marginTop: 14, fontSize: 15, color: "var(--color-neutral-700)" }}>Không có điều khoản bổ sung.</p>
+                )}
+              </div>
+
+              {/* Signatures */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", marginTop: 44, borderTop: "2px solid var(--color-text)", breakInside: "avoid" }}>
+                <div style={{ textAlign: "center", padding: "24px 16px 8px", borderRight: "1px solid var(--color-divider)" }}>
+                  <div style={{ fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em" }}>Đại diện Bên A</div>
+                  <div style={{ fontSize: 12.5, fontStyle: "italic", color: "var(--color-neutral-600)", marginTop: 3 }}>(Ký, ghi rõ họ tên và đóng dấu)</div>
+                  <div style={{ display: "flex", justifyContent: "center", margin: "14px 0 6px" }}>
+                    <Seal id="seal-a" color="var(--color-accent)" arc="★ BAN QUẢN LÝ KTX DORMIFY ★" bottom="ĐÃ XÁC THỰC" rotate={-7} />
+                  </div>
+                  <div style={{ fontWeight: 800, fontSize: 15 }}>Ban Quản Lý</div>
+                </div>
+                <div style={{ textAlign: "center", padding: "24px 16px 8px" }}>
+                  <div style={{ fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em" }}>Đại diện Bên B</div>
+                  <div style={{ fontSize: 12.5, fontStyle: "italic", color: "var(--color-neutral-600)", marginTop: 3 }}>(Ký, ghi rõ họ tên)</div>
+                  <div style={{ display: "flex", justifyContent: "center", margin: "14px 0 6px" }}>
+                    <Seal id="seal-b" color="var(--color-text)" arc="★ SINH VIÊN LƯU TRÚ ★" bottom="CHỮ KÝ SỐ" rotate={6} />
+                  </div>
+                  <div style={{ fontWeight: 800, fontSize: 15 }}>{contract.user?.fullName}</div>
                 </div>
               </div>
             </div>
 
-            {/* ── KHỐI CÁC NÚT BUTTON (Nằm ngoài khung giấy A4) ── */}
-            <div className="bg-white border border-slate-200 rounded p-4 shadow-sm flex flex-col sm:flex-row gap-4 print:hidden w-full max-w-[850px] mx-auto">
+            {/* ── ACTION BAR ── */}
+            <div className="no-print" style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
               <button
                 onClick={() =>
                   exportContractPdf({
@@ -392,47 +595,65 @@ export default function StudentContractPage() {
                     terms: contract.terms,
                   })
                 }
-                className="flex-1 py-3 px-6 flex items-center justify-center gap-2 bg-slate-100 text-slate-800 border border-slate-300 rounded font-bold text-[14px] hover:bg-slate-200 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
+                style={{ flex: 1, minWidth: 200, display: "inline-flex", alignItems: "center", justifyContent: "flex-start", gap: 8, padding: "12px 16px", fontWeight: 800, fontSize: 14, color: "var(--color-text)", background: "transparent", border: "1px solid var(--color-divider)", cursor: "pointer" }}
               >
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H9v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H7a2 2 0 00-2 2v4h12z" />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9V2h12v7" />
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                  <rect x="6" y="14" width="12" height="8" />
                 </svg>
                 In PDF / Tải xuống
               </button>
 
-              {contract.status === "ACTIVE" && (
-                <div className="flex flex-1 gap-4">
+              {active && (
+                <>
                   <button
                     onClick={handleExtend}
-                    className="flex-1 py-3 px-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded text-[14px] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                    style={{ flex: 1, minWidth: 150, display: "inline-flex", alignItems: "center", justifyContent: "flex-start", padding: "12px 16px", fontWeight: 800, fontSize: 14, color: "var(--color-bg)", background: "var(--color-accent)", border: "1px solid var(--color-accent)", cursor: "pointer" }}
                   >
                     Gia hạn hợp đồng
                   </button>
                   <button
                     onClick={handleTerminate}
-                    className="flex-1 py-3 px-4 flex items-center justify-center gap-2 bg-white hover:bg-rose-50 text-rose-600 border border-rose-300 font-bold rounded text-[14px] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
+                    style={{ flex: 1, minWidth: 120, display: "inline-flex", alignItems: "center", justifyContent: "flex-start", padding: "12px 16px", fontWeight: 800, fontSize: 14, color: "var(--color-accent)", background: "transparent", border: "1px solid var(--color-accent)", cursor: "pointer" }}
                   >
                     Thanh lý
                   </button>
-                </div>
+                </>
               )}
             </div>
-            
           </div>
         ) : (
-          <div className="bg-white border border-slate-200 p-20 text-center shadow-sm w-full">
-            <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6 text-amber-500">
-              <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          <div style={{ background: "#fff", border: "2px solid var(--color-text)", boxShadow: "var(--shadow-lg)", padding: "80px 40px", textAlign: "center" }}>
+            <div style={{ width: 56, height: 56, background: "var(--color-accent-100)", color: "var(--color-accent-700)", display: "grid", placeItems: "center", margin: "0 auto 22px" }}>
+              <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
               </svg>
             </div>
-            <h2 className={`${display.className} text-xl font-bold text-slate-900 mb-2`}>Chưa ghi nhận hợp đồng điện tử</h2>
-            <p className="text-slate-500 text-[15px] leading-relaxed">
+            <h2 style={{ fontWeight: 800, fontSize: 22, marginBottom: 8 }}>Chưa ghi nhận hợp đồng điện tử</h2>
+            <p style={{ color: "var(--color-neutral-700)", fontSize: 15, lineHeight: 1.6, maxWidth: 520, margin: "0 auto" }}>
               Hợp đồng pháp lý sẽ được tự động tạo và xuất bản tại không gian này ngay khi đơn đăng ký phòng của bạn được ban quản lý phê duyệt.
             </p>
           </div>
         )}
       </div>
+
+      <style jsx global>{`
+        @media print {
+          .no-print {
+            display: none !important;
+          }
+          body {
+            background: #fff !important;
+          }
+          #printable-contract {
+            box-shadow: none !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
