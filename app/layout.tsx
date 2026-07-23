@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 // Bổ sung import này
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import ChatbotWidget from './components/ChatbotWidget';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,6 +24,7 @@ export default function RootLayout({
         <GoogleOAuthProvider clientId="554498848939-6lfe3dqvl8ca1uaudvk9hqs0rm5irt26.apps.googleusercontent.com">
           {children}
         </GoogleOAuthProvider>
+        <ChatbotWidget />
       </body>
     </html>
   );
