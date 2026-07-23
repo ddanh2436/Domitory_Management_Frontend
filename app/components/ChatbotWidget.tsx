@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { apiClient } from '../utils/apiClient';
+import { getLoggedInUser } from '../utils/auth';
 
 interface Message {
   role: 'user' | 'bot';
@@ -9,6 +10,13 @@ interface Message {
 }
 
 export default function ChatbotWidget() {
+  // Endpoint /chatbot/ask yêu cầu đăng nhập, nên chỉ hiện widget cho user đã đăng nhập.
+  // Kiểm tra sau khi mount để tránh lệch hydration (localStorage chỉ có ở client).
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  useEffect(() => {
+    setIsAuthenticated(getLoggedInUser() !== null);
+  }, []);
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: 'bot', text: 'Chào bạn, tôi là trợ lý ảo của Dormify. Tôi có thể giúp gì cho bạn hôm nay?' }
@@ -51,6 +59,9 @@ export default function ChatbotWidget() {
       sendMessage();
     }
   };
+
+  // Chưa đăng nhập thì không render gì (khách ở trang login sẽ không thấy widget)
+  if (!isAuthenticated) return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 font-sans">
