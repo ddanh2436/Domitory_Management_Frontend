@@ -36,6 +36,13 @@ interface Message {
   invoice?: InvoiceCard;
   notFound?: boolean;
   suggestions?: string[];
+  verdict?: 'UP' | 'DOWN';
+}
+
+// Lượt hội thoại gửi kèm cho backend để bot hiểu câu hỏi nối tiếp.
+interface ChatTurn {
+  role: 'user' | 'assistant';
+  content: string;
 }
 
 const WELCOME_TEXT = 'Chào bạn, tôi là trợ lý ảo của Dormify. Tôi có thể giúp gì cho bạn hôm nay?';
@@ -44,6 +51,14 @@ const WELCOME_TEXT = 'Chào bạn, tôi là trợ lý ảo của Dormify. Tôi c
 // làm phiền người dùng cũ.
 const INVITE_KEY = 'dormify-ai-invited';
 const SEEN_KEY = 'dormify-ai-seen';
+// Lịch sử chat của phiên hiện tại. Dùng sessionStorage (không phải localStorage)
+// để đóng tab là sạch — hội thoại có chứa hoá đơn, phòng ở của sinh viên.
+const HISTORY_KEY = 'dormify-ai-history';
+
+// Số lượt gửi kèm cho backend. Backend cũng tự cắt lại, đây chỉ là để đỡ tốn băng thông.
+const HISTORY_TURNS = 4;
+// Trần số tin nhắn lưu lại, tránh sessionStorage phình vô hạn trong phiên dài.
+const MAX_STORED_MESSAGES = 40;
 
 const nowLabel = () =>
   new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
@@ -69,6 +84,25 @@ const ChatIcon = ({ size = 20 }: { size?: number }) => (
 const ArrowIcon = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
     <path d="M4 12h15M13 6l6 6-6 6" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const ThumbIcon = ({ down = false }: { down?: boolean }) => (
+  <svg
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+    style={down ? { transform: 'rotate(180deg)' } : undefined}
+  >
+    <path
+      d="M7 22V10L13 2l1.5 1.2a2 2 0 01.6 2.2L14 10h5.5a2 2 0 012 2.5l-1.8 7A2 2 0 0117.7 21H7z"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinejoin="round"
+    />
+    <path d="M7 10H3v12h4" stroke="currentColor" strokeWidth={2} strokeLinejoin="round" />
   </svg>
 );
 
@@ -179,6 +213,9 @@ export default function ChatbotWidget() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Cho phép cắt ngang luồng đang chạy. Không có nó thì đóng khung chat xong
+  // Ollama vẫn sinh nốt cả nghìn token — tốn CPU và làm câu hỏi sau chậm theo.
+  const abortRef = useRef<AbortController | null>(null);
 
   const isStudent = role === 'STUDENT';
 
@@ -189,6 +226,17 @@ export default function ChatbotWidget() {
     setIsAuthenticated(true);
     setRole(user.role);
     setHasUnseenBadge(localStorage.getItem(SEEN_KEY) !== '1');
+
+    // Khôi phục hội thoại của phiên: F5 giữa chừng không còn mất sạch nội dung.
+    try {
+      const saved = sessionStorage.getItem(HISTORY_KEY);
+      if (saved) {
+        const parsed: unknown = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) setMessages(parsed as Message[]);
+      }
+    } catch {
+      sessionStorage.removeItem(HISTORY_KEY);
+    }
 
     // Tên thật để chào đúng người; hỏng thì vẫn chạy với lời chào chung.
     void apiClient
@@ -224,6 +272,26 @@ export default function ChatbotWidget() {
     if (isOpen) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, status, isOpen]);
 
+  // Lưu lại sau mỗi thay đổi, nhưng bỏ qua lúc đang stream để không ghi
+  // sessionStorage vài chục lần mỗi giây.
+  useEffect(() => {
+    if (isStreaming) return;
+
+    if (messages.length === 0) {
+      sessionStorage.removeItem(HISTORY_KEY);
+      return;
+    }
+
+    try {
+      sessionStorage.setItem(HISTORY_KEY, JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)));
+    } catch {
+      // Hết dung lượng thì thôi, mất lịch sử không đáng để làm hỏng khung chat
+    }
+  }, [messages, isStreaming]);
+
+  // Dừng luồng đang chạy khi rời trang, nếu không tab đóng rồi mà Ollama vẫn sinh tiếp.
+  useEffect(() => () => abortRef.current?.abort(), []);
+
   const openChat = () => {
     setIsOpen(true);
     setShowInvite(false);
@@ -232,16 +300,32 @@ export default function ChatbotWidget() {
     setTimeout(() => inputRef.current?.focus(), 120);
   };
 
+  const closeChat = () => {
+    abortRef.current?.abort();
+    setIsOpen(false);
+  };
+
   const resetChat = () => {
+    abortRef.current?.abort();
     setMessages([]);
     setInputValue('');
     setStatus('');
+    sessionStorage.removeItem(HISTORY_KEY);
   };
 
   const sendMessage = useCallback(
     async (rawInput: string) => {
       const currentInput = rawInput.trim();
       if (!currentInput || isStreaming) return;
+
+      // Lấy lịch sử TRƯỚC khi thêm lượt mới, và chỉ lấy lượt đã có nội dung.
+      const history: ChatTurn[] = messages
+        .filter((m) => m.text.trim().length > 0)
+        .slice(-HISTORY_TURNS)
+        .map((m) => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text }));
+
+      const controller = new AbortController();
+      abortRef.current = controller;
 
       const botMsgId = `bot-${Date.now()}`;
       setMessages((prev) => [
@@ -289,7 +373,8 @@ export default function ChatbotWidget() {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
               },
-              body: JSON.stringify({ message: currentInput }),
+              body: JSON.stringify({ message: currentInput, history }),
+              signal: controller.signal,
             });
 
             if (res.status === 404) {
@@ -304,6 +389,9 @@ export default function ChatbotWidget() {
             response = res;
             break;
           } catch (err) {
+            // Người dùng bấm đóng giữa chừng: dừng hẳn, đừng thử URL tiếp theo
+            // (nếu không, hủy xong nó lại đi gọi lại chính request vừa hủy).
+            if (err instanceof DOMException && err.name === 'AbortError') throw err;
             lastError = err;
           }
         }
@@ -375,17 +463,56 @@ export default function ChatbotWidget() {
           consume(buffer.trim().replace(/^data:\s*/, ''));
         }
       } catch (error) {
-        console.error('Lỗi Streaming:', error);
-        patchBot({
-          text: 'Xin lỗi, đã có lỗi xảy ra khi kết nối. Vui lòng kiểm tra backend hoặc URL API.',
-        });
+        // Hủy là hành động có chủ đích của người dùng, không phải lỗi — giữ lại
+        // phần đã sinh được và im lặng.
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          setMessages((prev) => prev.filter((m) => m.id !== botMsgId || m.text.trim().length > 0));
+        } else {
+          console.error('Lỗi Streaming:', error);
+          patchBot({
+            text: 'Xin lỗi, đã có lỗi xảy ra khi kết nối. Vui lòng kiểm tra backend hoặc URL API.',
+          });
+        }
       } finally {
+        if (abortRef.current === controller) abortRef.current = null;
         setIsStreaming(false);
         setStatus('');
       }
     },
-    [isStreaming],
+    [isStreaming, messages],
   );
+
+  // Gửi 👍/👎. Cập nhật nút ngay rồi mới gọi API — phản hồi là việc phụ, không đáng
+  // để sinh viên phải ngồi chờ. Gọi thất bại thì trả nút về trạng thái cũ.
+  const handleVerdict = (msg: Message, verdict: 'UP' | 'DOWN') => {
+    const next = msg.verdict === verdict ? undefined : verdict;
+    setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, verdict: next } : m)));
+
+    if (!next) return; // bấm lại lần nữa = bỏ đánh giá, không cần báo backend
+
+    // Câu hỏi tương ứng là tin nhắn user ngay trước câu trả lời này
+    const index = messages.findIndex((m) => m.id === msg.id);
+    const question = [...messages.slice(0, index)].reverse().find((m) => m.sender === 'user')?.text;
+    if (!question) return;
+
+    void apiClient
+      .post('/chatbot/feedback', {
+        question,
+        answer: msg.text,
+        sources: msg.sources ?? [],
+        verdict: next,
+        notFound: msg.notFound ?? false,
+      })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      })
+      .catch((err) => {
+        console.error('Lỗi gửi phản hồi chatbot:', err);
+        setMessages((prev) =>
+          prev.map((m) => (m.id === msg.id ? { ...m, verdict: msg.verdict } : m)),
+        );
+      });
+  };
 
   const handleCopy = (msg: Message) => {
     void navigator.clipboard?.writeText(msg.text).then(() => {
@@ -580,11 +707,13 @@ export default function ChatbotWidget() {
           font-size: 11px; font-weight: 500; color: var(--dai-navy); background: var(--dai-gold-dim);
           border: 1px solid var(--dai-gold-b); border-radius: 6px; padding: 3px 8px; line-height: 1.4;
         }
-        .dai-actions { display: flex; gap: 6px; margin-top: 11px; }
+        .dai-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
+        .dai-act--icon { padding: 5px 7px; }
+        .dai-act-note { font-size: 11px; color: var(--dai-muted); margin-left: 2px; white-space: nowrap; }
         .dai-act {
           display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; font-size: 11.5px;
           font-family: inherit; color: #5A6675; background: #fff; border: 1px solid var(--dai-border);
-          border-radius: 7px; cursor: pointer; transition: all 0.15s;
+          border-radius: 7px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
         }
         .dai-act:hover { border-color: var(--dai-gold-b); background: var(--dai-cream); color: var(--dai-navy); }
         .dai-act--on { border-color: var(--dai-gold-b); background: var(--dai-gold-dim); color: var(--dai-navy); }
@@ -703,7 +832,7 @@ export default function ChatbotWidget() {
                     ✎
                   </button>
                 )}
-                <button className="dai-icon-btn" onClick={() => setIsOpen(false)} title="Đóng" type="button">
+                <button className="dai-icon-btn" onClick={closeChat} title="Đóng" type="button">
                   ✕
                 </button>
               </div>
@@ -850,6 +979,25 @@ export default function ChatbotWidget() {
                                     <CopyIcon />
                                     {copiedId === msg.id ? 'Đã chép' : 'Sao chép'}
                                   </button>
+                                  <button
+                                    className={`dai-act dai-act--icon ${msg.verdict === 'UP' ? 'dai-act--on' : ''}`}
+                                    type="button"
+                                    title="Câu trả lời này hữu ích"
+                                    aria-pressed={msg.verdict === 'UP'}
+                                    onClick={() => handleVerdict(msg, 'UP')}
+                                  >
+                                    <ThumbIcon />
+                                  </button>
+                                  <button
+                                    className={`dai-act dai-act--icon ${msg.verdict === 'DOWN' ? 'dai-act--on' : ''}`}
+                                    type="button"
+                                    title="Câu trả lời này chưa đúng"
+                                    aria-pressed={msg.verdict === 'DOWN'}
+                                    onClick={() => handleVerdict(msg, 'DOWN')}
+                                  >
+                                    <ThumbIcon down />
+                                  </button>
+                                  {msg.verdict && <span className="dai-act-note">Đã ghi nhận</span>}
                                 </div>
                               )}
                             </>
