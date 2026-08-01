@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react"; // Đã thêm useRef
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { getDashboardPath, getLoggedInUser, JwtPayload } from "./utils/auth";
 
@@ -106,13 +106,9 @@ export default function LandingPage() {
     // 2. Logic theo dõi khu vực Brand Display
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // Nếu phần tử lọt vào màn hình thì true, ngược lại thì false
         setIsBrandVisible(entry.isIntersecting);
       },
-      { 
-        // Kích hoạt khi ít nhất 30% khu vực này xuất hiện
-        threshold: 0.3 
-      }
+      { threshold: 0.3 }
     );
 
     if (brandRef.current) {
@@ -151,14 +147,82 @@ export default function LandingPage() {
           --white: #ffffff;
         }
 
-        html { scroll-behavior: smooth; }
-
         body {
           font-family: 'DM Sans', sans-serif;
           background: var(--cream);
           color: var(--navy);
           overflow-x: hidden;
         }
+
+        /* =========================================================
+           HIỆU ỨNG INTRO (1 GIÂY) - ÁNH KIM & POP-OUT
+           ========================================================= */
+        
+        /* Màn hình nền che phủ */
+        .intro-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 99999;
+          background: var(--navy);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          /* Biến mất sau 0.8s */
+          animation: fadeOverlay 0.3s 0.8s forwards ease-in-out;
+        }
+        @keyframes fadeOverlay {
+          to { opacity: 0; visibility: hidden; pointer-events: none; }
+        }
+
+        /* Container của Logo để thực hiện pop-out */
+        .intro-logo-container {
+          position: relative;
+          display: inline-block;
+          /* Phóng to và mờ đi ở giây thứ 0.7 */
+          animation: logoPop 0.3s 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes logoPop {
+          0% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(3); opacity: 0; filter: blur(4px); }
+        }
+
+        /* Hiệu ứng tia sáng lướt qua (Ánh kim) */
+        .intro-shimmer {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            120deg, 
+            transparent 0%, 
+            transparent 40%, 
+            rgba(255, 255, 255, 0.8) 50%, 
+            transparent 60%, 
+            transparent 100%
+          );
+          background-size: 200% 100%;
+          background-position: 150% 0;
+          mix-blend-mode: overlay;
+          /* Lướt từ giây 0.2 đến 0.7 */
+          animation: shimmerSweep 0.5s 0.2s forwards ease-in-out;
+          pointer-events: none;
+        }
+        @keyframes shimmerSweep {
+          0% { background-position: 150% 0; }
+          100% { background-position: -150% 0; }
+        }
+
+        /* Wrapper chứa nội dung toàn bộ trang chủ */
+        .page-reveal {
+          opacity: 0;
+          filter: blur(15px);
+          transform: scale(0.97);
+          /* Bắt đầu rõ nét lên từ giây 0.7 */
+          animation: revealPage 0.4s 0.7s forwards cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes revealPage {
+          to { opacity: 1; filter: blur(0); transform: scale(1); }
+        }
+        /* ========================================================= */
+
 
         /* ── NAVBAR (TOGGLE & SCROLL EFFECTS) ── */
         .logo-text-wrapper {
@@ -194,7 +258,6 @@ export default function LandingPage() {
                       backdrop-filter 0.4s ease, 
                       border-color 0.4s ease,
                       height 0.4s ease;
-          animation: slideDown 0.6s ease both;
         }
 
         .dormify-nav.scrolled {
@@ -208,11 +271,6 @@ export default function LandingPage() {
 
         .dormify-nav.hidden {
           transform: translateY(-100%);
-        }
-
-        @keyframes slideDown {
-          from { transform: translateY(-100%); opacity: 0; }
-          to   { transform: translateY(0);     opacity: 1; }
         }
 
         .nav-links { display: flex; align-items: center; gap: 32px; }
@@ -264,7 +322,6 @@ export default function LandingPage() {
           font-size: 12px; font-weight: 500; color: var(--gold);
           letter-spacing: 0.08em; text-transform: uppercase;
           margin-bottom: 36px;
-          animation: fadeUp 0.7s 0.2s ease both;
         }
         .hero-badge::before {
           content: ''; width: 6px; height: 6px; border-radius: 50%;
@@ -277,7 +334,6 @@ export default function LandingPage() {
           font-size: clamp(42px, 7vw, 72px); font-weight: 700;
           line-height: 1.1; color: var(--white);
           margin-bottom: 28px;
-          animation: fadeUp 0.7s 0.35s ease both;
           letter-spacing: -1.5px;
         }
         .hero-headline .gold { color: var(--gold); font-style: italic; }
@@ -286,12 +342,10 @@ export default function LandingPage() {
           font-size: 17px; font-weight: 300;
           color: rgba(255,255,255,0.6); line-height: 1.75;
           max-width: 540px; margin: 0 auto 48px;
-          animation: fadeUp 0.7s 0.5s ease both;
         }
 
         .hero-actions {
           display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
-          animation: fadeUp 0.7s 0.65s ease both;
         }
         .btn-hero-primary {
           font-family: 'DM Sans', sans-serif;
@@ -319,7 +373,7 @@ export default function LandingPage() {
           position: relative; z-index: 2;
           display: flex; gap: 0; margin-top: 80px;
           border: 1px solid rgba(201,168,76,0.2); border-radius: 12px;
-          overflow: hidden; animation: fadeUp 0.7s 0.8s ease both; max-width: 600px;
+          overflow: hidden; max-width: 600px;
         }
         .stat {
           flex: 1; padding: 24px 20px; text-align: center;
@@ -335,11 +389,6 @@ export default function LandingPage() {
           color: rgba(255,255,255,0.45); margin-top: 4px; letter-spacing: 0.04em;
         }
 
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(28px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-
         /* ── BRAND DISPLAY ── */
         .brand-section {
           background: var(--cream); padding: 100px 5vw; text-align: center;
@@ -351,12 +400,11 @@ export default function LandingPage() {
         }
         .brand-tagline { font-size: 15px; font-weight: 300; color: var(--text-muted); letter-spacing: 0.05em; }
 
-        /* CSS MỚI CHO HIỆU ỨNG BRAND LOGO Ở GIỮA TRANG */
         .brand-text-wrapper {
           display: inline-block;
           overflow: hidden;
           white-space: nowrap;
-          max-width: 0; /* Ẩn mặc định */
+          max-width: 0; 
           opacity: 0;
           margin-left: 0;
           transform: translateX(-20px);
@@ -367,7 +415,6 @@ export default function LandingPage() {
           transform-origin: left center;
         }
 
-        /* Hiển thị khi khối nằm trong khung hình */
         .brand-text-wrapper.is-visible {
           max-width: 300px;
           opacity: 1;
@@ -522,215 +569,221 @@ export default function LandingPage() {
         }
       `}</style>
 
-      {/* ─── Navbar ─────────────────────────────────────────────────────────── */}
-      <header className={`dormify-nav ${isScrolled ? 'scrolled' : ''} ${!isHeaderVisible ? 'hidden' : ''}`}>
-        <Link 
-          href="/" 
-          onClick={(e) => {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          className="flex items-center cursor-pointer hover:opacity-80 transition-opacity no-underline"
-        >
-          <DormifyLogoMark size={75} className="-translate-y-2 shrink-0" />
-          
-          <div className="logo-text-wrapper">
-            {/* Đổi translate-y-1 thành -translate-y-1 để nâng chữ lên.
-                Thêm py-2 để tạo không gian trống phía trên và dưới, giúp đuôi chữ 'y' không bị cắt xén */}
-            <span className="font-serif text-4xl font-bold text-white tracking-tight -translate-y-1 block py-2">
-              Dorm<span className="text-[#C9A84C]">ify</span>
-            </span>
-          </div>
-        </Link>
-
-        <div className="nav-links">
-          <a href="#features" className="nav-link">Tính năng</a>
-          <a href="#roles"    className="nav-link">Vai trò</a>
-          {user ? (
-            <Link href={dashboardHref} className="btn-nav btn-gold">
-              Vào không gian làm việc
-            </Link>
-          ) : (
-            <Link href="/login" className="btn-nav btn-gold">
-              Đăng nhập / Đăng ký
-            </Link>
-          )}
+      {/* ─── INTRO ANIMATION OVERLAY ─── */}
+      <div className="intro-overlay">
+        <div className="intro-logo-container">
+          <DormifyLogoMark size={140} />
+          {/* Lớp ánh kim lướt qua logo */}
+          <div className="intro-shimmer"></div>
         </div>
-      </header>
+      </div>
 
-      <main>
-        {/* ─── Hero ─────────────────────────────────────────────────────────── */}
-        <section className="hero">
-          <div className="hero-bg" />
-          <div className="hero-grid" />
-
-          <div className="hero-content">
-            <div className="hero-badge">Hệ thống Quản lý Lưu trú thế hệ mới</div>
-
-            <h1 className="hero-headline">
-              Nơi sinh viên<br />
-              sống <span className="gold">thật thoải mái</span>,<br />
-              quản lý thật dễ dàng
-            </h1>
-
-            <p className="hero-sub">
-              Nền tảng quản lý ký túc xá toàn diện dành cho sinh viên HCMUS — từ đặt phòng,
-              theo dõi hóa đơn đến hỗ trợ bảo trì, tất cả trong một nơi.
-            </p>
-
-            <div className="hero-actions">
-              {user ? (
-                <Link href={dashboardHref} className="btn-hero-primary">
-                  Quay lại Bảng điều khiển
-                </Link>
-              ) : (
-                <Link href="/login" className="btn-hero-primary">
-                  Bắt đầu miễn phí
-                </Link>
-              )}
-              <a href="#features" className="btn-hero-secondary">Khám phá tính năng →</a>
-            </div>
-          </div>
-
-          <div className="hero-stats">
-            <div className="stat">
-              <div className="stat-num">500+</div>
-              <div className="stat-label">Phòng quản lý</div>
-            </div>
-            <div className="stat">
-              <div className="stat-num">2,000+</div>
-              <div className="stat-label">Sinh viên sử dụng</div>
-            </div>
-            <div className="stat">
-              <div className="stat-num">24/7</div>
-              <div className="stat-label">Hỗ trợ &amp; Bảo trì</div>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── Brand Display ────────────────────────────────────────────────── */}
-        <section className="brand-section">
-          <div className="brand-section-label">Thương hiệu</div>
-          
-          {/* Cập nhật ref và style cho khối Logo */}
-          <div ref={brandRef} className="flex items-center justify-center mb-6">
-            {/* Đổi thành -translate-y-3 để nâng logo lên thêm 1 xíu */}
-            <DormifyLogoMark size={90} className="-translate-y-3 shrink-0" />
+      {/* ─── TOÀN BỘ NỘI DUNG ĐƯỢC BỌC TRONG HIỆU ỨNG REVEAL ─── */}
+      <div className="page-reveal">
+        {/* ─── Navbar ─────────────────────────────────────────────────────────── */}
+        <header className={`dormify-nav ${isScrolled ? 'scrolled' : ''} ${!isHeaderVisible ? 'hidden' : ''}`}>
+          <Link 
+            href="/" 
+            onClick={(e) => {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="flex items-center cursor-pointer hover:opacity-80 transition-opacity no-underline"
+          >
+            <DormifyLogoMark size={75} className="-translate-y-2 shrink-0" />
             
-            <div className={`brand-text-wrapper ${isBrandVisible ? 'is-visible' : ''}`}>
-              {/* Đổi translate-y-1 thành -translate-y-1 để chữ được nâng cao lên cân bằng với logo. 
-                  Đồng thời THÊM py-4 để mở rộng không gian chiều dọc, giúp đuôi chữ 'y' KHÔNG BỊ CẮT MẤT */}
-              <div className="font-serif text-6xl font-bold text-[#0D1B2A] tracking-tight -translate-y-1 block py-4">
+            <div className="logo-text-wrapper">
+              <span className="font-serif text-4xl font-bold text-white tracking-tight -translate-y-1 block py-2">
                 Dorm<span className="text-[#C9A84C]">ify</span>
-              </div>
+              </span>
             </div>
-          </div>
-          
-          <div className="brand-tagline">Smart Dormitory Management Platform · HCMUS</div>
-        </section>
+          </Link>
 
-        {/* ─── Features ─────────────────────────────────────────────────────── */}
-        <section id="features" className="features-section">
-          <span className="section-label">Tính năng nổi bật</span>
-          <h2 className="section-title">
-            Mọi thứ bạn cần,<br />
-            tập trung <em>một nơi</em>
-          </h2>
-
-          <div className="features-grid">
-            <FeatureCard
-              num="01" title="Đăng ký phòng trực tuyến"
-              desc="Xem sơ đồ tòa nhà, lựa chọn phòng trống và hoàn tất hồ sơ lưu trú nhanh chóng, không cần giấy tờ phức tạp."
-              icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>}
-            />
-            <FeatureCard
-              num="02" title="Hợp đồng số hóa"
-              desc="Ký kết và quản lý hợp đồng thuê phòng trực tuyến. Xem lại lịch sử và gia hạn hợp đồng dễ dàng bất kỳ lúc nào."
-              icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
-            />
-            <FeatureCard
-              num="03" title="Thanh toán minh bạch"
-              desc="Theo dõi phí phòng, điện nước hàng tháng với lịch sử giao dịch được lưu trữ rõ ràng và an toàn tuyệt đối."
-              icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
-            />
-            <FeatureCard
-              num="04" title="Báo cáo sự cố 24/7"
-              desc="Phản ánh ngay sự cố điện, nước hay thiết bị hỏng hóc. Ban quản lý tiếp nhận và xử lý kịp thời, minh bạch."
-              icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>}
-            />
-            <FeatureCard
-              num="05" title="Dashboard quản trị"
-              desc="Admin có toàn quyền quản lý phòng, sinh viên, hóa đơn và báo cáo thống kê trực quan theo thời gian thực."
-              icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
-            />
-            <FeatureCard
-              num="06" title="Thông báo thông minh"
-              desc="Nhận cảnh báo hạn hóa đơn, cập nhật trạng thái bảo trì và mọi thông tin quan trọng về lưu trú của bạn."
-              icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>}
-            />
-          </div>
-        </section>
-
-        {/* ─── Roles ────────────────────────────────────────────────────────── */}
-        <section id="roles" className="roles-section">
-          <span className="section-label">Dành cho tất cả</span>
-          <h2 className="section-title dark">
-            Hai vai trò, <em style={{ color: "var(--gold)" }}>một nền tảng</em>
-          </h2>
-
-          <div className="roles-grid">
-            <RoleCard
-              emoji="🎓" name="Sinh viên" avatarClass="student"
-              desc="Quản lý toàn bộ việc lưu trú, từ đăng ký đến thanh toán, ngay trên điện thoại."
-              perms={["Tìm kiếm & đặt phòng", "Xem hóa đơn & thanh toán", "Báo cáo sự cố", "Xem hợp đồng cá nhân"]}
-            />
-            <RoleCard
-              emoji="🏛️" name="Quản trị viên" avatarClass="admin"
-              desc="Kiểm soát toàn bộ hệ thống — phòng, sinh viên, bảo trì và báo cáo tài chính."
-              perms={["Quản lý phòng & tòa nhà", "Phê duyệt yêu cầu thuê", "Quản lý & Điều phối bảo trì", "Thống kê & báo cáo"]}
-            />
-          </div>
-        </section>
-
-        {/* ─── CTA ──────────────────────────────────────────────────────────── */}
-        <section className="cta-section">
-          <div className="cta-bg" />
-          <h2 className="cta-title">
-            Sẵn sàng trải nghiệm<br />
-            <em>ký túc xá thế hệ mới?</em>
-          </h2>
-          <p className="cta-sub">Đăng ký ngay hôm nay — miễn phí, không cần thẻ tín dụng.</p>
-          <div className="cta-actions">
+          <div className="nav-links">
+            <a href="#features" className="nav-link">Tính năng</a>
+            <a href="#roles"    className="nav-link">Vai trò</a>
             {user ? (
-              <Link href={dashboardHref} className="btn-hero-primary">
-                Vào Bảng điều khiển
+              <Link href={dashboardHref} className="btn-nav btn-gold">
+                Vào không gian làm việc
               </Link>
             ) : (
-              <Link href="/login" className="btn-hero-primary">Đăng nhập / Đăng ký</Link>
+              <Link href="/login" className="btn-nav btn-gold">
+                Đăng nhập / Đăng ký
+              </Link>
             )}
           </div>
-        </section>
-      </main>
+        </header>
 
-      {/* ─── Footer ───────────────────────────────────────────────────────── */}
-      <footer>
-        <div className="footer-top">
-          <div className="flex items-center gap-2">
-            <DormifyLogoMark size={40} className="-translate-y-1" />
-            <span className="font-serif text-2xl font-bold text-white tracking-tight">
-              Dorm<span className="text-[#C9A84C]">ify</span>
-            </span>
+        <main>
+          {/* ─── Hero ─────────────────────────────────────────────────────────── */}
+          <section className="hero">
+            <div className="hero-bg" />
+            <div className="hero-grid" />
+
+            <div className="hero-content">
+              <div className="hero-badge">Hệ thống Quản lý Lưu trú thế hệ mới</div>
+
+              <h1 className="hero-headline">
+                Nơi sinh viên<br />
+                sống <span className="gold">thật thoải mái</span>,<br />
+                quản lý thật dễ dàng
+              </h1>
+
+              <p className="hero-sub">
+                Nền tảng quản lý ký túc xá toàn diện dành cho sinh viên HCMUS — từ đặt phòng,
+                theo dõi hóa đơn đến hỗ trợ bảo trì, tất cả trong một nơi.
+              </p>
+
+              <div className="hero-actions">
+                {user ? (
+                  <Link href={dashboardHref} className="btn-hero-primary">
+                    Quay lại Bảng điều khiển
+                  </Link>
+                ) : (
+                  <Link href="/login" className="btn-hero-primary">
+                    Bắt đầu miễn phí
+                  </Link>
+                )}
+                <a href="#features" className="btn-hero-secondary">Khám phá tính năng →</a>
+              </div>
+            </div>
+
+            <div className="hero-stats">
+              <div className="stat">
+                <div className="stat-num">500+</div>
+                <div className="stat-label">Phòng quản lý</div>
+              </div>
+              <div className="stat">
+                <div className="stat-num">2,000+</div>
+                <div className="stat-label">Sinh viên sử dụng</div>
+              </div>
+              <div className="stat">
+                <div className="stat-num">24/7</div>
+                <div className="stat-label">Hỗ trợ &amp; Bảo trì</div>
+              </div>
+            </div>
+          </section>
+
+          {/* ─── Brand Display ────────────────────────────────────────────────── */}
+          <section className="brand-section">
+            <div className="brand-section-label">Thương hiệu</div>
+            
+            <div ref={brandRef} className="flex items-center justify-center mb-6">
+              <DormifyLogoMark size={90} className="-translate-y-3 shrink-0" />
+              
+              <div className={`brand-text-wrapper ${isBrandVisible ? 'is-visible' : ''}`}>
+                <div className="font-serif text-6xl font-bold text-[#0D1B2A] tracking-tight -translate-y-1 block py-4">
+                  Dorm<span className="text-[#C9A84C]">ify</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="brand-tagline">Smart Dormitory Management Platform · HCMUS</div>
+          </section>
+
+          {/* ─── Features ─────────────────────────────────────────────────────── */}
+          <section id="features" className="features-section">
+            <span className="section-label">Tính năng nổi bật</span>
+            <h2 className="section-title">
+              Mọi thứ bạn cần,<br />
+              tập trung <em>một nơi</em>
+            </h2>
+
+            <div className="features-grid">
+              <FeatureCard
+                num="01" title="Đăng ký phòng trực tuyến"
+                desc="Xem sơ đồ tòa nhà, lựa chọn phòng trống và hoàn tất hồ sơ lưu trú nhanh chóng, không cần giấy tờ phức tạp."
+                icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>}
+              />
+              <FeatureCard
+                num="02" title="Hợp đồng số hóa"
+                desc="Ký kết và quản lý hợp đồng thuê phòng trực tuyến. Xem lại lịch sử và gia hạn hợp đồng dễ dàng bất kỳ lúc nào."
+                icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
+              />
+              <FeatureCard
+                num="03" title="Thanh toán minh bạch"
+                desc="Theo dõi phí phòng, điện nước hàng tháng với lịch sử giao dịch được lưu trữ rõ ràng và an toàn tuyệt đối."
+                icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
+              />
+              <FeatureCard
+                num="04" title="Báo cáo sự cố 24/7"
+                desc="Phản ánh ngay sự cố điện, nước hay thiết bị hỏng hóc. Ban quản lý tiếp nhận và xử lý kịp thời, minh bạch."
+                icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>}
+              />
+              <FeatureCard
+                num="05" title="Dashboard quản trị"
+                desc="Admin có toàn quyền quản lý phòng, sinh viên, hóa đơn và báo cáo thống kê trực quan theo thời gian thực."
+                icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
+              />
+              <FeatureCard
+                num="06" title="Thông báo thông minh"
+                desc="Nhận cảnh báo hạn hóa đơn, cập nhật trạng thái bảo trì và mọi thông tin quan trọng về lưu trú của bạn."
+                icon={<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>}
+              />
+            </div>
+          </section>
+
+          {/* ─── Roles ────────────────────────────────────────────────────────── */}
+          <section id="roles" className="roles-section">
+            <span className="section-label">Dành cho tất cả</span>
+            <h2 className="section-title dark">
+              Hai vai trò, <em style={{ color: "var(--gold)" }}>một nền tảng</em>
+            </h2>
+
+            <div className="roles-grid">
+              <RoleCard
+                emoji="🎓" name="Sinh viên" avatarClass="student"
+                desc="Quản lý toàn bộ việc lưu trú, từ đăng ký đến thanh toán, ngay trên điện thoại."
+                perms={["Tìm kiếm & đặt phòng", "Xem hóa đơn & thanh toán", "Báo cáo sự cố", "Xem hợp đồng cá nhân"]}
+              />
+              <RoleCard
+                emoji="🏛️" name="Quản trị viên" avatarClass="admin"
+                desc="Kiểm soát toàn bộ hệ thống — phòng, sinh viên, bảo trì và báo cáo tài chính."
+                perms={["Quản lý phòng & tòa nhà", "Phê duyệt yêu cầu thuê", "Quản lý & Điều phối bảo trì", "Thống kê & báo cáo"]}
+              />
+            </div>
+          </section>
+
+          {/* ─── CTA ──────────────────────────────────────────────────────────── */}
+          <section className="cta-section">
+            <div className="cta-bg" />
+            <h2 className="cta-title">
+              Sẵn sàng trải nghiệm<br />
+              <em>ký túc xá thế hệ mới?</em>
+            </h2>
+            <p className="cta-sub">Đăng ký ngay hôm nay — miễn phí, không cần thẻ tín dụng.</p>
+            <div className="cta-actions">
+              {user ? (
+                <Link href={dashboardHref} className="btn-hero-primary">
+                  Vào Bảng điều khiển
+                </Link>
+              ) : (
+                <Link href="/login" className="btn-hero-primary">Đăng nhập / Đăng ký</Link>
+              )}
+            </div>
+          </section>
+        </main>
+
+        {/* ─── Footer ───────────────────────────────────────────────────────── */}
+        <footer>
+          <div className="footer-top">
+            <div className="flex items-center gap-2">
+              <DormifyLogoMark size={40} className="-translate-y-1" />
+              <span className="font-serif text-2xl font-bold text-white tracking-tight">
+                Dorm<span className="text-[#C9A84C]">ify</span>
+              </span>
+            </div>
+            <div className="footer-links">
+              <a href="#features" className="footer-link">Tính năng</a>
+              <a href="#roles"    className="footer-link">Vai trò</a>
+              <Link href="/login" className="footer-link">Đăng nhập</Link>
+            </div>
           </div>
-          <div className="footer-links">
-            <a href="#features" className="footer-link">Tính năng</a>
-            <a href="#roles"    className="footer-link">Vai trò</a>
-            <Link href="/login" className="footer-link">Đăng nhập</Link>
+          <div className="footer-copy">
+            © {new Date().getFullYear()} Dormify · Hệ thống Quản lý Ký túc xá · HCMUS · Được thiết kế vì trải nghiệm của bạn.
           </div>
-        </div>
-        <div className="footer-copy">
-          © {new Date().getFullYear()} Dormify · Hệ thống Quản lý Ký túc xá · HCMUS · Được thiết kế vì trải nghiệm của bạn.
-        </div>
-      </footer>
+        </footer>
+      </div>
     </>
   );
 }

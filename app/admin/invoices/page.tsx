@@ -107,6 +107,26 @@ export default function AdminInvoicesPage() {
     fetchData();
   }, []);
 
+  // Đóng modal tạo hóa đơn bằng phím Esc, giống UX của trang Phòng
+  useEffect(() => {
+    if (!showModal) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isSubmitting) setShowModal(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [showModal, isSubmitting]);
+
+  // Đóng modal sinh hóa đơn hàng loạt bằng phím Esc
+  useEffect(() => {
+    if (!showBulkModal) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !bulkSubmitting) setShowBulkModal(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [showBulkModal, bulkSubmitting]);
+
   const handleMarkAsPaid = async (invoiceId: string) => {
     const ok = await confirmDialog({
       title: "Xác nhận đã thu tiền?",
@@ -240,7 +260,7 @@ export default function AdminInvoicesPage() {
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=DM+Sans:wght@400;500;700&display=swap');
         
         .adm-page { 
-          max-width: 1180px; 
+          max-width: 1300px; 
           margin: 0 auto; 
           padding-top: 24px;
           padding-bottom: 48px;
@@ -336,30 +356,82 @@ export default function AdminInvoicesPage() {
         .animate-drop-down {
           animation: dropDownModal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+
+        /* ── MODAL TẠO HÓA ĐƠN — cùng ngôn ngữ thiết kế với modal Thêm phòng mới ── */
+        @keyframes ivModalIn { from { opacity: 0; transform: scale(0.97) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .iv-overlay { position: fixed; inset: 0; background: rgba(13,27,42,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(3px); padding: 20px; }
+        .iv-modal { background: #fff; border-radius: 12px; width: 100%; max-width: 560px; box-shadow: 0 24px 60px rgba(13,27,42,0.3); max-height: 92vh; overflow-y: auto; animation: ivModalIn .18s cubic-bezier(.22,1,.36,1); }
+        .iv-modal-head { padding: 22px 26px; border-bottom: 1px solid rgba(13,27,42,0.09); display: flex; align-items: center; gap: 14px; }
+        .iv-modal-icon { width: 46px; height: 46px; border-radius: 11px; background: rgba(201,168,76,0.14); color: #9a7b2c; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .iv-modal-title { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; color: #0D1B2A; }
+        .iv-modal-sub { font-size: 13px; color: #8A9BAD; margin-top: 2px; }
+        .iv-modal-body { padding: 24px 26px; }
+
+        .iv-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 17px; }
+        .iv-label { font-size: 12.5px; font-weight: 700; color: #0D1B2A; }
+        .iv-input, .iv-select { width: 100%; height: 44px; padding: 0 14px; border: 1px solid rgba(13,27,42,0.15); border-radius: 8px; background: #fbfaf8; color: #0D1B2A; outline: none; font-size: 14px; font-weight: 500; font-family: 'DM Sans', sans-serif; transition: border-color .15s, background .15s, box-shadow .15s; }
+        .iv-input:focus, .iv-select:focus { border-color: #C9A84C; background: #fff; box-shadow: 0 0 0 3px rgba(201,168,76,0.15); }
+        .iv-input::placeholder { color: #b6c2cd; }
+        .iv-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A9BAD' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px; }
+        .iv-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        .iv-modal-foot { display: flex; gap: 12px; padding: 20px 26px 24px; border-top: 1px solid rgba(13,27,42,0.07); background: #FBFAF8; }
+        .iv-btn-cancel { flex: 1; height: 46px; border: 1px solid rgba(13,27,42,0.15); border-radius: 8px; background: #fff; color: #0D1B2A; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s; }
+        .iv-btn-cancel:hover { background: #F5F3EF; }
+        .iv-btn-submit { flex: 2; height: 46px; border: none; border-radius: 8px; background: #0D1B2A; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background .18s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .iv-btn-submit:hover:not(:disabled) { background: #1A2E42; }
+        .iv-btn-submit:disabled { opacity: .55; cursor: not-allowed; }
+
+        /* ── MODAL SINH HÓA ĐƠN HÀNG LOẠT — mở rộng từ hệ iv- ── */
+        .iv-modal--wide { max-width: 960px; }
+        .iv-modal-body--flush { padding: 22px 26px 20px; border-bottom: 1px solid rgba(13,27,42,0.09); }
+        .iv-config-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+        .iv-field-sm { display: flex; flex-direction: column; gap: 6px; }
+        .iv-label-sm { font-size: 11.5px; font-weight: 700; color: #0D1B2A; }
+        .iv-input-sm { width: 100%; height: 40px; padding: 0 11px; border: 1px solid rgba(13,27,42,0.15); border-radius: 8px; background: #fbfaf8; color: #0D1B2A; outline: none; font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif; transition: border-color .15s, background .15s, box-shadow .15s; }
+        .iv-input-sm:focus { border-color: #C9A84C; background: #fff; box-shadow: 0 0 0 3px rgba(201,168,76,0.15); }
+
+        .iv-table-wrap { padding: 18px 26px 22px; overflow-y: auto; flex-grow: 1; background: #FBFAF8; }
+        .iv-empty { text-align: center; padding: 44px 20px; color: #8A9BAD; font-size: 13.5px; border: 1px dashed rgba(13,27,42,0.15); border-radius: 10px; background: #fff; }
+        .iv-table { width: 100%; border-collapse: collapse; text-align: left; background: #fff; border: 1px solid rgba(13,27,42,0.08); border-radius: 10px; overflow: hidden; }
+        .iv-table th { padding: 12px 18px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #9a7b2c; background: rgba(201,168,76,0.08); border-bottom: 1px solid rgba(13,27,42,0.08); }
+        .iv-table th:last-child { text-align: right; }
+        .iv-table td { padding: 12px 18px; border-bottom: 1px solid rgba(13,27,42,0.06); vertical-align: middle; }
+        .iv-table tr:last-child td { border-bottom: none; }
+        .iv-table tr:hover td { background: #fbfaf8; }
+        .iv-table-room { font-weight: 700; color: #0D1B2A; font-size: 14px; }
+        .iv-table-sub { color: #8A9BAD; font-size: 12px; margin-top: 2px; }
+        .iv-table-input { width: 92px; height: 38px; padding: 0 12px; border: 1px solid rgba(13,27,42,0.15); border-radius: 8px; background: #fbfaf8; color: #0D1B2A; outline: none; font-size: 13.5px; font-weight: 500; font-family: 'DM Sans', sans-serif; transition: border-color .15s, background .15s, box-shadow .15s; }
+        .iv-table-input:focus { border-color: #C9A84C; background: #fff; box-shadow: 0 0 0 3px rgba(201,168,76,0.15); }
+        .iv-table-total { text-align: right; font-weight: 800; color: #2563eb; font-size: 14.5px; white-space: nowrap; }
+
+        @media (max-width: 760px) { .iv-config-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px) { .iv-grid2 { grid-template-columns: 1fr; } }
       `}</style>
 
-
       <div className="panel">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-           <h2 className="panel-title">Quản lý Hệ thống Hóa đơn</h2>
+        
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-8 gap-4">
+           <h2 className="panel-title shrink-0">Quản lý Hệ thống Hóa đơn</h2>
 
-           <div className="flex flex-wrap items-center gap-3 shrink-0">
+           <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
             <RoomFilterBar rooms={invoices.map((inv) => inv.room)} value={roomFilter} onChange={setRoomFilter} />
+            
             <button 
               onClick={handleTriggerOverdue}
-              className="px-5 py-2.5 bg-slate-100 text-slate-700 rounded hover:bg-slate-200 font-bold transition-colors text-[13px] whitespace-nowrap"
+              className="shrink-0 flex items-center justify-center gap-2 h-9 px-4 text-[12.5px] font-semibold bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors whitespace-nowrap"
             >
               ↻ Quét Quá Hạn
             </button>
             <button
               onClick={() => setShowBulkModal(true)}
-              className="px-5 py-2.5 bg-[#C9A84C] text-[#0D1B2A] rounded hover:bg-[#D9B85C] font-bold transition-colors text-[13px] shadow-sm whitespace-nowrap"
+              className="shrink-0 flex items-center justify-center gap-2 h-9 px-4 text-[12.5px] font-semibold bg-[#C9A84C] text-[#0D1B2A] rounded-lg hover:bg-[#D9B85C] shadow-sm transition-colors whitespace-nowrap"
             >
               ⚡ Sinh hàng loạt
             </button>
             <button
               onClick={() => setShowModal(true)}
-              className="px-5 py-2.5 bg-[#0D1B2A] text-white rounded hover:bg-[#1A2E42] font-bold transition-colors text-[13px] shadow-sm whitespace-nowrap"
+              className="shrink-0 flex items-center justify-center gap-2 h-9 px-4 text-[12.5px] font-semibold bg-[#0D1B2A] text-white rounded-lg hover:bg-[#1A2E42] shadow-sm transition-colors whitespace-nowrap"
             >
               + Tạo hóa đơn mới
             </button>
@@ -456,67 +528,115 @@ export default function AdminInvoicesPage() {
         </div>
       </div>
 
-      {/* MODAL TẠO HÓA ĐƠN */}
+      {/* MODAL TẠO HÓA ĐƠN — thiết kế lớn, thoáng, đồng bộ với modal Thêm phòng mới */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-xl overflow-hidden animate-drop-down">
-            
-            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-start">
-              <div>
-                <h3 className="text-2xl font-bold text-[#0D1B2A] mb-1" style={{ fontFamily: "'Fraunces', serif" }}>Tạo Hóa Đơn Mới</h3>
-                <p className="text-[13.5px] text-[#8A9BAD]">Lựa chọn phòng và nhập các khoản phí sinh hoạt hàng tháng.</p>
+        <div
+          className="iv-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isSubmitting) setShowModal(false);
+          }}
+        >
+          <div className="iv-modal" role="dialog" aria-modal="true" aria-labelledby="iv-modal-title">
+            <div className="iv-modal-head">
+              <div className="iv-modal-icon">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
               </div>
-              <button 
-                onClick={() => setShowModal(false)} 
-                className="text-slate-400 hover:text-[#dc2626] text-2xl font-bold transition-colors"
-              >
-                &times;
-              </button>
+              <div>
+                <div id="iv-modal-title" className="iv-modal-title">Tạo Hóa Đơn Mới</div>
+                <div className="iv-modal-sub">Lựa chọn phòng và nhập các khoản phí sinh hoạt hàng tháng</div>
+              </div>
             </div>
-            
-            <form onSubmit={handleCreateInvoice} className="p-8 pt-6 space-y-5">
-              <div>
-                <label className="block text-[13.5px] font-bold text-[#0D1B2A] mb-2">Chọn Phòng</label>
-                <select 
-                  required
-                  className="w-full border border-slate-200 rounded-md px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"
-                  value={formData.roomId}
-                  onChange={(e) => setFormData({...formData, roomId: e.target.value})}
-                >
-                  <option value="" disabled>-- Lựa chọn phòng --</option>
-                  {rooms.map(r => (
-                    <option key={r._id} value={r._id}>{r.name} (Tòa {r.building})</option>
-                  ))}
-                </select>
-              </div>
 
-              <div className="grid grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-[13.5px] font-bold text-[#0D1B2A] mb-2">Tháng</label>
-                  <input type="number" min="1" max="12" required value={formData.month} onChange={(e) => setFormData({...formData, month: Number(e.target.value)})} className="w-full border border-slate-200 rounded-md px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"/>
+            <form onSubmit={handleCreateInvoice}>
+              <div className="iv-modal-body">
+                <div className="iv-field">
+                  <label className="iv-label" htmlFor="iv-room">Chọn Phòng *</label>
+                  <select
+                    id="iv-room"
+                    required
+                    className="iv-select"
+                    value={formData.roomId}
+                    onChange={(e) => setFormData({ ...formData, roomId: e.target.value })}
+                  >
+                    <option value="" disabled>-- Lựa chọn phòng --</option>
+                    {rooms.map((r) => (
+                      <option key={r._id} value={r._id}>{r.name} (Tòa {r.building})</option>
+                    ))}
+                  </select>
                 </div>
-                <div>
-                  <label className="block text-[13.5px] font-bold text-[#0D1B2A] mb-2">Năm</label>
-                  <input type="number" min="2020" required value={formData.year} onChange={(e) => setFormData({...formData, year: Number(e.target.value)})} className="w-full border border-slate-200 rounded-md px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"/>
+
+                <div className="iv-grid2">
+                  <div className="iv-field">
+                    <label className="iv-label" htmlFor="iv-month">Tháng *</label>
+                    <input
+                      id="iv-month"
+                      type="number" min="1" max="12" required
+                      value={formData.month}
+                      onChange={(e) => setFormData({ ...formData, month: Number(e.target.value) })}
+                      placeholder="Ví dụ: 8"
+                      className="iv-input"
+                    />
+                  </div>
+                  <div className="iv-field">
+                    <label className="iv-label" htmlFor="iv-year">Năm *</label>
+                    <input
+                      id="iv-year"
+                      type="number" min="2020" required
+                      value={formData.year}
+                      onChange={(e) => setFormData({ ...formData, year: Number(e.target.value) })}
+                      placeholder="Ví dụ: 2026"
+                      className="iv-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="iv-grid2">
+                  <div className="iv-field">
+                    <label className="iv-label" htmlFor="iv-electricity">Tiền Điện (VNĐ) *</label>
+                    <input
+                      id="iv-electricity"
+                      type="number" min="0" required
+                      value={formData.electricityFee}
+                      onChange={(e) => setFormData({ ...formData, electricityFee: Number(e.target.value) })}
+                      placeholder="Ví dụ: 300000"
+                      className="iv-input"
+                    />
+                  </div>
+                  <div className="iv-field" style={{ marginBottom: 0 }}>
+                    <label className="iv-label" htmlFor="iv-water">Tiền Nước (VNĐ) *</label>
+                    <input
+                      id="iv-water"
+                      type="number" min="0" required
+                      value={formData.waterFee}
+                      onChange={(e) => setFormData({ ...formData, waterFee: Number(e.target.value) })}
+                      placeholder="Ví dụ: 100000"
+                      className="iv-input"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[13.5px] font-bold text-[#0D1B2A] mb-2">Tiền Điện (VNĐ)</label>
-                <input type="number" min="0" required value={formData.electricityFee} onChange={(e) => setFormData({...formData, electricityFee: Number(e.target.value)})} className="w-full border border-slate-200 rounded-md px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"/>
-              </div>
-
-              <div>
-                <label className="block text-[13.5px] font-bold text-[#0D1B2A] mb-2">Tiền Nước (VNĐ)</label>
-                <input type="number" min="0" required value={formData.waterFee} onChange={(e) => setFormData({...formData, waterFee: Number(e.target.value)})} className="w-full border border-slate-200 rounded-md px-4 py-2.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] font-medium text-slate-800 bg-white transition-all text-[14px]"/>
-              </div>
-
-              <div className="pt-5 flex gap-3">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded hover:bg-slate-50 font-bold text-[14px] transition-colors">
+              <div className="iv-modal-foot">
+                <button type="button" onClick={() => setShowModal(false)} disabled={isSubmitting} className="iv-btn-cancel">
                   Hủy bỏ
                 </button>
-                <button type="submit" disabled={isSubmitting} className="flex-1 px-5 py-2.5 bg-[#0D1B2A] text-white rounded hover:bg-[#1A2E42] disabled:opacity-50 font-bold text-[14px] transition-colors shadow-sm">
-                  {isSubmitting ? "Đang xử lý..." : "Lưu hóa đơn"}
+                <button type="submit" disabled={isSubmitting} className="iv-btn-submit">
+                  {isSubmitting ? (
+                    "Đang xử lý..."
+                  ) : (
+                    <>
+                      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Lưu hóa đơn mới
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -524,63 +644,65 @@ export default function AdminInvoicesPage() {
         </div>
       )}
 
-      {/* MODAL SINH HÓA ĐƠN HÀNG LOẠT */}
+      {/* MODAL SINH HÓA ĐƠN HÀNG LOẠT — cùng hệ thiết kế iv- với modal Tạo hóa đơn mới */}
       {showBulkModal && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl overflow-hidden animate-drop-down max-h-[92vh] flex flex-col">
-            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-start shrink-0">
-              <div>
-                <h3 className="text-2xl font-bold text-[#0D1B2A] mb-1" style={{ fontFamily: "'Fraunces', serif" }}>Sinh hóa đơn hàng loạt</h3>
-                <p className="text-[13.5px] text-[#8A9BAD]">Nhập chỉ số điện nước từng phòng — tiền phòng lấy theo giá phòng, phòng đã có hóa đơn kỳ này sẽ được bỏ qua.</p>
+        <div
+          className="iv-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !bulkSubmitting) setShowBulkModal(false);
+          }}
+        >
+          <div className="iv-modal iv-modal--wide" style={{ display: "flex", flexDirection: "column" }} role="dialog" aria-modal="true" aria-labelledby="iv-bulk-modal-title">
+            <div className="iv-modal-head">
+              <div className="iv-modal-icon">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
               </div>
-              <button
-                onClick={() => !bulkSubmitting && setShowBulkModal(false)}
-                className="text-slate-400 hover:text-[#dc2626] text-2xl font-bold transition-colors"
-              >
-                &times;
-              </button>
+              <div>
+                <div id="iv-bulk-modal-title" className="iv-modal-title">Sinh hóa đơn hàng loạt</div>
+                <div className="iv-modal-sub">Nhập chỉ số điện nước từng phòng, phòng đã có hóa đơn kỳ này sẽ được bỏ qua</div>
+              </div>
             </div>
 
-            <form onSubmit={handleGenerateBulk} className="flex flex-col overflow-hidden">
-              <div className="px-8 pt-6 pb-4 shrink-0">
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                  <div>
-                    <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Tháng</label>
-                    <input type="text" inputMode="numeric" required value={bulkConfig.month} onChange={(e) => setBulkConfig({ ...bulkConfig, month: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-md px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
+            <form onSubmit={handleGenerateBulk} style={{ display: "flex", flexDirection: "column", overflow: "hidden", flex: 1 }}>
+              <div className="iv-modal-body--flush">
+                <div className="iv-config-grid">
+                  <div className="iv-field-sm">
+                    <label className="iv-label-sm" htmlFor="iv-bulk-month">Tháng *</label>
+                    <input id="iv-bulk-month" type="text" inputMode="numeric" required value={bulkConfig.month} onChange={(e) => setBulkConfig({ ...bulkConfig, month: sanitizeDigits(e.target.value) })} className="iv-input-sm" />
                   </div>
-                  <div>
-                    <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Năm</label>
-                    <input type="text" inputMode="numeric" required value={bulkConfig.year} onChange={(e) => setBulkConfig({ ...bulkConfig, year: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-md px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
+                  <div className="iv-field-sm">
+                    <label className="iv-label-sm" htmlFor="iv-bulk-year">Năm *</label>
+                    <input id="iv-bulk-year" type="text" inputMode="numeric" required value={bulkConfig.year} onChange={(e) => setBulkConfig({ ...bulkConfig, year: sanitizeDigits(e.target.value) })} className="iv-input-sm" />
                   </div>
-                  <div>
-                    <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Hạn đóng</label>
-                    <input type="datetime-local" required value={bulkConfig.dueDate} onChange={(e) => setBulkConfig({ ...bulkConfig, dueDate: e.target.value })} className="w-full border border-slate-200 rounded-md px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[12.5px]" />
+                  <div className="iv-field-sm">
+                    <label className="iv-label-sm" htmlFor="iv-bulk-due">Hạn đóng *</label>
+                    <input id="iv-bulk-due" type="datetime-local" required value={bulkConfig.dueDate} onChange={(e) => setBulkConfig({ ...bulkConfig, dueDate: e.target.value })} className="iv-input-sm" style={{ padding: "0 8px" }} />
                   </div>
-                  <div>
-                    <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Giá điện (đ/kWh)</label>
-                    <input type="text" inputMode="numeric" required value={bulkConfig.electricityUnitPrice} onChange={(e) => setBulkConfig({ ...bulkConfig, electricityUnitPrice: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-md px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
+                  <div className="iv-field-sm">
+                    <label className="iv-label-sm" htmlFor="iv-bulk-elec">Giá điện (đ) *</label>
+                    <input id="iv-bulk-elec" type="text" inputMode="numeric" required value={bulkConfig.electricityUnitPrice} onChange={(e) => setBulkConfig({ ...bulkConfig, electricityUnitPrice: sanitizeDigits(e.target.value) })} className="iv-input-sm" />
                   </div>
-                  <div>
-                    <label className="block text-[12px] font-bold text-[#0D1B2A] mb-1.5">Giá nước (đ/m³)</label>
-                    <input type="text" inputMode="numeric" required value={bulkConfig.waterUnitPrice} onChange={(e) => setBulkConfig({ ...bulkConfig, waterUnitPrice: sanitizeDigits(e.target.value) })} className="w-full border border-slate-200 rounded-md px-3 py-2 outline-none focus:border-[#C9A84C] font-medium text-slate-800 bg-white text-[13.5px]" />
+                  <div className="iv-field-sm">
+                    <label className="iv-label-sm" htmlFor="iv-bulk-water">Giá nước (đ) *</label>
+                    <input id="iv-bulk-water" type="text" inputMode="numeric" required value={bulkConfig.waterUnitPrice} onChange={(e) => setBulkConfig({ ...bulkConfig, waterUnitPrice: sanitizeDigits(e.target.value) })} className="iv-input-sm" />
                   </div>
                 </div>
               </div>
 
-              <div className="px-8 pb-4 overflow-y-auto grow">
+              <div className="iv-table-wrap">
                 {occupiedRooms.length === 0 ? (
-                  <div className="text-center py-10 text-[#8A9BAD] text-[13.5px] border border-dashed border-slate-200 rounded-xl">
-                    Chưa có phòng nào đang có người ở.
-                  </div>
+                  <div className="iv-empty">Chưa có phòng nào đang có người ở.</div>
                 ) : (
-                  <table className="w-full text-left border-collapse">
+                  <table className="iv-table">
                     <thead>
-                      <tr className="bg-slate-50">
-                        <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#8A9BAD] rounded-l-lg">Phòng</th>
-                        <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#8A9BAD]">Tiền phòng</th>
-                        <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#8A9BAD]">Điện (kWh)</th>
-                        <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#8A9BAD]">Nước (m³)</th>
-                        <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[#8A9BAD] text-right rounded-r-lg">Tổng dự kiến</th>
+                      <tr>
+                        <th>Phòng</th>
+                        <th>Tiền phòng</th>
+                        <th>Điện (kWh)</th>
+                        <th>Nước (m³)</th>
+                        <th>Tổng dự kiến</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -591,33 +713,33 @@ export default function AdminInvoicesPage() {
                           Number(reading.kwh || 0) * Number(bulkConfig.electricityUnitPrice || 0) +
                           Number(reading.m3 || 0) * Number(bulkConfig.waterUnitPrice || 0);
                         return (
-                          <tr key={room._id} className="border-b border-slate-100 last:border-0">
-                            <td className="px-4 py-2.5">
-                              <div className="font-bold text-[#0D1B2A] text-[13.5px]">{room.name}</div>
-                              <div className="text-[#8A9BAD] text-[11.5px]">Tòa {room.building}{room.floor ? ` · Tầng ${room.floor}` : ""}</div>
+                          <tr key={room._id}>
+                            <td>
+                              <div className="iv-table-room">{room.name}</div>
+                              <div className="iv-table-sub">Tòa {room.building}{room.floor ? ` · Tầng ${room.floor}` : ""}</div>
                             </td>
-                            <td className="px-4 py-2.5 text-[13px] text-slate-600 whitespace-nowrap">{(room.price ?? 0).toLocaleString("vi-VN")} đ</td>
-                            <td className="px-4 py-2.5">
+                            <td style={{ whiteSpace: "nowrap", fontSize: 13.5, color: "#475569", fontWeight: 500 }}>{(room.price ?? 0).toLocaleString("vi-VN")} đ</td>
+                            <td>
                               <input
                                 type="text"
                                 inputMode="numeric"
                                 placeholder="0"
                                 value={reading.kwh}
                                 onChange={(e) => setBulkReadings({ ...bulkReadings, [room._id]: { ...reading, kwh: sanitizeDigits(e.target.value) } })}
-                                className="w-20 border border-slate-200 rounded-md px-2.5 py-1.5 outline-none focus:border-[#C9A84C] text-[13px] text-slate-800"
+                                className="iv-table-input"
                               />
                             </td>
-                            <td className="px-4 py-2.5">
+                            <td>
                               <input
                                 type="text"
                                 inputMode="numeric"
                                 placeholder="0"
                                 value={reading.m3}
                                 onChange={(e) => setBulkReadings({ ...bulkReadings, [room._id]: { ...reading, m3: sanitizeDigits(e.target.value) } })}
-                                className="w-20 border border-slate-200 rounded-md px-2.5 py-1.5 outline-none focus:border-[#C9A84C] text-[13px] text-slate-800"
+                                className="iv-table-input"
                               />
                             </td>
-                            <td className="px-4 py-2.5 text-right font-bold text-[#2563eb] text-[13.5px] whitespace-nowrap">{total.toLocaleString("vi-VN")} đ</td>
+                            <td className="iv-table-total">{total.toLocaleString("vi-VN")} đ</td>
                           </tr>
                         );
                       })}
@@ -626,12 +748,21 @@ export default function AdminInvoicesPage() {
                 )}
               </div>
 
-              <div className="px-8 py-5 border-t border-slate-100 flex gap-3 shrink-0">
-                <button type="button" onClick={() => setShowBulkModal(false)} disabled={bulkSubmitting} className="flex-1 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded hover:bg-slate-50 font-bold text-[14px] transition-colors">
+              <div className="iv-modal-foot">
+                <button type="button" onClick={() => setShowBulkModal(false)} disabled={bulkSubmitting} className="iv-btn-cancel">
                   Hủy bỏ
                 </button>
-                <button type="submit" disabled={bulkSubmitting || occupiedRooms.length === 0} className="flex-[2] px-5 py-2.5 bg-[#0D1B2A] text-white rounded hover:bg-[#1A2E42] disabled:opacity-50 font-bold text-[14px] transition-colors shadow-sm">
-                  {bulkSubmitting ? "Đang sinh hóa đơn..." : `Sinh hóa đơn cho ${occupiedRooms.length} phòng`}
+                <button type="submit" disabled={bulkSubmitting || occupiedRooms.length === 0} className="iv-btn-submit">
+                  {bulkSubmitting ? (
+                    "Đang sinh hóa đơn..."
+                  ) : (
+                    <>
+                      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Sinh hóa đơn cho {occupiedRooms.length} phòng
+                    </>
+                  )}
                 </button>
               </div>
             </form>
