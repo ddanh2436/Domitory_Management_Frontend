@@ -4,6 +4,45 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { getDashboardPath, getLoggedInUser, JwtPayload } from "./utils/auth";
 
+// ─── Smooth Scroll Utility (Thời gian: 1.2s) ───────────────────────────────
+const smoothScroll = (target: string | number, duration: number = 1200) => {
+  const targetPosition =
+    typeof target === "string"
+      ? document.getElementById(target)?.getBoundingClientRect().top! + window.scrollY
+      : target;
+
+  if (targetPosition === undefined || targetPosition === null || isNaN(targetPosition)) return;
+
+  const startPosition = window.scrollY;
+  const distance = targetPosition - startPosition;
+  let startTime: number | null = null;
+
+  // Easing function (easeInOutCubic) cho cảm giác cuộn mượt mà nhất
+  const easeInOutCubic = (t: number, b: number, c: number, d: number) => {
+    t /= d / 2;
+    if (t < 1) return (c / 2) * t * t * t + b;
+    t -= 2;
+    return (c / 2) * (t * t * t + 2) + b;
+  };
+
+  const animation = (currentTime: number) => {
+    if (startTime === null) startTime = currentTime;
+    const timeElapsed = currentTime - startTime;
+    const run = easeInOutCubic(timeElapsed, startPosition, distance, duration);
+
+    window.scrollTo(0, run);
+
+    if (timeElapsed < duration) {
+      requestAnimationFrame(animation);
+    } else {
+      // Đảm bảo cuộn chính xác tới vị trí đích khi kết thúc
+      window.scrollTo(0, targetPosition);
+    }
+  };
+
+  requestAnimationFrame(animation);
+};
+
 // ─── Logo Component ──────────────────────────────────────────────────────────
 function DormifyLogoMark({ size = 75, className = "" }: { size?: number; className?: string }) {
   return (
@@ -71,6 +110,43 @@ function RoleCard({
   );
 }
 
+// ─── FAQ Component & Data ─────────────────────────────────────────────────────
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className={`faq-item ${isOpen ? "open" : ""}`} onClick={() => setIsOpen(!isOpen)}>
+      <div className="faq-question">
+        <span>{question}</span>
+        <span className="faq-icon">+</span>
+      </div>
+      <div className="faq-answer-wrapper">
+        <div className="faq-answer-inner">
+          <div className="faq-answer">{answer}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const FAQ_DATA = [
+  {
+    question: "Làm thế nào để đăng ký phòng ký túc xá?",
+    answer: "Sinh viên có thể đăng nhập vào hệ thống, chọn mục 'Tìm phòng', xem sơ đồ các tòa nhà và chọn phòng còn trống phù hợp với nhu cầu, sau đó hoàn tất form đăng ký trực tuyến."
+  },
+  {
+    question: "Khi nào tôi phải thanh toán tiền phòng hàng tháng?",
+    answer: "Hóa đơn sẽ được hệ thống tạo tự động vào ngày 1 hàng tháng. Bạn có 10 ngày để hoàn tất thanh toán qua các cổng thanh toán trực tuyến (Momo, VNPay, v.v.) hoặc chuyển khoản ngân hàng."
+  },
+  {
+    question: "Làm sao để báo cáo khi đồ đạc trong phòng bị hỏng?",
+    answer: "Bạn chỉ cần vào mục 'Bảo trì', tạo yêu cầu mới, mô tả tình trạng sự cố và đính kèm hình ảnh nếu có. Ban quản lý sẽ tiếp nhận và phản hồi lịch sửa chữa trong vòng 24h."
+  },
+  {
+    question: "Tôi có thể xin chuyển phòng sau khi đã ký hợp đồng không?",
+    answer: "Có. Bạn có thể tạo 'Yêu cầu chuyển phòng' ngay trên hệ thống. Tuy nhiên, việc này phụ thuộc vào số lượng phòng trống và cần có sự phê duyệt của Ban quản lý."
+  }
+];
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const [user, setUser] = useState<JwtPayload | null>(null);
@@ -126,6 +202,12 @@ export default function LandingPage() {
   if (!isMounted) return null;
 
   const dashboardHref = user ? getDashboardPath(user.role) : "/student";
+
+  // Hàm xử lý click cho thẻ a
+  const handleScrollClick = (e: React.MouseEvent<HTMLAnchorElement>, target: string | number) => {
+    e.preventDefault();
+    smoothScroll(target, 1200);
+  };
 
   return (
     <>
@@ -438,7 +520,7 @@ export default function LandingPage() {
         .section-title em { font-style: italic; color: var(--gold); }
         .section-title.dark { color: var(--navy); text-align: center; margin-bottom: 20px; }
         
-        .roles-section .section-label { text-align: center; }
+        .roles-section .section-label, .faq-section .section-label { text-align: center; }
 
         .features-grid {
           display: grid; grid-template-columns: repeat(3, 1fr);
@@ -516,6 +598,68 @@ export default function LandingPage() {
         .role-perms li:last-child { border-bottom: none; }
         .perm-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
 
+        /* ── FAQ ── */
+        .faq-section {
+          padding: 60px 5vw 120px;
+          background: var(--cream);
+        }
+        .faq-container {
+          max-width: 800px;
+          margin: 50px auto 0;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .faq-item {
+          background: var(--white);
+          border: 1px solid rgba(13,27,42,0.1);
+          border-radius: 12px;
+          overflow: hidden;
+          transition: all 0.3s ease;
+          cursor: pointer;
+        }
+        .faq-item:hover {
+          border-color: rgba(201,168,76,0.5);
+          box-shadow: 0 4px 12px rgba(13,27,42,0.05);
+        }
+        .faq-question {
+          padding: 24px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-weight: 600;
+          color: var(--navy);
+          font-size: 16px;
+          user-select: none;
+        }
+        .faq-icon {
+          color: var(--gold);
+          font-size: 24px;
+          font-weight: 400;
+          line-height: 1;
+          transition: transform 0.3s ease;
+        }
+        .faq-item.open .faq-icon {
+          transform: rotate(45deg);
+        }
+        .faq-answer-wrapper {
+          display: grid;
+          grid-template-rows: 0fr;
+          transition: grid-template-rows 0.3s ease;
+        }
+        .faq-item.open .faq-answer-wrapper {
+          grid-template-rows: 1fr;
+        }
+        .faq-answer-inner {
+          overflow: hidden;
+        }
+        .faq-answer {
+          padding: 0 24px 24px;
+          color: var(--text-muted);
+          font-size: 15px;
+          line-height: 1.6;
+        }
+
         /* ── CTA ── */
         .cta-section {
           background: var(--navy); padding: 100px 5vw; text-align: center;
@@ -582,12 +726,9 @@ export default function LandingPage() {
       <div className="page-reveal">
         {/* ─── Navbar ─────────────────────────────────────────────────────────── */}
         <header className={`dormify-nav ${isScrolled ? 'scrolled' : ''} ${!isHeaderVisible ? 'hidden' : ''}`}>
-          <Link 
-            href="/" 
-            onClick={(e) => {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+          <a 
+            href="#" 
+            onClick={(e) => handleScrollClick(e, 0)}
             className="flex items-center cursor-pointer hover:opacity-80 transition-opacity no-underline"
           >
             <DormifyLogoMark size={75} className="-translate-y-2 shrink-0" />
@@ -597,11 +738,12 @@ export default function LandingPage() {
                 Dorm<span className="text-[#C9A84C]">ify</span>
               </span>
             </div>
-          </Link>
+          </a>
 
           <div className="nav-links">
-            <a href="#features" className="nav-link">Tính năng</a>
-            <a href="#roles"    className="nav-link">Vai trò</a>
+            <a href="#features" className="nav-link" onClick={(e) => handleScrollClick(e, 'features')}>Tính năng</a>
+            <a href="#roles"    className="nav-link" onClick={(e) => handleScrollClick(e, 'roles')}>Vai trò</a>
+            <a href="#faq"      className="nav-link" onClick={(e) => handleScrollClick(e, 'faq')}>Hỏi đáp</a>
             {user ? (
               <Link href={dashboardHref} className="btn-nav btn-gold">
                 Vào không gian làm việc
@@ -644,7 +786,9 @@ export default function LandingPage() {
                     Bắt đầu miễn phí
                   </Link>
                 )}
-                <a href="#features" className="btn-hero-secondary">Khám phá tính năng →</a>
+                <a href="#features" className="btn-hero-secondary" onClick={(e) => handleScrollClick(e, 'features')}>
+                  Khám phá tính năng →
+                </a>
               </div>
             </div>
 
@@ -744,6 +888,20 @@ export default function LandingPage() {
             </div>
           </section>
 
+          {/* ─── FAQ ──────────────────────────────────────────────────────────── */}
+          <section id="faq" className="faq-section">
+            <span className="section-label">Hỗ trợ sinh viên</span>
+            <h2 className="section-title dark">
+              Câu hỏi <em style={{ color: "var(--gold)" }}>thường gặp</em>
+            </h2>
+
+            <div className="faq-container">
+              {FAQ_DATA.map((faq, idx) => (
+                <FAQItem key={idx} question={faq.question} answer={faq.answer} />
+              ))}
+            </div>
+          </section>
+
           {/* ─── CTA ──────────────────────────────────────────────────────────── */}
           <section className="cta-section">
             <div className="cta-bg" />
@@ -774,8 +932,9 @@ export default function LandingPage() {
               </span>
             </div>
             <div className="footer-links">
-              <a href="#features" className="footer-link">Tính năng</a>
-              <a href="#roles"    className="footer-link">Vai trò</a>
+              <a href="#features" className="footer-link" onClick={(e) => handleScrollClick(e, 'features')}>Tính năng</a>
+              <a href="#roles"    className="footer-link" onClick={(e) => handleScrollClick(e, 'roles')}>Vai trò</a>
+              <a href="#faq"      className="footer-link" onClick={(e) => handleScrollClick(e, 'faq')}>Hỏi đáp</a>
               <Link href="/login" className="footer-link">Đăng nhập</Link>
             </div>
           </div>
