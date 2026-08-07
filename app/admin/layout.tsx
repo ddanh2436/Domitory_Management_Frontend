@@ -298,6 +298,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <NavItem href="/admin/contracts" icon={Icons.contract} label="Hợp đồng" active={pathname.startsWith("/admin/contracts")} />
             <NavItem href="/admin/profile" icon={Icons.users} label="Hồ sơ cá nhân" active={pathname.startsWith("/admin/profile")} />
             <NavItem href="/admin/maintenance" icon={Icons.wrench} label="Bảo trì" badge={pendingMaintenance} active={pathname.startsWith("/admin/maintenance")} />
+            <NavItem href="/admin/violations" icon={Icons.doc} label="Vi phạm và khiếu nại" active={pathname.startsWith("/admin/violations")} />
             <NavItem href="/admin/audit-logs" icon={Icons.chart} label="Nhật ký hệ thống" active={pathname.startsWith("/admin/audit-logs")} />
           </nav>
           <div className="sidebar__footer">
