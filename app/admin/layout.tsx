@@ -102,6 +102,11 @@ const Icons = {
       <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" strokeWidth={1.8} />
     </svg>
   ),
+  mailbox: (
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 8l9 6 9-6M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" />
+    </svg>
+  ),
 };
 
 function NavItem({
@@ -136,6 +141,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [pendingTransfers, setPendingTransfers] = useState(0);
   const [pendingCheckouts, setPendingCheckouts] = useState(0);
   const [pendingAbsences, setPendingAbsences] = useState(0);
+  const [pendingFeedback, setPendingFeedback] = useState(0);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const avatarMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -194,6 +200,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         if (resMaintenance.ok) {
           const mData = (await resMaintenance.json()) as MaintenanceSummary[];
           setPendingMaintenance(mData.filter((req) => req.status === "PENDING").length);
+        }
+
+        const resFeedback = await apiClient.get("/feedback");
+        if (resFeedback.ok) {
+          const fData = (await resFeedback.json()) as BookingSummary[];
+          setPendingFeedback(fData.filter((item) => item.status === "PENDING").length);
         }
       } catch (error) {
         console.error("Lỗi đồng bộ dữ liệu Layout Admin:", error);
@@ -299,6 +311,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <NavItem href="/admin/profile" icon={Icons.users} label="Hồ sơ cá nhân" active={pathname.startsWith("/admin/profile")} />
             <NavItem href="/admin/maintenance" icon={Icons.wrench} label="Bảo trì" badge={pendingMaintenance} active={pathname.startsWith("/admin/maintenance")} />
             <NavItem href="/admin/violations" icon={Icons.doc} label="Vi phạm và khiếu nại" active={pathname.startsWith("/admin/violations")} />
+            <NavItem href="/admin/feedback" icon={Icons.mailbox} label="Góp ý và khiếu nại" badge={pendingFeedback} active={pathname.startsWith("/admin/feedback")} />
             <NavItem href="/admin/audit-logs" icon={Icons.chart} label="Nhật ký hệ thống" active={pathname.startsWith("/admin/audit-logs")} />
           </nav>
           <div className="sidebar__footer">
@@ -329,6 +342,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {pathname.includes("/invoices") && "Hệ thống hóa đơn"}
                 {pathname.includes("/profile") && "Hồ sơ cá nhân Admin"}
                 {pathname.includes("/maintenance") && "Quản lý yêu cầu bảo trì"}
+                {pathname.includes("/feedback") && "Góp ý và khiếu nại"}
               </div>
               <div className="topbar__breadcrumb">Dormify · Đám mây Atlas</div>
             </div>
