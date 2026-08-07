@@ -28,7 +28,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
         .sf-topbar { position: sticky; top: 0; z-index: 50; background: #0D1B2A; border-bottom: 1px solid rgba(201,168,76,0.25); padding: 0 24px; height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
         .sf-brand { display: flex; align-items: center; gap: 11px; }
         .sf-brand-mark { width: 34px; height: 34px; border-radius: 8px; background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.35); color: #C9A84C; display: flex; align-items: center; justify-content: center; }
-        .sf-brand-name { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; color: #fff; }
+        .sf-brand-name { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 17px; font-weight: 700; color: #fff; }
         .sf-brand-role { font-size: 10.5px; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
         .sf-topbar-right { display: flex; align-items: center; gap: 10px; }
         .sf-nav { display: flex; align-items: center; gap: 6px; }

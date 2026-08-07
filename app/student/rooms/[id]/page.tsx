@@ -127,7 +127,7 @@ export default function RoomDetailPage() {
     <RoleGuard allowedRoles={["STUDENT"]}>
       <div className="min-h-screen bg-white pb-24 font-sans">
         <style>{`
-          .rd-serif { font-family: 'Fraunces', serif; }
+          .rd-serif { font-family: 'FrauncesAmp', 'Fraunces', serif; }
         `}</style>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-6">
           <button

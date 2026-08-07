@@ -150,7 +150,7 @@ export default function StudentNotificationsPage() {
         }
 
         .nf-hero-title {
-          font-family: 'Fraunces', serif;
+          font-family: 'FrauncesAmp', 'Fraunces', serif;
           font-size: 28px;
           font-weight: 600;
           letter-spacing: -0.02em;

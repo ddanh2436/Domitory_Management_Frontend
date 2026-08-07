@@ -103,17 +103,17 @@ export default function StaffProfilePage() {
         .sp-hero { position: relative; background: linear-gradient(135deg, #0D1B2A 0%, #182b43 60%, #253d5d 100%); border: 1px solid rgba(201,168,76,0.25); border-radius: 16px; padding: 26px 28px; display: flex; align-items: center; gap: 22px; flex-wrap: wrap; margin-bottom: 20px; overflow: hidden; }
         .sp-avatar { position: relative; width: 88px; height: 88px; border-radius: 50%; border: 3px solid rgba(201,168,76,0.5); overflow: hidden; background: #0D1B2A; display: flex; justify-content: center; align-items: center; cursor: pointer; flex-shrink: 0; }
         .sp-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .sp-avatar-placeholder { font-family: 'Fraunces', serif; font-size: 36px; color: #C9A84C; }
+        .sp-avatar-placeholder { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 36px; color: #C9A84C; }
         .sp-avatar-overlay { position: absolute; inset: 0; background: rgba(13,27,42,0.65); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; color: #fff; font-size: 10.5px; font-weight: 500; }
         .sp-avatar:hover .sp-avatar-overlay { opacity: 1; }
         .sp-hidden-input { display: none; }
-        .sp-name { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: #fff; }
+        .sp-name { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 22px; font-weight: 700; color: #fff; }
         .sp-email { margin-top: 3px; color: rgba(255,255,255,0.65); font-size: 13px; }
         .sp-chip { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; background: rgba(201,168,76,0.15); color: #C9A84C; border: 1px solid rgba(201,168,76,0.35); }
 
         .sp-grid { display: grid; grid-template-columns: 1fr 300px; gap: 18px; align-items: start; }
         .sp-panel { background: #fff; border: 1px solid rgba(13,27,42,0.09); border-radius: 12px; overflow: hidden; }
-        .sp-panel-head { padding: 16px 22px; border-bottom: 1px solid rgba(13,27,42,0.09); font-family: 'Fraunces', serif; font-size: 15.5px; font-weight: 600; color: #0D1B2A; }
+        .sp-panel-head { padding: 16px 22px; border-bottom: 1px solid rgba(13,27,42,0.09); font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 15.5px; font-weight: 600; color: #0D1B2A; }
         .sp-panel-body { padding: 22px; }
 
         .sp-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }

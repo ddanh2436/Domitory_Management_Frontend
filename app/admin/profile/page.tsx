@@ -128,12 +128,12 @@ export default function AdminProfilePage() {
 
         .avatar-wrapper { position: relative; width: 96px; height: 96px; border-radius: 50%; border: 3px solid rgba(201,168,76,0.5); box-shadow: 0 8px 20px rgba(0,0,0,0.25); overflow: hidden; background: #0D1B2A; display: flex; justify-content: center; align-items: center; cursor: pointer; flex-shrink: 0; }
         .avatar-img { width: 100%; height: 100%; object-fit: cover; }
-        .avatar-placeholder { font-family: 'Fraunces', serif; font-size: 40px; color: #C9A84C; }
+        .avatar-placeholder { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 40px; color: #C9A84C; }
         .avatar-overlay { position: absolute; inset: 0; background: rgba(13, 27, 42, 0.65); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; color: white; font-size: 11px; font-weight: 500; }
         .avatar-wrapper:hover .avatar-overlay { opacity: 1; }
         .hidden-input { display: none; }
 
-        .pf-hero-name { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+        .pf-hero-name { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
         .pf-hero-email { margin-top: 4px; color: rgba(255,255,255,0.65); font-size: 13.5px; }
         .pf-chips { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
         .pf-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
@@ -146,7 +146,7 @@ export default function AdminProfilePage() {
 
         .pf-panel { background: #ffffff; border: 1px solid rgba(13,27,42,0.09); border-radius: 12px; overflow: hidden; }
         .pf-panel-head { padding: 18px 24px; border-bottom: 1px solid rgba(13,27,42,0.09); }
-        .pf-panel-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; }
+        .pf-panel-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; }
         .pf-panel-sub { margin-top: 3px; font-size: 12.5px; color: #8A9BAD; }
         .pf-panel-body { padding: 24px; }
 

@@ -80,11 +80,11 @@ export default function AdminAnnouncementsPage() {
         .an-page { max-width: 860px; margin: 0 auto; padding-top: 24px; padding-bottom: 48px; color: #0D1B2A; font-family: 'DM Sans', sans-serif; }
 
         .an-hero { background: linear-gradient(135deg, #0D1B2A 0%, #182b43 60%, #253d5d 100%); color: #fff; border-radius: 16px; padding: 26px 28px; border: 1px solid rgba(201,168,76,0.25); margin-bottom: 24px; }
-        .an-hero-title { font-family: 'Fraunces', serif; font-size: 25px; font-weight: 700; letter-spacing: -.3px; }
+        .an-hero-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 25px; font-weight: 700; letter-spacing: -.3px; }
         .an-hero-sub { margin-top: 6px; color: rgba(255,255,255,.65); font-size: 13.5px; max-width: 560px; line-height: 1.6; }
 
         .an-panel { background: #fff; border: 1px solid rgba(13,27,42,.09); border-radius: 12px; overflow: hidden; }
-        .an-panel-head { padding: 16px 20px; border-bottom: 1px solid rgba(13,27,42,.09); font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; }
+        .an-panel-head { padding: 16px 20px; border-bottom: 1px solid rgba(13,27,42,.09); font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; }
         .an-panel-body { padding: 22px; }
 
         .an-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
@@ -120,7 +120,7 @@ export default function AdminAnnouncementsPage() {
         .an-history-msg { font-size: 12.5px; color: #64748b; margin-top: 4px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .an-history-meta { font-size: 11.5px; color: #8A9BAD; margin-top: 7px; font-weight: 500; }
         .an-history-count { flex-shrink: 0; text-align: center; padding: 8px 14px; border-radius: 8px; background: rgba(201,168,76,.1); border: 1px solid rgba(201,168,76,.25); }
-        .an-history-count-num { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; color: #9a7b2c; }
+        .an-history-count-num { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 17px; font-weight: 700; color: #9a7b2c; }
         .an-history-count-label { font-size: 10px; color: #8A9BAD; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
         .an-history-empty { padding: 30px 20px; text-align: center; color: #8A9BAD; font-size: 13px; border: 1px dashed rgba(13,27,42,.15); border-radius: 10px; }
       `}</style>

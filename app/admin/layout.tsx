@@ -107,7 +107,102 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 8l9 6 9-6M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" />
     </svg>
   ),
+  shield: (
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
+    </svg>
+  ),
+  chevron: (
+    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 5l7 7-7 7" />
+    </svg>
+  ),
 };
+
+type BadgeKey = "students" | "bookings" | "transfers" | "checkouts" | "absences" | "maintenance" | "feedback";
+
+interface NavLink {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  badgeKey?: BadgeKey;
+}
+
+interface NavSection {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  items: NavLink[];
+}
+
+/** Nhóm tính năng quản trị — mỗi nhóm có thể thu gọn / mở rộng riêng */
+const NAV_SECTIONS: NavSection[] = [
+  {
+    id: "phong",
+    label: "Phòng & Lưu trú",
+    icon: Icons.home,
+    items: [
+      { href: "/admin/rooms", label: "Quản lý phòng", icon: Icons.home },
+      { href: "/admin/auto-assign", label: "Phân phòng tự động", icon: Icons.home },
+      { href: "/admin/bookings", label: "Duyệt đơn phòng", icon: Icons.doc, badgeKey: "bookings" },
+      { href: "/admin/transfers", label: "Duyệt đổi phòng", icon: Icons.transfer, badgeKey: "transfers" },
+      { href: "/admin/checkouts", label: "Duyệt trả phòng", icon: Icons.logout, badgeKey: "checkouts" },
+    ],
+  },
+  {
+    id: "sinh-vien",
+    label: "Sinh viên",
+    icon: Icons.users,
+    items: [
+      { href: "/admin/students", label: "Sinh viên", icon: Icons.users, badgeKey: "students" },
+      { href: "/admin/absences", label: "Tạm trú / Tạm vắng", icon: Icons.moon, badgeKey: "absences" },
+      { href: "/admin/violations", label: "Vi phạm nề nếp", icon: Icons.shield },
+    ],
+  },
+  {
+    id: "tai-chinh",
+    label: "Tài chính & Hợp đồng",
+    icon: Icons.invoice,
+    items: [
+      { href: "/admin/invoices", label: "Hóa đơn", icon: Icons.invoice },
+      { href: "/admin/debts", label: "Công nợ", icon: Icons.invoice },
+      { href: "/admin/contracts", label: "Hợp đồng", icon: Icons.contract },
+    ],
+  },
+  {
+    id: "van-hanh",
+    label: "Vận hành & Hỗ trợ",
+    icon: Icons.wrench,
+    items: [
+      { href: "/admin/maintenance", label: "Bảo trì", icon: Icons.wrench, badgeKey: "maintenance" },
+      { href: "/admin/feedback", label: "Góp ý và khiếu nại", icon: Icons.mailbox, badgeKey: "feedback" },
+      { href: "/admin/announcements", label: "Gửi thông báo", icon: Icons.megaphone },
+    ],
+  },
+  {
+    id: "he-thong",
+    label: "Hệ thống",
+    icon: Icons.chart,
+    items: [
+      { href: "/admin/permissions", label: "Phân quyền tài khoản", icon: Icons.users },
+      { href: "/admin/audit-logs", label: "Nhật ký hệ thống", icon: Icons.chart },
+      { href: "/admin/profile", label: "Hồ sơ cá nhân", icon: Icons.users },
+    ],
+  },
+];
+
+const NAV_STORAGE_KEY = "dormify.admin.navGroups";
+
+/** Đọc các nhóm đang thu gọn từ lần truy cập trước (nhóm vắng mặt = đang mở) */
+function readCollapsedGroups(): Record<string, boolean> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(NAV_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as Record<string, boolean>) : {};
+  } catch {
+    return {};
+  }
+}
 
 function NavItem({
   icon,
@@ -131,6 +226,34 @@ function NavItem({
   );
 }
 
+function NavGroup({
+  section,
+  open,
+  hasActive,
+  badge,
+  onToggle,
+  children,
+}: {
+  section: NavSection;
+  open: boolean;
+  hasActive: boolean;
+  badge: number;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={`nav-group ${open ? "nav-group--open" : ""} ${hasActive ? "nav-group--active" : ""}`}>
+      <button type="button" className="nav-group__head" onClick={onToggle} aria-expanded={open}>
+        <span className="nav-item__icon">{section.icon}</span>
+        <span className="nav-group__label">{section.label}</span>
+        {!open && badge > 0 && <span className="nav-item__badge">{badge}</span>}
+        <span className="nav-group__chevron">{Icons.chevron}</span>
+      </button>
+      {open && <div className="nav-group__items">{children}</div>}
+    </div>
+  );
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -144,6 +267,44 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [pendingFeedback, setPendingFeedback] = useState(0);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const avatarMenuRef = useRef<HTMLDivElement | null>(null);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(readCollapsedGroups);
+  const [lastPath, setLastPath] = useState<string | null>(null);
+
+  const badges: Record<BadgeKey, number> = {
+    students: studentsCount,
+    bookings: pendingBookings,
+    transfers: pendingTransfers,
+    checkouts: pendingCheckouts,
+    absences: pendingAbsences,
+    maintenance: pendingMaintenance,
+    feedback: pendingFeedback,
+  };
+
+  const isLinkActive = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
+  const badgeOf = (item: NavLink) => (item.badgeKey ? badges[item.badgeKey] : 0);
+  const activeSection = NAV_SECTIONS.find((section) => section.items.some((item) => isLinkActive(item.href)));
+  const allExpanded = NAV_SECTIONS.every((section) => !collapsedGroups[section.id]);
+
+  // Mở sẵn nhóm chứa trang đang xem mỗi khi điều hướng (kể cả khi vào thẳng bằng link)
+  if (lastPath !== pathname) {
+    setLastPath(pathname);
+    if (activeSection && collapsedGroups[activeSection.id]) {
+      setCollapsedGroups({ ...collapsedGroups, [activeSection.id]: false });
+    }
+  }
+
+  const applyGroups = (next: Record<string, boolean>) => {
+    setCollapsedGroups(next);
+    try {
+      localStorage.setItem(NAV_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      /* bỏ qua khi không ghi được storage */
+    }
+  };
+
+  const toggleGroup = (id: string) => applyGroups({ ...collapsedGroups, [id]: !collapsedGroups[id] });
+  const toggleAllGroups = () =>
+    applyGroups(Object.fromEntries(NAV_SECTIONS.map((section) => [section.id, allExpanded])));
 
   // Đóng menu avatar khi bấm ra ngoài
   useEffect(() => {
@@ -242,10 +403,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         .sidebar { width: var(--sidebar-w); min-height: 100vh; background: var(--navy); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; border-right: 1px solid var(--gold-border); z-index: 40; }
         .sidebar__brand { padding: 24px 20px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); text-decoration: none; transition: opacity 0.2s; }
         .sidebar__brand:hover { opacity: 0.8; }
-        .sidebar__wordmark { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; color: var(--white); letter-spacing: -0.2px; }
+        .sidebar__wordmark { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 20px; font-weight: 600; color: var(--white); letter-spacing: -0.2px; }
         .sidebar__wordmark span { color: var(--gold); }
         .sidebar__role-chip { margin: 16px 20px 4px; font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
-        .sidebar__nav { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 12px 16px; display: flex; flex-direction: column; gap: 2px; }
+        .sidebar__nav-head { flex-shrink: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding-right: 14px; }
+        .sidebar__nav-head .sidebar__role-chip { margin-right: 0; }
+        .sidebar__toggle-all { background: transparent; border: none; padding: 2px 4px; font-family: inherit; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.3); cursor: pointer; transition: color 0.15s; }
+        .sidebar__toggle-all:hover { color: var(--gold); }
+        .sidebar__nav { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 4px 12px 16px; display: flex; flex-direction: column; gap: 2px; }
+        .nav-group { display: flex; flex-direction: column; gap: 2px; }
+        .nav-group + .nav-group, .nav-item + .nav-group { margin-top: 6px; }
+        .nav-group__head { display: flex; align-items: center; gap: 11px; width: 100%; padding: 9px 12px; border: none; border-radius: 8px; background: transparent; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+        .nav-group__head:hover { background: rgba(255,255,255,0.05); }
+        .nav-group__label { flex: 1; text-align: left; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+        .nav-group--active .nav-group__label { color: rgba(201,168,76,0.85); }
+        .nav-group--active .nav-group__head .nav-item__icon { color: rgba(201,168,76,0.75); }
+        .nav-group__chevron { display: flex; flex-shrink: 0; color: rgba(255,255,255,0.28); transition: transform 0.2s ease; }
+        .nav-group--open .nav-group__chevron { transform: rotate(90deg); }
+        .nav-group__items { display: flex; flex-direction: column; gap: 2px; margin: 2px 0 2px 21px; padding-left: 6px; border-left: 1px solid rgba(255,255,255,0.08); }
         .sidebar__nav::-webkit-scrollbar { width: 5px; }
         .sidebar__nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 100px; }
         .sidebar__nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
@@ -270,10 +445,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         .btn-sidebar-action--logout span:last-child  { font-size: 13.5px; color: rgba(240,80,80,0.8); }
         .admin-main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
         .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 30; }
-        .topbar__title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--navy); line-height: 1.2; letter-spacing: -0.2px; }
+        .topbar__title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--navy); line-height: 1.2; letter-spacing: -0.2px; }
         .topbar__breadcrumb { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
         .topbar__right { display: flex; align-items: center; gap: 12px; }
-        .topbar__avatar { width: 36px; height: 36px; border-radius: 9px; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600; color: var(--gold); cursor: pointer; border: 1.5px solid var(--gold-border); transition: transform 0.1s; overflow: hidden; }
+        .topbar__avatar { width: 36px; height: 36px; border-radius: 9px; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 14px; font-weight: 600; color: var(--gold); cursor: pointer; border: 1.5px solid var(--gold-border); transition: transform 0.1s; overflow: hidden; }
         .topbar__avatar:hover { transform: scale(1.05); border-color: var(--gold); }
         .avatar-menu-wrap { position: relative; }
         .avatar-menu { position: absolute; top: calc(100% + 8px); right: 0; min-width: 200px; background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 32px rgba(13,27,42,0.12); padding: 6px; z-index: 50; }
@@ -293,26 +468,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <DormifyLogoMark size={36} />
             <span className="sidebar__wordmark">Dorm<span>ify</span></span>
           </Link>
-          <div className="sidebar__role-chip">Quản trị viên</div>
+          <div className="sidebar__nav-head">
+            <div className="sidebar__role-chip">Quản trị viên</div>
+            <button type="button" className="sidebar__toggle-all" onClick={toggleAllGroups}>
+              {allExpanded ? "Thu gọn" : "Mở rộng"}
+            </button>
+          </div>
           <nav className="sidebar__nav">
             <NavItem href="/admin" icon={Icons.chart} label="Tổng quan" active={pathname === "/admin"} />
-            <NavItem href="/admin/rooms" icon={Icons.home} label="Quản lý phòng" active={pathname.startsWith("/admin/rooms")} />
-            <NavItem href="/admin/students" icon={Icons.users} label="Sinh viên" badge={studentsCount} active={pathname.startsWith("/admin/students")} />
-            <NavItem href="/admin/permissions" icon={Icons.users} label="Phân quyền tài khoản" active={pathname.startsWith("/admin/permissions")} />
-            <NavItem href="/admin/bookings" icon={Icons.doc} label="Duyệt đơn phòng" badge={pendingBookings} active={pathname.startsWith("/admin/bookings")} />
-            <NavItem href="/admin/auto-assign" icon={Icons.home} label="Phân phòng tự động" active={pathname.startsWith("/admin/auto-assign")} />
-            <NavItem href="/admin/transfers" icon={Icons.transfer} label="Duyệt đổi phòng" badge={pendingTransfers} active={pathname.startsWith("/admin/transfers")} />
-            <NavItem href="/admin/checkouts" icon={Icons.logout} label="Duyệt trả phòng" badge={pendingCheckouts} active={pathname.startsWith("/admin/checkouts")} />
-            <NavItem href="/admin/absences" icon={Icons.moon} label="Tạm trú / Tạm vắng" badge={pendingAbsences} active={pathname.startsWith("/admin/absences")} />
-            <NavItem href="/admin/announcements" icon={Icons.megaphone} label="Gửi thông báo" active={pathname.startsWith("/admin/announcements")} />
-            <NavItem href="/admin/invoices" icon={Icons.invoice} label="Hóa đơn" active={pathname.startsWith("/admin/invoices")} />
-            <NavItem href="/admin/debts" icon={Icons.invoice} label="Công nợ" active={pathname.startsWith("/admin/debts")} />
-            <NavItem href="/admin/contracts" icon={Icons.contract} label="Hợp đồng" active={pathname.startsWith("/admin/contracts")} />
-            <NavItem href="/admin/profile" icon={Icons.users} label="Hồ sơ cá nhân" active={pathname.startsWith("/admin/profile")} />
-            <NavItem href="/admin/maintenance" icon={Icons.wrench} label="Bảo trì" badge={pendingMaintenance} active={pathname.startsWith("/admin/maintenance")} />
-            <NavItem href="/admin/violations" icon={Icons.doc} label="Vi phạm và khiếu nại" active={pathname.startsWith("/admin/violations")} />
-            <NavItem href="/admin/feedback" icon={Icons.mailbox} label="Góp ý và khiếu nại" badge={pendingFeedback} active={pathname.startsWith("/admin/feedback")} />
-            <NavItem href="/admin/audit-logs" icon={Icons.chart} label="Nhật ký hệ thống" active={pathname.startsWith("/admin/audit-logs")} />
+
+            {NAV_SECTIONS.map((section) => (
+              <NavGroup
+                key={section.id}
+                section={section}
+                open={!collapsedGroups[section.id]}
+                hasActive={section.items.some((item) => isLinkActive(item.href))}
+                /* Tổng số việc chờ xử lý của nhóm — bỏ qua "students" vì đó là tổng số, không phải việc cần duyệt */
+                badge={section.items.reduce((sum, item) => sum + (item.badgeKey === "students" ? 0 : badgeOf(item)), 0)}
+                onToggle={() => toggleGroup(section.id)}
+              >
+                {section.items.map((item) => (
+                  <NavItem
+                    key={item.href}
+                    href={item.href}
+                    icon={item.icon}
+                    label={item.label}
+                    badge={badgeOf(item)}
+                    active={isLinkActive(item.href)}
+                  />
+                ))}
+              </NavGroup>
+            ))}
           </nav>
           <div className="sidebar__footer">
             <Link href="/" className="btn-sidebar-action btn-sidebar-action--home">

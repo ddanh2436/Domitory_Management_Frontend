@@ -159,12 +159,12 @@ export default function StudentProfilePage() {
     <>
       <style>{`
         .profile-page-body { padding: 28px 0 48px; max-width: 900px; margin: 0 auto; width: 100%; }
-        .profile-page-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--navy); margin-bottom: 20px; }
+        .profile-page-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--navy); margin-bottom: 20px; }
         .profile-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: row; box-shadow: 0 4px 20px rgba(13,27,42,0.03); }
         .profile-left { width: 280px; background: #FAFAF9; border-right: 1px solid var(--border); padding: 40px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; }
         .avatar-wrapper { position: relative; width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--white); box-shadow: 0 8px 16px rgba(0,0,0,0.08); margin-bottom: 20px; overflow: hidden; background: var(--navy); display: flex; justify-content: center; align-items: center; cursor: pointer; }
         .avatar-img { width: 100%; height: 100%; object-fit: cover; }
-        .avatar-placeholder { font-family: 'Fraunces', serif; font-size: 56px; color: var(--gold); }
+        .avatar-placeholder { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 56px; color: var(--gold); }
         .avatar-overlay { position: absolute; inset: 0; background: rgba(13, 27, 42, 0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; color: white; font-size: 12px; font-weight: 500; }
         .avatar-wrapper:hover .avatar-overlay { opacity: 1; }
         .hidden-input { display: none; }
@@ -186,9 +186,9 @@ export default function StudentProfilePage() {
 
         .behavior-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-top: 24px; box-shadow: 0 4px 20px rgba(13,27,42,0.03); }
         .behavior-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
-        .behavior-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--navy); }
+        .behavior-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--navy); }
         .behavior-sub { font-size: 13px; color: var(--muted); margin-top: 4px; max-width: 480px; line-height: 1.6; }
-        .behavior-score { font-family: 'Fraunces', serif; font-size: 42px; font-weight: 700; line-height: 1; letter-spacing: -1px; white-space: nowrap; }
+        .behavior-score { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 42px; font-weight: 700; line-height: 1; letter-spacing: -1px; white-space: nowrap; }
         .behavior-score-max { font-size: 16px; color: var(--muted); font-weight: 400; margin-left: 2px; }
         .behavior-bar { height: 10px; border-radius: 100px; background: #EDEBE6; overflow: hidden; }
         .behavior-bar-fill { height: 100%; border-radius: 100px; transition: width 0.5s ease; }
@@ -201,7 +201,7 @@ export default function StudentProfilePage() {
         .behavior-item { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: #FCFBF9; }
         .behavior-item-reason { font-size: 14px; font-weight: 500; color: var(--navy); line-height: 1.4; }
         .behavior-item-time { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
-        .behavior-item-points { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; color: #dc2626; white-space: nowrap; }
+        .behavior-item-points { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 20px; font-weight: 700; color: #dc2626; white-space: nowrap; }
         .behavior-item-tags { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         .behavior-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 100px; font-size: 11.5px; font-weight: 700; }
         .behavior-appeal-btn { padding: 4px 12px; border-radius: 100px; border: 1px solid rgba(2,132,199,0.4); background: #fff; color: #0284c7; font-family: 'DM Sans', sans-serif; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all .15s; }
@@ -212,7 +212,7 @@ export default function StudentProfilePage() {
         .vio-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(13,27,42,.6); display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px); }
         .vio-modal { background: #fff; border-radius: 14px; width: 100%; max-width: 460px; box-shadow: 0 24px 56px rgba(13,27,42,.24); overflow: hidden; }
         .vio-modal-head { padding: 18px 22px; border-bottom: 1px solid var(--border); }
-        .vio-modal-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; color: var(--navy); }
+        .vio-modal-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 17px; font-weight: 700; color: var(--navy); }
         .vio-modal-sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
         .vio-modal-body { padding: 18px 22px; }
         .vio-textarea { width: 100%; min-height: 96px; padding: 11px 13px; border: 1px solid var(--border); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--navy); background: #F9F8F6; outline: none; resize: vertical; line-height: 1.6; }
@@ -251,7 +251,7 @@ export default function StudentProfilePage() {
               <input type="file" accept="image/*" className="hidden-input" onChange={handleImageUpload} />
             </label>
 
-            <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "20px", color: "var(--navy)", marginBottom: "4px" }}>
+            <h2 style={{ fontFamily: "'FrauncesAmp', 'Fraunces', serif", fontSize: "20px", color: "var(--navy)", marginBottom: "4px" }}>
               {profile?.fullName}
             </h2>
             <p style={{ color: "var(--muted)", fontSize: "14px", marginBottom: "16px" }}>{profile?.email}</p>

@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* Fraunces vẽ dấu "&" theo lối ligature "Et" cổ điển — trên màn hình nó trông giống số 8
+   trong vòng tròn chứ không ra dấu "và". Face này chỉ nhận đúng ký tự U+0026 và được đặt
+   TRƯỚC 'Fraunces' trong mọi font stack, nên chỉ riêng dấu "&" lấy từ một serif thường,
+   toàn bộ ký tự còn lại vẫn rơi xuống Fraunces như cũ. */
+@font-face {
+  font-family: "FrauncesAmp";
+  src: local("Georgia"), local("Times New Roman"), local("Cambria"),
+       local("DejaVu Serif"), local("Liberation Serif"), local("Noto Serif");
+  unicode-range: U+0026;
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

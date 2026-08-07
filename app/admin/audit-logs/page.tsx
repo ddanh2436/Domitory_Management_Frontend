@@ -81,7 +81,7 @@ export default function AdminAuditLogsPage() {
 
         .adm-page { max-width: 1180px; margin: 0 auto; padding-top: 24px; padding-bottom: 48px; color: #0D1B2A; font-family: 'DM Sans', sans-serif; }
         .panel { background: #fff; border: 1px solid rgba(13,27,42,0.09); border-radius: 20px; padding: 28px 32px; box-shadow: 0 10px 24px rgba(13,27,42,0.04); overflow: hidden; }
-        .panel-title { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; color: #0D1B2A; letter-spacing: -0.5px; }
+        .panel-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 24px; font-weight: 700; color: #0D1B2A; letter-spacing: -0.5px; }
         .panel-sub { font-size: 13px; color: #64748b; margin-top: 6px; }
 
         .al-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; align-items: center; }

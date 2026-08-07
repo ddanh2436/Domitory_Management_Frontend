@@ -245,13 +245,13 @@ export default function AdminRoomsPage() {
         .rm-hero { position: relative; background: linear-gradient(135deg, #0D1B2A 0%, #182b43 60%, #253d5d 100%); color: #fff; border-radius: 16px; padding: 26px 28px; border: 1px solid rgba(201,168,76,0.25); overflow: hidden; }
         .rm-hero::after { content: ''; position: absolute; right: -70px; top: -70px; width: 240px; height: 240px; border-radius: 50%; background: rgba(201,168,76,0.08); pointer-events: none; }
         .rm-hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-        .rm-hero-title { font-family: 'Fraunces', serif; font-size: 25px; font-weight: 700; letter-spacing: -0.3px; }
+        .rm-hero-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 25px; font-weight: 700; letter-spacing: -0.3px; }
         .rm-hero-sub { margin-top: 6px; color: rgba(255,255,255,0.65); font-size: 13.5px; max-width: 520px; line-height: 1.6; }
         .rm-add-btn { display: inline-flex; align-items: center; gap: 8px; background: #C9A84C; color: #0D1B2A; border: none; padding: 11px 20px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13.5px; cursor: pointer; transition: all .18s; position: relative; z-index: 1; }
         .rm-add-btn:hover { background: #D9B85C; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,168,76,0.35); }
         .rm-stats { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
         .rm-stat { background: rgba(255,255,255,0.06); border: 1px solid rgba(201,168,76,0.2); border-radius: 10px; padding: 12px 18px; min-width: 110px; }
-        .rm-stat-num { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; }
+        .rm-stat-num { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 22px; font-weight: 700; }
         .rm-stat-label { font-size: 11.5px; color: rgba(255,255,255,0.6); margin-top: 2px; }
         .rm-stat-num--green { color: #4ade80; }
         .rm-stat-num--red { color: #f87171; }
@@ -279,7 +279,7 @@ export default function AdminRoomsPage() {
         .rm-layout { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 20px; align-items: start; }
         .rm-panel { background: #fff; border: 1px solid rgba(13,27,42,0.09); border-radius: 12px; overflow: hidden; }
         .rm-panel-head { padding: 16px 20px; border-bottom: 1px solid rgba(13,27,42,0.09); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-        .rm-panel-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; }
+        .rm-panel-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; }
         .rm-panel-count { font-size: 12px; color: #8A9BAD; font-weight: 600; }
         .rm-panel-body { padding: 16px; }
 
@@ -291,7 +291,7 @@ export default function AdminRoomsPage() {
         .rm-card:hover { border-color: rgba(201,168,76,0.4); }
         .rm-card--active { border-color: #C9A84C; background: #fffdf7; box-shadow: 0 4px 14px rgba(201,168,76,0.12); }
         .rm-card-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
-        .rm-card-name { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 700; color: #0D1B2A; }
+        .rm-card-name { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 16px; font-weight: 700; color: #0D1B2A; }
         .rm-card-sub { color: #8A9BAD; font-size: 12px; margin-top: 3px; }
         .rm-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
         .rm-tag-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
@@ -316,7 +316,7 @@ export default function AdminRoomsPage() {
 
         /* ── DETAIL PANEL ── */
         .rm-detail-head { padding: 20px 24px; border-bottom: 1px solid rgba(13,27,42,0.09); display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
-        .rm-detail-title { font-family: 'Fraunces', serif; font-size: 21px; font-weight: 700; color: #0D1B2A; letter-spacing: -0.3px; }
+        .rm-detail-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 21px; font-weight: 700; color: #0D1B2A; letter-spacing: -0.3px; }
         .rm-detail-sub { font-size: 12.5px; color: #8A9BAD; margin-top: 4px; }
         .rm-detail-actions { display: flex; align-items: center; gap: 8px; }
         .rm-delete-btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.25); background: #fff; color: #dc2626; font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all .15s; }
@@ -334,7 +334,7 @@ export default function AdminRoomsPage() {
         .rm-fac--none { background: rgba(13,27,42,0.04); border-color: rgba(13,27,42,0.08); color: #8A9BAD; font-style: italic; font-weight: 500; }
 
         .rm-occupants { padding: 18px 24px 22px; }
-        .rm-occupants-title { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 600; color: #0D1B2A; margin-bottom: 12px; }
+        .rm-occupants-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 15px; font-weight: 600; color: #0D1B2A; margin-bottom: 12px; }
         .rm-occupant { border: 1px solid rgba(13,27,42,0.08); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; background: #fff; }
         .rm-occupant:last-child { margin-bottom: 0; }
         .rm-occupant-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
@@ -351,7 +351,7 @@ export default function AdminRoomsPage() {
         .rm-modal { background: #fff; border-radius: 12px; width: 100%; max-width: 520px; box-shadow: 0 24px 60px rgba(13,27,42,0.3); max-height: 92vh; overflow-y: auto; animation: rmModalIn .18s cubic-bezier(.22,1,.36,1); }
         .rm-modal-head { padding: 20px 24px; border-bottom: 1px solid rgba(13,27,42,0.09); display: flex; align-items: center; gap: 14px; }
         .rm-modal-icon { width: 42px; height: 42px; border-radius: 10px; background: rgba(201,168,76,0.14); color: #9a7b2c; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .rm-modal-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; color: #0D1B2A; }
+        .rm-modal-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 18px; font-weight: 700; color: #0D1B2A; }
         .rm-modal-sub { font-size: 12.5px; color: #8A9BAD; margin-top: 2px; }
         .rm-modal-body { padding: 22px 24px; }
 

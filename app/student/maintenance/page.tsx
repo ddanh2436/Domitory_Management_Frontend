@@ -424,14 +424,14 @@ export default function StudentMaintenancePage() {
         }
         .mn-banner-left { position:relative; z-index:1; }
         .mn-banner-eyebrow { font-size:10px; font-weight:500; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); margin-bottom:8px; display:block; }
-        .mn-banner-title { font-family:'Fraunces',serif; font-size:24px; font-weight:700; color:#fff; letter-spacing:-.3px; margin-bottom:8px; line-height:1.2; }
+        .mn-banner-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:24px; font-weight:700; color:#fff; letter-spacing:-.3px; margin-bottom:8px; line-height:1.2; }
         .mn-banner-title em { color:var(--gold); font-style:italic; }
         .mn-banner-sub { font-size:13px; font-weight:300; color:rgba(255,255,255,.45); max-width:380px; line-height:1.65; }
         .mn-banner-right { position:relative; z-index:1; display:flex; gap:12px; align-items:stretch; }
 
         /* banner stat cards */
         .mn-bstat { background:rgba(255,255,255,.06); border:1px solid rgba(201,168,76,.2); border-radius:12px; padding:14px 18px; text-align:center; min-width:80px; }
-        .mn-bstat-val { font-family:'Fraunces',serif; font-size:28px; font-weight:700; color:var(--gold); letter-spacing:-.5px; line-height:1; }
+        .mn-bstat-val { font-family:'FrauncesAmp','Fraunces',serif; font-size:28px; font-weight:700; color:var(--gold); letter-spacing:-.5px; line-height:1; }
         .mn-bstat-label { font-size:10px; color:rgba(255,255,255,.35); margin-top:4px; letter-spacing:.04em; }
 
         /* ── TOOLBAR ── */
@@ -468,7 +468,7 @@ export default function StudentMaintenancePage() {
         }
         .mn-card:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(13,27,42,.07); }
         .mn-card-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; gap:12px; }
-        .mn-card-title { font-family:'Fraunces',serif; font-size:17px; font-weight:600; color:var(--navy); margin-bottom:6px; line-height:1.3; }
+        .mn-card-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:17px; font-weight:600; color:var(--navy); margin-bottom:6px; line-height:1.3; }
         .mn-card-meta { display:flex; align-items:center; gap:14px; }
         .mn-card-meta-item { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--muted); }
         .mn-card-meta-item svg { width:12px; height:12px; stroke:currentColor; }
@@ -526,7 +526,7 @@ export default function StudentMaintenancePage() {
         .mn-empty { background:var(--white); border:1px solid var(--border); border-radius:14px; padding:60px 24px; text-align:center; }
         .mn-empty-icon { width:52px; height:52px; border-radius:14px; background:#F5F3EF; display:flex; align-items:center; justify-content:center; margin:0 auto 18px; color:var(--muted); }
         .mn-empty-icon svg { width:24px; height:24px; stroke:currentColor; }
-        .mn-empty-title { font-family:'Fraunces',serif; font-size:18px; font-weight:600; color:var(--navy); margin-bottom:8px; }
+        .mn-empty-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:18px; font-weight:600; color:var(--navy); margin-bottom:8px; }
         .mn-empty-sub { font-size:13.5px; color:var(--muted); line-height:1.6; max-width:320px; margin:0 auto 24px; }
         .mn-empty-link { display:inline-flex; align-items:center; gap:7px; padding:10px 20px; background:var(--navy); color:#fff; border-radius:8px; text-decoration:none; font-size:13.5px; font-weight:500; transition:background .15s; }
         .mn-empty-link:hover { background:#1A2E42; }
@@ -548,7 +548,7 @@ export default function StudentMaintenancePage() {
         .mn-modal-head-left { display:flex; align-items:center; gap:12px; }
         .mn-modal-icon { width:38px; height:38px; border-radius:9px; background:var(--gold-dim); border:1px solid var(--gold-b); display:flex; align-items:center; justify-content:center; color:var(--gold); }
         .mn-modal-icon svg { width:18px; height:18px; stroke:currentColor; }
-        .mn-modal-title { font-family:'Fraunces',serif; font-size:18px; font-weight:700; color:var(--navy); }
+        .mn-modal-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:18px; font-weight:700; color:var(--navy); }
         .mn-modal-sub { font-size:12px; color:var(--muted); margin-top:2px; }
         .mn-modal-close { width:32px; height:32px; border-radius:8px; border:1px solid var(--border); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted); transition:all .15s; }
         .mn-modal-close:hover { background:#F5F3EF; color:var(--navy); border-color:var(--navy); }

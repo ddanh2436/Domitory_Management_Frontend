@@ -138,11 +138,11 @@ export default function AdminViolationsPage() {
     <div>
       <style>{`
         .av-hero { background: linear-gradient(135deg,#0D1B2A 0%,#182b43 60%,#253d5d 100%); color:#fff; border-radius:16px; padding:24px 26px; border:1px solid rgba(201,168,76,0.25); margin-bottom:22px; }
-        .av-hero-title { font-family:'Fraunces',serif; font-size:23px; font-weight:700; }
+        .av-hero-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:23px; font-weight:700; }
         .av-hero-sub { margin-top:5px; color:rgba(255,255,255,.65); font-size:13px; }
         .av-stats { display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; }
         .av-stat { background:rgba(255,255,255,0.06); border:1px solid rgba(201,168,76,0.2); border-radius:10px; padding:10px 16px; min-width:110px; }
-        .av-stat-num { font-family:'Fraunces',serif; font-size:20px; font-weight:700; }
+        .av-stat-num { font-family:'FrauncesAmp','Fraunces',serif; font-size:20px; font-weight:700; }
         .av-stat-label { font-size:11px; color:rgba(255,255,255,0.6); margin-top:1px; }
 
         .av-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
@@ -153,7 +153,7 @@ export default function AdminViolationsPage() {
         .av-cards { display:flex; flex-direction:column; gap:12px; }
         .av-card { background:#fff; border:1px solid rgba(13,27,42,0.09); border-radius:12px; padding:18px 20px; }
         .av-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
-        .av-student { font-family:'Fraunces',serif; font-size:15.5px; font-weight:700; color:#0D1B2A; }
+        .av-student { font-family:'FrauncesAmp','Fraunces',serif; font-size:15.5px; font-weight:700; color:#0D1B2A; }
         .av-student-sub { font-size:12px; color:#8A9BAD; margin-left:8px; }
         .av-chip { display:inline-flex; align-items:center; padding:4px 11px; border-radius:100px; font-size:11.5px; font-weight:700; white-space:nowrap; }
         .av-reason { font-size:14px; font-weight:600; color:#0D1B2A; margin-top:10px; }
@@ -174,7 +174,7 @@ export default function AdminViolationsPage() {
         .av-overlay { position:fixed; inset:0; z-index:200; background:rgba(13,27,42,.6); display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(3px); }
         .av-modal { background:#fff; border-radius:14px; width:100%; max-width:460px; box-shadow:0 24px 56px rgba(13,27,42,.24); overflow:hidden; }
         .av-modal-head { padding:18px 22px; border-bottom:1px solid rgba(13,27,42,.08); }
-        .av-modal-title { font-family:'Fraunces',serif; font-size:17px; font-weight:700; color:#0D1B2A; }
+        .av-modal-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:17px; font-weight:700; color:#0D1B2A; }
         .av-modal-body { padding:18px 22px; }
         .av-textarea { width:100%; min-height:88px; padding:11px 13px; border:1px solid rgba(13,27,42,.15); border-radius:9px; font-family:'DM Sans',sans-serif; font-size:13.5px; color:#0D1B2A; outline:none; resize:vertical; }
         .av-textarea:focus { border-color:#C9A84C; }

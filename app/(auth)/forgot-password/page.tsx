@@ -39,9 +39,9 @@ export default function ForgotPasswordPage() {
         .fp-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0D1B2A 0%, #182b43 60%, #253d5d 100%); padding: 20px; font-family: 'DM Sans', sans-serif; }
         .fp-card { width: 100%; max-width: 420px; background: #fff; border-radius: 12px; box-shadow: 0 24px 60px rgba(0,0,0,0.3); overflow: hidden; }
         .fp-head { padding: 26px 30px 0; }
-        .fp-brand { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; color: #0D1B2A; }
+        .fp-brand { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 20px; font-weight: 700; color: #0D1B2A; }
         .fp-brand span { color: #C9A84C; }
-        .fp-title { font-family: 'Fraunces', serif; font-size: 21px; font-weight: 700; color: #0D1B2A; margin-top: 20px; }
+        .fp-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 21px; font-weight: 700; color: #0D1B2A; margin-top: 20px; }
         .fp-sub { font-size: 13px; color: #64748b; line-height: 1.65; margin-top: 7px; }
         .fp-body { padding: 22px 30px 30px; }
         .fp-error { padding: 11px 14px; border-radius: 8px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); color: #b91c1c; font-size: 12.5px; margin-bottom: 16px; line-height: 1.6; }
@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
         .fp-back:hover { color: #0D1B2A; }
         .fp-success { text-align: center; padding: 8px 0 4px; }
         .fp-success-icon { width: 58px; height: 58px; border-radius: 50%; background: rgba(34,197,94,0.1); color: #16a34a; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
-        .fp-success-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; color: #0D1B2A; }
+        .fp-success-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 18px; font-weight: 700; color: #0D1B2A; }
         .fp-success-sub { font-size: 13px; color: #64748b; line-height: 1.7; margin-top: 8px; }
         .fp-success-sub b { color: #0D1B2A; }
       `}</style>

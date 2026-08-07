@@ -224,7 +224,7 @@ export default function StudentInvoicesPage() {
         .iv-stat--accent { background:var(--navy); border-color:var(--gold-b); }
         .iv-stat-label { font-size:10.5px; font-weight:500; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
         .iv-stat--accent .iv-stat-label { color:rgba(255,255,255,.38); }
-        .iv-stat-value { font-family:'Fraunces',serif; font-size:24px; font-weight:700; color:var(--navy); letter-spacing:-.6px; line-height:1; }
+        .iv-stat-value { font-family:'FrauncesAmp','Fraunces',serif; font-size:24px; font-weight:700; color:var(--navy); letter-spacing:-.6px; line-height:1; }
         .iv-stat--accent .iv-stat-value { color:var(--gold); }
 
         /* ── FILTER TOOLBAR ── */
@@ -243,7 +243,7 @@ export default function StudentInvoicesPage() {
         .iv-card:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(13,27,42,.07); }
         .iv-card--overdue { border-color:rgba(239,68,68,.3); }
         .iv-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; border-bottom:1px dashed var(--border); padding-bottom:20px; gap:10px; flex-wrap:wrap; }
-        .iv-month { font-family:'Fraunces',serif; font-size:18px; font-weight:600; color:var(--navy); display:flex; align-items:center; gap:10px; }
+        .iv-month { font-family:'FrauncesAmp','Fraunces',serif; font-size:18px; font-weight:600; color:var(--navy); display:flex; align-items:center; gap:10px; }
         .iv-month-icon { color:var(--gold); display:flex; }
         .iv-status-badge { padding:4px 12px; border-radius:100px; font-size:11px; font-weight:600; white-space:nowrap; }
 
@@ -259,7 +259,7 @@ export default function StudentInvoicesPage() {
 
         .iv-total { display:flex; justify-content:space-between; align-items:center; padding:16px 18px; background:#F9F8F6; border-radius:12px; margin-bottom:20px; }
         .iv-total-label { font-size:13.5px; color:var(--muted); }
-        .iv-total-amount { font-family:'Fraunces',serif; font-size:23px; font-weight:700; color:var(--navy); letter-spacing:-.5px; }
+        .iv-total-amount { font-family:'FrauncesAmp','Fraunces',serif; font-size:23px; font-weight:700; color:var(--navy); letter-spacing:-.5px; }
 
         .iv-btn-pay { width:100%; padding:13px; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14.5px; font-weight:600; text-align:center; border:none; cursor:pointer; transition:all .18s; }
         .iv-btn-pay--active { background:var(--navy); color:var(--white); }

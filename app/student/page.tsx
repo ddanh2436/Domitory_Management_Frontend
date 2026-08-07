@@ -386,7 +386,7 @@ export default function StudentDashboard() {
           margin-bottom: 8px; display: block;
         }
         .st-welcome-name {
-          font-family: 'Fraunces', serif;
+          font-family: 'FrauncesAmp', 'Fraunces', serif;
           font-size: clamp(22px, 3vw, 30px); font-weight: 700;
           color: var(--white); line-height: 1.2;
           letter-spacing: -0.5px; margin-bottom: 10px;
@@ -409,7 +409,7 @@ export default function StudentDashboard() {
           margin-bottom: 10px;
         }
         .st-room-card-name {
-          font-family: 'Fraunces', serif;
+          font-family: 'FrauncesAmp', 'Fraunces', serif;
           font-size: 26px; font-weight: 700;
           color: var(--gold); letter-spacing: -0.5px; line-height: 1;
           margin-bottom: 8px;
@@ -435,7 +435,7 @@ export default function StudentDashboard() {
           display: flex; align-items: center; justify-content: space-between;
         }
         .st-panel-title {
-          font-family: 'Fraunces', serif;
+          font-family: 'FrauncesAmp', 'Fraunces', serif;
           font-size: 15px; font-weight: 600; color: var(--navy); letter-spacing: -0.2px;
         }
         .st-panel-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
@@ -511,7 +511,7 @@ export default function StudentDashboard() {
         .st-feat-card--violet  .st-feat-icon { background: rgba(124,92,191,0.1); color: #7C5CBF; }
         .st-feat-body { flex: 1; }
         .st-feat-title {
-          font-family: 'Fraunces', serif;
+          font-family: 'FrauncesAmp', 'Fraunces', serif;
           font-size: 14px; font-weight: 600; color: var(--navy);
           margin-bottom: 5px; line-height: 1.3;
         }

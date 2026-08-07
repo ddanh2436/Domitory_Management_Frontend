@@ -119,7 +119,7 @@ export default function MyBookingsPage() {
           }
           .bk-hero-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; }
           .bk-hero-left { position: relative; z-index: 1; }
-          .bk-hero-title { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; letter-spacing: -.3px; }
+          .bk-hero-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 26px; font-weight: 700; letter-spacing: -.3px; }
           .bk-hero-sub { margin-top: 6px; color: rgba(255,255,255,.6); font-size: 13.5px; max-width: 460px; line-height: 1.6; }
           .bk-hero-btn {
             position: relative; z-index: 1;
@@ -144,7 +144,7 @@ export default function MyBookingsPage() {
           .bk-table tbody tr:last-child td { border-bottom: none; }
           .bk-table tbody tr { transition: background .15s; }
           .bk-table tbody tr:hover { background: #FBFAF8; }
-          .bk-room-name { font-family: 'Fraunces', serif; font-size: 15.5px; font-weight: 600; color: var(--navy); }
+          .bk-room-name { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 15.5px; font-weight: 600; color: var(--navy); }
           .bk-room-loc { font-size: 12px; color: var(--muted); margin-top: 2px; }
           .bk-date { font-size: 13.5px; color: #4A6580; }
           .bk-badge { display: inline-flex; align-items: center; padding: 5px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; white-space: nowrap; }
@@ -156,7 +156,7 @@ export default function MyBookingsPage() {
           /* ── EMPTY ── */
           .bk-empty { padding: 60px 24px; text-align: center; }
           .bk-empty-icon { width: 52px; height: 52px; border-radius: 14px; background: #F5F3EF; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; color: var(--muted); }
-          .bk-empty-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
+          .bk-empty-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
           .bk-empty-sub { font-size: 13.5px; color: var(--muted); line-height: 1.6; max-width: 340px; margin: 0 auto 22px; }
           .bk-empty-link { display: inline-flex; align-items: center; gap: 7px; padding: 10px 20px; background: var(--navy); color: #fff; border-radius: 8px; text-decoration: none; font-size: 13.5px; font-weight: 500; transition: background .15s; }
           .bk-empty-link:hover { background: #1A2E42; }

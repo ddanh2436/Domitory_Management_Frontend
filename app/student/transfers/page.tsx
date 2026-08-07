@@ -140,7 +140,7 @@ export default function StudentTransfersPage() {
         .tf-shell { max-width: 1080px; margin: 0 auto; padding: 24px 24px 48px; font-family: 'DM Sans', sans-serif; }
 
         .tf-hero { background: linear-gradient(135deg, #0D1B2A 0%, #182b43 60%, #253d5d 100%); color: #fff; border-radius: 16px; padding: 26px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; border: 1px solid rgba(201,168,76,0.25); margin-bottom: 24px; }
-        .tf-hero-title { font-family: 'Fraunces', serif; font-size: 25px; font-weight: 700; letter-spacing: -.3px; }
+        .tf-hero-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 25px; font-weight: 700; letter-spacing: -.3px; }
         .tf-hero-sub { margin-top: 6px; color: rgba(255,255,255,.65); font-size: 13.5px; max-width: 480px; line-height: 1.6; }
         .tf-hero-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--gold, #C9A84C); color: #0D1B2A; border: none; padding: 11px 20px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13.5px; cursor: pointer; transition: all .18s; }
         .tf-hero-btn:hover:not(:disabled) { background: #D9B85C; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,168,76,.35); }
@@ -149,10 +149,10 @@ export default function StudentTransfersPage() {
         .tf-current { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid rgba(13,27,42,.09); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; }
         .tf-current-icon { width: 40px; height: 40px; border-radius: 8px; background: rgba(201,168,76,.15); color: #9a7b2c; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .tf-current-label { font-size: 12px; color: #8A9BAD; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
-        .tf-current-room { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: #0D1B2A; margin-top: 2px; }
+        .tf-current-room { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 17px; font-weight: 600; color: #0D1B2A; margin-top: 2px; }
 
         .tf-panel { background: #fff; border: 1px solid rgba(13,27,42,.09); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
-        .tf-panel-head { padding: 16px 20px; border-bottom: 1px solid rgba(13,27,42,.09); font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; }
+        .tf-panel-head { padding: 16px 20px; border-bottom: 1px solid rgba(13,27,42,.09); font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; }
         .tf-panel-body { padding: 20px; }
 
         .tf-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }

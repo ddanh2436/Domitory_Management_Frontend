@@ -96,7 +96,7 @@ export default function AdminBookingsPage() {
         }
         
         .panel-title { 
-          font-family: 'Fraunces', serif; 
+          font-family: 'FrauncesAmp', 'Fraunces', serif; 
           font-size: 24px; 
           font-weight: 700; 
           color: #0D1B2A; 
