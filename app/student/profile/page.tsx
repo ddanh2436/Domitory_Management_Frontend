@@ -16,13 +16,25 @@ interface StudentProfile {
   room?: { name: string; building: string };
 }
 
+type ViolationStatus = "ACTIVE" | "APPEAL_PENDING" | "REVOKED" | "APPEAL_REJECTED";
+
 interface Violation {
   _id: string;
   reason: string;
   points: number;
   scoreAfter?: number;
   createdAt: string;
+  status?: ViolationStatus;
+  appealReason?: string;
+  reviewNote?: string;
 }
+
+const VIOLATION_STATUS_CFG: Record<ViolationStatus, { label: string; color: string; bg: string }> = {
+  ACTIVE: { label: "Đang hiệu lực", color: "#b45309", bg: "rgba(245,158,11,0.12)" },
+  APPEAL_PENDING: { label: "Đang khiếu nại", color: "#0284c7", bg: "rgba(2,132,199,0.12)" },
+  REVOKED: { label: "Đã thu hồi", color: "#16a34a", bg: "rgba(34,197,94,0.12)" },
+  APPEAL_REJECTED: { label: "Khiếu nại bị từ chối", color: "#dc2626", bg: "rgba(239,68,68,0.12)" },
+};
 
 const CameraIcon = (
   <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,6 +48,10 @@ export default function StudentProfilePage() {
   const [violations, setViolations] = useState<Violation[]>([]);
   const [formData, setFormData] = useState({ phone: "", cccd: "", avatar: "" });
   const [loading, setLoading] = useState(true);
+  // Modal khiếu nại: giữ vi phạm đang khiếu nại + nội dung lý do
+  const [appealTarget, setAppealTarget] = useState<Violation | null>(null);
+  const [appealReason, setAppealReason] = useState("");
+  const [appealing, setAppealing] = useState(false);
   const toast = useToast();
   // Cầu nối sang toast dùng chung (giữ nguyên các lệnh setAlertMsg sẵn có)
   const setAlertMsg = ({ text, type }: { text: string; type: string }) => {
@@ -107,6 +123,34 @@ export default function StudentProfilePage() {
     }
   };
 
+  // Gửi khiếu nại cho một vi phạm đang hiệu lực
+  const submitAppeal = async () => {
+    if (!appealTarget) return;
+    if (!appealReason.trim()) {
+      toast.error("Vui lòng nhập lý do khiếu nại.");
+      return;
+    }
+    setAppealing(true);
+    try {
+      const res = await apiClient.post(`/violations/${appealTarget._id}/appeal`, {
+        reason: appealReason.trim(),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Đã gửi khiếu nại, vui lòng chờ ban quản lý duyệt.");
+        setAppealTarget(null);
+        setAppealReason("");
+        loadProfile();
+      } else {
+        toast.error(data.message || "Không gửi được khiếu nại.");
+      }
+    } catch {
+      toast.error("Không thể kết nối đến server.");
+    } finally {
+      setAppealing(false);
+    }
+  };
+
   if (loading) {
     return <div className="py-20 text-center text-slate-500">Đang tải hồ sơ...</div>;
   }
@@ -158,6 +202,28 @@ export default function StudentProfilePage() {
         .behavior-item-reason { font-size: 14px; font-weight: 500; color: var(--navy); line-height: 1.4; }
         .behavior-item-time { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
         .behavior-item-points { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; color: #dc2626; white-space: nowrap; }
+        .behavior-item-tags { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+        .behavior-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 100px; font-size: 11.5px; font-weight: 700; }
+        .behavior-appeal-btn { padding: 4px 12px; border-radius: 100px; border: 1px solid rgba(2,132,199,0.4); background: #fff; color: #0284c7; font-family: 'DM Sans', sans-serif; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all .15s; }
+        .behavior-appeal-btn:hover { background: rgba(2,132,199,0.08); }
+        .behavior-note { margin-top: 8px; font-size: 12.5px; line-height: 1.55; padding: 8px 12px; border-radius: 8px; }
+        .behavior-note--reject { color: #b91c1c; background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.18); }
+        .behavior-note--ok { color: #15803d; background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.18); }
+        .vio-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(13,27,42,.6); display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px); }
+        .vio-modal { background: #fff; border-radius: 14px; width: 100%; max-width: 460px; box-shadow: 0 24px 56px rgba(13,27,42,.24); overflow: hidden; }
+        .vio-modal-head { padding: 18px 22px; border-bottom: 1px solid var(--border); }
+        .vio-modal-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; color: var(--navy); }
+        .vio-modal-sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+        .vio-modal-body { padding: 18px 22px; }
+        .vio-textarea { width: 100%; min-height: 96px; padding: 11px 13px; border: 1px solid var(--border); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--navy); background: #F9F8F6; outline: none; resize: vertical; line-height: 1.6; }
+        .vio-textarea:focus { border-color: var(--gold); background: #fff; }
+        .vio-count { text-align: right; font-size: 11px; color: var(--muted); margin-top: 4px; }
+        .vio-modal-foot { display: flex; gap: 10px; padding: 0 22px 20px; }
+        .vio-btn-cancel { flex: 1; padding: 11px; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--navy); font-family: 'DM Sans', sans-serif; font-size: 13.5px; cursor: pointer; }
+        .vio-btn-cancel:hover { background: #F5F3EF; }
+        .vio-btn-submit { flex: 2; padding: 11px; border: none; border-radius: 8px; background: #0284c7; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+        .vio-btn-submit:hover:not(:disabled) { background: #0369a1; }
+        .vio-btn-submit:disabled { opacity: .6; cursor: not-allowed; }
 
         @media (max-width: 760px) {
           .profile-card { flex-direction: column; }
@@ -285,27 +351,84 @@ export default function StudentProfilePage() {
                 <div className="behavior-empty">Bạn chưa có vi phạm nào. Hãy tiếp tục giữ vững nề nếp! 🎉</div>
               ) : (
                 <div className="behavior-list">
-                  {violations.map((v) => (
-                    <div key={v._id} className="behavior-item">
-                      <div className="behavior-item-main">
-                        <div className="behavior-item-reason">{v.reason}</div>
-                        <div className="behavior-item-time">
-                          {new Date(v.createdAt).toLocaleString("vi-VN", {
-                            day: "2-digit", month: "2-digit", year: "numeric",
-                            hour: "2-digit", minute: "2-digit",
-                          })}
-                          {typeof v.scoreAfter === "number" && ` · Còn ${v.scoreAfter}/100`}
+                  {violations.map((v) => {
+                    const status = (v.status ?? "ACTIVE") as ViolationStatus;
+                    const sc = VIOLATION_STATUS_CFG[status];
+                    const isRevoked = status === "REVOKED";
+                    return (
+                      <div key={v._id} className="behavior-item">
+                        <div className="behavior-item-main">
+                          <div className="behavior-item-reason">{v.reason}</div>
+                          <div className="behavior-item-time">
+                            {new Date(v.createdAt).toLocaleString("vi-VN", {
+                              day: "2-digit", month: "2-digit", year: "numeric",
+                              hour: "2-digit", minute: "2-digit",
+                            })}
+                            {typeof v.scoreAfter === "number" && ` · Còn ${v.scoreAfter}/100`}
+                          </div>
+                          <div className="behavior-item-tags">
+                            <span className="behavior-badge" style={{ color: sc.color, background: sc.bg }}>{sc.label}</span>
+                            {status === "ACTIVE" && (
+                              <button
+                                type="button"
+                                className="behavior-appeal-btn"
+                                onClick={() => { setAppealTarget(v); setAppealReason(""); }}
+                              >
+                                Khiếu nại
+                              </button>
+                            )}
+                          </div>
+                          {status === "APPEAL_REJECTED" && v.reviewNote && (
+                            <div className="behavior-note behavior-note--reject">Ban quản lý từ chối: {v.reviewNote}</div>
+                          )}
+                          {isRevoked && (
+                            <div className="behavior-note behavior-note--ok">Đã thu hồi — điểm hành vi đã được hoàn lại.</div>
+                          )}
                         </div>
+                        <div className="behavior-item-points" style={isRevoked ? { color: "#16a34a", textDecoration: "line-through" } : undefined}>-{v.points}</div>
                       </div>
-                      <div className="behavior-item-points">-{v.points}</div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
           );
         })()}
       </div>
+
+      {/* Modal khiếu nại vi phạm */}
+      {appealTarget && (
+        <div className="vio-overlay" onClick={(e) => { if (e.target === e.currentTarget) setAppealTarget(null); }}>
+          <div className="vio-modal">
+            <div className="vio-modal-head">
+              <div className="vio-modal-title">Khiếu nại vi phạm</div>
+              <div className="vio-modal-sub">Vi phạm: “{appealTarget.reason}” (−{appealTarget.points} điểm). Nêu rõ lý do để ban quản lý xem xét.</div>
+            </div>
+            <div className="vio-modal-body">
+              <textarea
+                className="vio-textarea"
+                maxLength={500}
+                autoFocus
+                placeholder="VD: Hôm đó em có đơn xin phép/vắng mặt hợp lệ, có minh chứng kèm theo…"
+                value={appealReason}
+                onChange={(e) => setAppealReason(e.target.value)}
+              />
+              <div className="vio-count">{appealReason.length}/500</div>
+            </div>
+            <div className="vio-modal-foot">
+              <button type="button" className="vio-btn-cancel" onClick={() => setAppealTarget(null)}>Hủy bỏ</button>
+              <button
+                type="button"
+                className="vio-btn-submit"
+                disabled={appealing || !appealReason.trim()}
+                onClick={() => void submitAppeal()}
+              >
+                {appealing ? "Đang gửi…" : "Gửi khiếu nại"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
