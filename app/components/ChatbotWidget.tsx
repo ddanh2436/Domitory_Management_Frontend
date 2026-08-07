@@ -569,7 +569,7 @@ export default function ChatbotWidget() {
           animation: daiPop 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.2);
           text-align: left;
         }
-        .dai-invite-title { font-family: 'Fraunces', serif; font-size: 14.5px; font-weight: 600; line-height: 1.35; }
+        .dai-invite-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 14.5px; font-weight: 600; line-height: 1.35; }
         .dai-invite-sub { font-size: 12px; color: var(--dai-muted); margin-top: 3px; line-height: 1.4; }
         .dai-invite-x {
           position: absolute; top: 7px; right: 7px; width: 20px; height: 20px; border: none;
@@ -601,7 +601,7 @@ export default function ChatbotWidget() {
         }
         .dai-launcher-text { padding: 0 16px 0 13px; text-align: left; }
         .dai-launcher-title {
-          display: block; font-family: 'Fraunces', serif; font-size: 13px; font-weight: 700; color: #fff;
+          display: block; font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 13px; font-weight: 700; color: #fff;
           letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.2; white-space: nowrap;
         }
         .dai-launcher-sub {
@@ -631,7 +631,7 @@ export default function ChatbotWidget() {
           display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
         .dai-head-name {
-          font-family: 'Fraunces', serif; font-size: 15px; font-weight: 700; color: #fff;
+          font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 15px; font-weight: 700; color: #fff;
           letter-spacing: 0.05em; text-transform: uppercase; line-height: 1.2;
         }
         .dai-head-sub { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 1px; }
@@ -655,7 +655,7 @@ export default function ChatbotWidget() {
         }
         .dai-eyebrow::before { content: ''; width: 22px; height: 2px; background: var(--dai-gold); flex-shrink: 0; }
         .dai-greeting {
-          font-family: 'Fraunces', serif; font-size: 27px; font-weight: 700; color: var(--dai-navy);
+          font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 27px; font-weight: 700; color: var(--dai-navy);
           line-height: 1.18; letter-spacing: -0.5px; margin: 16px 0 10px;
         }
         .dai-greeting span { color: var(--dai-gold); }
@@ -693,7 +693,7 @@ export default function ChatbotWidget() {
         .dai-list:last-child { margin-bottom: 0; }
         .dai-list li { display: flex; gap: 10px; }
         .dai-list-marker {
-          flex-shrink: 0; min-width: 13px; font-family: 'Fraunces', serif; font-weight: 700;
+          flex-shrink: 0; min-width: 13px; font-family: 'FrauncesAmp', 'Fraunces', serif; font-weight: 700;
           color: var(--dai-gold); font-size: 13px; line-height: 1.6;
         }
 
@@ -730,7 +730,7 @@ export default function ChatbotWidget() {
         }
         .dai-invoice-row--total {
           border-bottom: none; background: var(--dai-cream); font-weight: 700;
-          font-family: 'Fraunces', serif; font-size: 14px;
+          font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 14px;
         }
         .dai-invoice-row--total .dai-invoice-amount { color: var(--dai-navy); }
         .dai-invoice-amount { font-variant-numeric: tabular-nums; white-space: nowrap; }

@@ -278,7 +278,7 @@ export default function AdminInvoicesPage() {
         }
         
         .panel-title { 
-          font-family: 'Fraunces', serif; 
+          font-family: 'FrauncesAmp', 'Fraunces', serif; 
           font-size: 24px; 
           font-weight: 700; 
           color: #0D1B2A; 
@@ -363,7 +363,7 @@ export default function AdminInvoicesPage() {
         .iv-modal { background: #fff; border-radius: 12px; width: 100%; max-width: 560px; box-shadow: 0 24px 60px rgba(13,27,42,0.3); max-height: 92vh; overflow-y: auto; animation: ivModalIn .18s cubic-bezier(.22,1,.36,1); }
         .iv-modal-head { padding: 22px 26px; border-bottom: 1px solid rgba(13,27,42,0.09); display: flex; align-items: center; gap: 14px; }
         .iv-modal-icon { width: 46px; height: 46px; border-radius: 11px; background: rgba(201,168,76,0.14); color: #9a7b2c; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .iv-modal-title { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; color: #0D1B2A; }
+        .iv-modal-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 19px; font-weight: 700; color: #0D1B2A; }
         .iv-modal-sub { font-size: 13px; color: #8A9BAD; margin-top: 2px; }
         .iv-modal-body { padding: 24px 26px; }
 

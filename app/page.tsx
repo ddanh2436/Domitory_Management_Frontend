@@ -412,7 +412,7 @@ export default function LandingPage() {
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .hero-headline {
-          font-family: 'Fraunces', serif;
+          font-family: 'FrauncesAmp', 'Fraunces', serif;
           font-size: clamp(42px, 7vw, 72px); font-weight: 700;
           line-height: 1.1; color: var(--white);
           margin-bottom: 28px;
@@ -463,7 +463,7 @@ export default function LandingPage() {
         }
         .stat:last-child { border-right: none; }
         .stat-num {
-          font-family: 'Fraunces', serif;
+          font-family: 'FrauncesAmp', 'Fraunces', serif;
           font-size: 32px; font-weight: 600; color: var(--gold);
         }
         .stat-label {
@@ -512,7 +512,7 @@ export default function LandingPage() {
           margin-bottom: 16px; display: block;
         }
         .section-title {
-          font-family: 'Fraunces', serif;
+          font-family: 'FrauncesAmp', 'Fraunces', serif;
           font-size: clamp(32px, 5vw, 48px); font-weight: 600;
           color: var(--white); line-height: 1.2;
           letter-spacing: -0.5px; margin-bottom: 60px;
@@ -545,7 +545,7 @@ export default function LandingPage() {
           color: rgba(201,168,76,0.5); margin-bottom: 12px;
         }
         .feature-title {
-          font-family: 'Fraunces', serif;
+          font-family: 'FrauncesAmp', 'Fraunces', serif;
           font-size: 20px; font-weight: 600;
           color: var(--white); margin-bottom: 12px; line-height: 1.3;
         }
@@ -585,7 +585,7 @@ export default function LandingPage() {
         .role-avatar.student { background: rgba(201,168,76,0.12); }
         .role-avatar.admin   { background: rgba(13,27,42,0.08); }
         .role-name {
-          font-family: 'Fraunces', serif;
+          font-family: 'FrauncesAmp', 'Fraunces', serif;
           font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 8px;
         }
         .role-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px; }
@@ -670,7 +670,7 @@ export default function LandingPage() {
           background: radial-gradient(ellipse 50% 80% at 50% 100%, rgba(201,168,76,0.15) 0%, transparent 70%);
         }
         .cta-title {
-          font-family: 'Fraunces', serif;
+          font-family: 'FrauncesAmp', 'Fraunces', serif;
           font-size: clamp(36px, 5vw, 54px); font-weight: 700;
           color: var(--white); line-height: 1.15; letter-spacing: -1px;
           margin-bottom: 20px; position: relative; z-index: 1;

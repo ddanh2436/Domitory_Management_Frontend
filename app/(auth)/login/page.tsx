@@ -212,9 +212,9 @@ export default function AuthPage() {
         .ap-left-glow { position: absolute; inset: 0; background: radial-gradient(ellipse 90% 60% at 50% 105%, rgba(201,168,76,.14) 0%, transparent 65%); pointer-events: none; }
         .ap-left-content { position: relative; z-index: 1; text-align: center; width: 100%; }
         .ap-left-brand { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 30px; text-decoration: none; cursor: pointer; }
-        .ap-left-wordmark { font-family: 'Fraunces', serif; font-size: 30px; font-weight: 700; color: var(--white); letter-spacing: -0.3px; }
+        .ap-left-wordmark { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 30px; font-weight: 700; color: var(--white); letter-spacing: -0.3px; }
         .ap-left-wordmark span { color: var(--gold); }
-        .ap-left-headline { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; color: var(--white); line-height: 1.25; margin-bottom: 14px; letter-spacing: -0.3px; }
+        .ap-left-headline { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 24px; font-weight: 700; color: var(--white); line-height: 1.25; margin-bottom: 14px; letter-spacing: -0.3px; }
         .ap-left-headline em { color: var(--gold); font-style: italic; }
         .ap-left-sub { font-size: 13px; font-weight: 300; color: rgba(255,255,255,.45); line-height: 1.7; margin-bottom: 32px; max-width: 280px; margin-left: auto; margin-right: auto; }
         .ap-features { display: flex; flex-direction: column; gap: 10px; }
@@ -230,7 +230,7 @@ export default function AuthPage() {
         .ap-card.register-active .overlay-left { transform: translateX(0); }
         .ap-card.register-active .overlay-right { transform: translateX(20%); }
         @keyframes show { 0%, 49.99% { opacity: 0; z-index: 1; } 50%, 100% { opacity: 1; z-index: 5; } }
-        .ap-form-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--navy); letter-spacing: -0.3px; margin-bottom: 5px; text-align: center; }
+        .ap-form-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--navy); letter-spacing: -0.3px; margin-bottom: 5px; text-align: center; }
         .ap-form-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; text-align: center; }
         .ap-message { padding: 10px 14px; border-radius: 9px; font-size: 13px; font-weight: 500; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 8px; }
         .ap-message--success { background: rgba(34,197,94,.1); color: #16a34a; border: 1px solid rgba(34,197,94,.2); }

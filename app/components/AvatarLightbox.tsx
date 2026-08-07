@@ -78,7 +78,7 @@ export default function AvatarLightbox({ name, avatar, size = 46, style }: Avata
             background: "#0D1B2A",
             color: "#C9A84C",
             fontWeight: 700,
-            fontFamily: "'Fraunces', serif",
+            fontFamily: "'FrauncesAmp', 'Fraunces', serif",
             fontSize: Math.round(size * 0.4),
             ...style,
           }}

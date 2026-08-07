@@ -306,18 +306,18 @@ export default function StaffDashboardPage() {
     <div>
       <style>{`
         .sf-hero { background: linear-gradient(135deg, #0D1B2A 0%, #182b43 60%, #253d5d 100%); color: #fff; border-radius: 16px; padding: 24px 26px; border: 1px solid rgba(201,168,76,0.25); margin-bottom: 22px; }
-        .sf-hero-title { font-family: 'Fraunces', serif; font-size: 23px; font-weight: 700; letter-spacing: -.3px; }
+        .sf-hero-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 23px; font-weight: 700; letter-spacing: -.3px; }
         .sf-hero-sub { margin-top: 5px; color: rgba(255,255,255,.65); font-size: 13px; line-height: 1.6; }
         .sf-hero-stats { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
         .sf-stat { background: rgba(255,255,255,0.06); border: 1px solid rgba(201,168,76,0.2); border-radius: 10px; padding: 10px 16px; min-width: 100px; }
-        .sf-stat-num { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; }
+        .sf-stat-num { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 20px; font-weight: 700; }
         .sf-stat-label { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 1px; }
 
-        .sf-section { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; margin: 22px 0 12px; }
+        .sf-section { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; margin: 22px 0 12px; }
         .sf-cards { display: flex; flex-direction: column; gap: 12px; }
         .sf-card { background: #fff; border: 1px solid rgba(13,27,42,0.09); border-left: 4px solid transparent; border-radius: 10px; padding: 18px 20px; }
         .sf-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-        .sf-room { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 700; color: #0D1B2A; margin-right: 10px; }
+        .sf-room { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 16px; font-weight: 700; color: #0D1B2A; margin-right: 10px; }
         .sf-room-sub { font-size: 12px; color: #8A9BAD; }
         .sf-chip { display: inline-flex; align-items: center; padding: 4px 11px; border-radius: 100px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
         .sf-title { font-size: 14.5px; font-weight: 700; color: #0D1B2A; }
@@ -358,7 +358,7 @@ export default function StaffDashboardPage() {
         .sf-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(13,27,42,.6); display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px); }
         .sf-modal { background: #fff; border-radius: 14px; width: 100%; max-width: 460px; box-shadow: 0 24px 56px rgba(13,27,42,.24); overflow: hidden; }
         .sf-modal-head { padding: 18px 22px; border-bottom: 1px solid rgba(13,27,42,.08); }
-        .sf-modal-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; color: #0D1B2A; }
+        .sf-modal-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 17px; font-weight: 700; color: #0D1B2A; }
         .sf-modal-sub { font-size: 12.5px; color: #8A9BAD; margin-top: 3px; }
         .sf-modal-body { padding: 18px 22px; }
         .sf-modal-textarea { width: 100%; min-height: 92px; padding: 11px 13px; border: 1px solid rgba(13,27,42,.15); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: #0D1B2A; outline: none; resize: vertical; line-height: 1.6; }

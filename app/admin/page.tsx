@@ -188,7 +188,7 @@ export default function AdminDashboard() {
     <RoleGuard allowedRoles={["ADMIN"]}>
       <style>{`
         .dashboard-wrapper { padding: 32px; max-width: 1280px; margin: 0 auto; }
-        .page-title { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 700; color: #0D1B2A; margin-bottom: 6px; }
+        .page-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 28px; font-weight: 700; color: #0D1B2A; margin-bottom: 6px; }
         .page-subtitle { font-size: 14px; color: #8A9BAD; margin-bottom: 28px; }
 
         .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
@@ -198,7 +198,7 @@ export default function AdminDashboard() {
         .stat-card--accent { background: #0D1B2A; border-color: rgba(201,168,76,0.25); }
         .stat-card__label { font-size: 11px; font-weight: 500; letter-spacing: 0.09em; text-transform: uppercase; color: #8A9BAD; margin-bottom: 10px; }
         .stat-card--accent .stat-card__label { color: rgba(255,255,255,0.4); }
-        .stat-card__value { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 700; color: #0D1B2A; line-height: 1; letter-spacing: -1px; margin-bottom: 6px; }
+        .stat-card__value { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 32px; font-weight: 700; color: #0D1B2A; line-height: 1; letter-spacing: -1px; margin-bottom: 6px; }
         .stat-card--accent .stat-card__value { color: #C9A84C; }
         .stat-card__sub { font-size: 12px; color: #8A9BAD; }
         .stat-card--accent .stat-card__sub { color: rgba(255,255,255,0.35); }
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
         /* Chỉnh lại Grid hiển thị biểu đồ hàng trên */
         .db-charts-section { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin-bottom: 28px; }
         .chart-box { background: white; border: 1px solid rgba(13,27,42,0.09); border-radius: 14px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.01); min-width: 0; }
-        .chart-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
+        .chart-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
         
         @media (max-width: 1024px) { 
           .db-charts-section { grid-template-columns: 1fr; } 
@@ -214,7 +214,7 @@ export default function AdminDashboard() {
 
         .panel { background: #ffffff; border: 1px solid rgba(13,27,42,0.09); border-radius: 14px; overflow: hidden; margin-bottom: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
         .panel__header { padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(13,27,42,0.09); }
-        .panel__title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: #0D1B2A; letter-spacing: -0.2px; }
+        .panel__title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 17px; font-weight: 600; color: #0D1B2A; letter-spacing: -0.2px; }
         .panel__subtitle { font-size: 12.5px; color: #8A9BAD; margin-top: 2px; }
         .panel__header-right { display: flex; align-items: center; gap: 10px; }
         .count-badge { display: inline-flex; align-items: center; justify-content: center; padding: 4px 12px; border-radius: 100px; background: rgba(201,168,76,0.18); border: 1px solid rgba(201,168,76,0.25); font-size: 12px; font-weight: 600; color: #C9A84C; }

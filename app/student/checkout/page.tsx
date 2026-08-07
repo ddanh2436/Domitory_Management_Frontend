@@ -147,7 +147,7 @@ export default function StudentCheckoutPage() {
         .co-shell { max-width: 1080px; margin: 0 auto; padding: 24px 24px 48px; font-family: 'DM Sans', sans-serif; }
 
         .co-hero { background: linear-gradient(135deg, #0D1B2A 0%, #182b43 60%, #253d5d 100%); color: #fff; border-radius: 16px; padding: 26px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; border: 1px solid rgba(201,168,76,0.25); margin-bottom: 24px; }
-        .co-hero-title { font-family: 'Fraunces', serif; font-size: 25px; font-weight: 700; letter-spacing: -.3px; }
+        .co-hero-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 25px; font-weight: 700; letter-spacing: -.3px; }
         .co-hero-sub { margin-top: 6px; color: rgba(255,255,255,.65); font-size: 13.5px; max-width: 520px; line-height: 1.6; }
         .co-hero-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--gold, #C9A84C); color: #0D1B2A; border: none; padding: 11px 20px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13.5px; cursor: pointer; transition: all .18s; }
         .co-hero-btn:hover:not(:disabled) { background: #D9B85C; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,168,76,.35); }
@@ -156,10 +156,10 @@ export default function StudentCheckoutPage() {
         .co-current { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid rgba(13,27,42,.09); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; }
         .co-current-icon { width: 40px; height: 40px; border-radius: 8px; background: rgba(201,168,76,.15); color: #9a7b2c; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .co-current-label { font-size: 12px; color: #8A9BAD; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
-        .co-current-room { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: #0D1B2A; margin-top: 2px; }
+        .co-current-room { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 17px; font-weight: 600; color: #0D1B2A; margin-top: 2px; }
 
         .co-panel { background: #fff; border: 1px solid rgba(13,27,42,.09); border-radius: 12px; overflow: hidden; margin-bottom: 24px; }
-        .co-panel-head { padding: 16px 20px; border-bottom: 1px solid rgba(13,27,42,.09); font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; }
+        .co-panel-head { padding: 16px 20px; border-bottom: 1px solid rgba(13,27,42,.09); font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #0D1B2A; }
         .co-panel-body { padding: 20px; }
 
         .co-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
@@ -201,7 +201,7 @@ export default function StudentCheckoutPage() {
 
         .co-overlay { position: fixed; inset: 0; background: rgba(13,27,42,.55); display: flex; align-items: center; justify-content: center; z-index: 60; padding: 20px; }
         .co-modal { background: #fff; border-radius: 14px; width: 100%; max-width: 520px; max-height: 85vh; overflow-y: auto; }
-        .co-modal-head { padding: 18px 22px; border-bottom: 1px solid rgba(13,27,42,.09); font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; color: #0D1B2A; display: flex; align-items: center; justify-content: space-between; }
+        .co-modal-head { padding: 18px 22px; border-bottom: 1px solid rgba(13,27,42,.09); font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 17px; font-weight: 700; color: #0D1B2A; display: flex; align-items: center; justify-content: space-between; }
         .co-modal-close { border: none; background: transparent; cursor: pointer; color: #8A9BAD; font-size: 20px; line-height: 1; }
         .co-modal-body { padding: 20px 22px; }
         .co-money-row { display: flex; justify-content: space-between; padding: 9px 0; font-size: 13.5px; color: #37485c; border-bottom: 1px dashed rgba(13,27,42,.08); }

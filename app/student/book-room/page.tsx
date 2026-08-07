@@ -199,7 +199,7 @@ export default function BookRoomPage() {
         .br-hero-content { position:relative; z-index:1; }
         .br-back-link { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:rgba(255,255,255,.5); text-decoration:none; background:none; border:none; cursor:pointer; margin-bottom:16px; font-family:'DM Sans',sans-serif; transition:color .15s; padding:0; }
         .br-back-link:hover { color:var(--gold); }
-        .br-hero-title { font-family:'Fraunces',serif; font-size:24px; font-weight:700; color:#fff; letter-spacing:-.3px; margin-bottom:8px; }
+        .br-hero-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:24px; font-weight:700; color:#fff; letter-spacing:-.3px; margin-bottom:8px; }
         .br-hero-sub { font-size:13px; color:rgba(255,255,255,.45); }
 
         /* ── ERROR ── */
@@ -214,7 +214,7 @@ export default function BookRoomPage() {
         .br-room-card:hover { transform:translateY(-3px); box-shadow:0 12px 30px rgba(13,27,42,.09); }
         .br-room-body { padding:22px 22px 18px; flex:1; }
         .br-room-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap:10px; }
-        .br-room-name { font-family:'Fraunces',serif; font-size:19px; font-weight:600; color:var(--navy); }
+        .br-room-name { font-family:'FrauncesAmp','Fraunces',serif; font-size:19px; font-weight:600; color:var(--navy); }
         .br-room-loc { font-size:12px; color:var(--muted); margin-top:3px; }
         .br-room-avail { padding:3px 11px; border-radius:100px; background:rgba(34,197,94,.1); color:#16a34a; border:1px solid rgba(34,197,94,.2); font-size:11px; font-weight:600; white-space:nowrap; }
 
@@ -242,7 +242,7 @@ export default function BookRoomPage() {
         /* ── MAP PANEL ── */
         .br-panel { background:var(--white); border:1px solid var(--border); border-radius:16px; padding:24px; }
         .br-panel-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; margin-bottom:22px; }
-        .br-panel-title { font-family:'Fraunces',serif; font-size:18px; font-weight:600; color:var(--navy); }
+        .br-panel-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:18px; font-weight:600; color:var(--navy); }
         .br-legend { display:flex; flex-wrap:wrap; gap:14px; }
         .br-legend-item { display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--muted); font-weight:500; }
         .br-legend-dot { width:12px; height:12px; border-radius:4px; flex-shrink:0; }
@@ -273,7 +273,7 @@ export default function BookRoomPage() {
           cursor:pointer; transition:all .18s;
         }
         .br-bed-icon { display:flex; }
-        .br-bed-code { font-family:'Fraunces',serif; font-size:14px; font-weight:600; }
+        .br-bed-code { font-family:'FrauncesAmp','Fraunces',serif; font-size:14px; font-weight:600; }
         .br-bed-tag { position:absolute; top:8px; right:8px; font-size:9px; font-weight:600; padding:2px 7px; border-radius:100px; letter-spacing:.03em; }
 
         .br-bed--available { background:#fff; border-color:#22c55e; color:#15803d; }
@@ -286,7 +286,7 @@ export default function BookRoomPage() {
 
         /* ── SIDE PANEL (booking summary) ── */
         .br-summary { background:var(--white); border:1px solid var(--border); border-radius:16px; padding:24px; position:sticky; top:24px; }
-        .br-summary-title { font-family:'Fraunces',serif; font-size:17px; font-weight:600; color:var(--navy); padding-bottom:16px; border-bottom:1px solid var(--border); margin-bottom:18px; }
+        .br-summary-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:17px; font-weight:600; color:var(--navy); padding-bottom:16px; border-bottom:1px solid var(--border); margin-bottom:18px; }
 
         .br-sum-rows { display:flex; flex-direction:column; gap:13px; margin-bottom:20px; }
         .br-sum-row { display:flex; justify-content:space-between; align-items:center; font-size:13px; }
@@ -297,7 +297,7 @@ export default function BookRoomPage() {
         .br-sum-total { padding-top:20px; margin-top:6px; border-top:1px solid var(--border); }
         .br-sum-total-row { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:18px; }
         .br-sum-total-label { font-size:13px; color:var(--muted); font-weight:500; }
-        .br-sum-total-val { font-family:'Fraunces',serif; font-size:26px; font-weight:700; color:var(--navy); letter-spacing:-.5px; }
+        .br-sum-total-val { font-family:'FrauncesAmp','Fraunces',serif; font-size:26px; font-weight:700; color:var(--navy); letter-spacing:-.5px; }
 
         .br-btn-confirm { width:100%; padding:14px; background:var(--navy); color:#fff; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:all .18s; display:flex; align-items:center; justify-content:center; gap:8px; }
         .br-btn-confirm:hover:not(:disabled) { background:var(--navy-md); box-shadow:0 8px 22px rgba(13,27,42,.25); transform:translateY(-1px); }

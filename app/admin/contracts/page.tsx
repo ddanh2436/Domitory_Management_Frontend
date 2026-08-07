@@ -72,11 +72,11 @@ export default function AdminContractsPage() {
 
         .ct-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
         .ct-stat { background: #fff; border: 1px solid rgba(13,27,42,0.09); border-radius: 12px; padding: 16px 20px; }
-        .ct-stat-num { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; color: #0D1B2A; }
+        .ct-stat-num { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 24px; font-weight: 700; color: #0D1B2A; }
         .ct-stat-label { font-size: 12px; color: #8A9BAD; margin-top: 2px; font-weight: 600; }
 
         .panel { background: #fff; border: 1px solid rgba(13,27,42,0.09); border-radius: 20px; padding: 28px 32px; box-shadow: 0 10px 24px rgba(13,27,42,0.04); overflow: hidden; }
-        .panel-title { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; color: #0D1B2A; letter-spacing: -0.5px; }
+        .panel-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 24px; font-weight: 700; color: #0D1B2A; letter-spacing: -0.5px; }
 
         .ct-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
         .ct-tab { padding: 8px 14px; border-radius: 8px; border: 1px solid rgba(13,27,42,0.12); background: #fff; font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 600; color: #5c6f82; cursor: pointer; transition: all .15s; }

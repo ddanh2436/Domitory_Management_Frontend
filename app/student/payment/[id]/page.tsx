@@ -245,7 +245,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
 
         /* ── LEFT: ORDER SUMMARY ── */
         .pm-summary-eyebrow { font-size:11px; font-weight:500; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; display:block; }
-        .pm-summary-title { font-family:'Fraunces',serif; font-size:26px; font-weight:700; color:var(--navy); letter-spacing:-.5px; margin-bottom:6px; }
+        .pm-summary-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:26px; font-weight:700; color:var(--navy); letter-spacing:-.5px; margin-bottom:6px; }
         .pm-summary-sub { font-size:13.5px; color:var(--muted); margin-bottom:32px; }
 
         .pm-line-items { display:flex; flex-direction:column; gap:14px; padding-bottom:20px; border-bottom:1px dashed var(--border); margin-bottom:20px; }
@@ -259,7 +259,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
 
         .pm-total-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; }
         .pm-total-label { font-size:13.5px; color:var(--muted); }
-        .pm-total-val { font-family:'Fraunces',serif; font-size:34px; font-weight:700; color:var(--navy); letter-spacing:-1px; }
+        .pm-total-val { font-family:'FrauncesAmp','Fraunces',serif; font-size:34px; font-weight:700; color:var(--navy); letter-spacing:-1px; }
 
         .pm-meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:18px 20px; background:var(--white); border:1px solid var(--border); border-radius:12px; margin-bottom:20px; }
         .pm-meta-item { display:flex; flex-direction:column; gap:3px; }
@@ -273,7 +273,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
 
         /* ── RIGHT: PAYMENT PANEL ── */
         .pm-panel { background:var(--white); border:1px solid var(--border); border-radius:18px; padding:28px; box-shadow:0 8px 32px rgba(13,27,42,.03); }
-        .pm-panel-title { font-family:'Fraunces',serif; font-size:17px; font-weight:600; color:var(--navy); margin-bottom:18px; }
+        .pm-panel-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:17px; font-weight:600; color:var(--navy); margin-bottom:18px; }
 
         /* method tabs */
         .pm-methods { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px; }
@@ -301,7 +301,7 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
         .pm-qr-box { display:flex; flex-direction:column; align-items:center; padding:28px 20px; background:#F9F8F6; border-radius:14px; border:1px solid var(--border); }
         .pm-qr-frame { width:180px; height:180px; background:var(--white); border-radius:12px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; margin-bottom:16px; padding:14px; }
         .pm-qr-sub { font-size:12.5px; color:var(--muted); text-align:center; line-height:1.6; max-width:260px; }
-        .pm-qr-amount { font-family:'Fraunces',serif; font-size:20px; font-weight:700; color:var(--navy); margin:10px 0; }
+        .pm-qr-amount { font-family:'FrauncesAmp','Fraunces',serif; font-size:20px; font-weight:700; color:var(--navy); margin:10px 0; }
 
         /* ewallet */
         .pm-ewallet-grid { display:flex; flex-direction:column; gap:10px; }
@@ -342,9 +342,9 @@ export default function MockPaymentPage({ params }: { params: Promise<{ id: stri
         .pm-success-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:40px 10px; }
         .pm-success-circle { width:84px; height:84px; border-radius:50%; background:rgba(34,197,94,.1); display:flex; align-items:center; justify-content:center; color:var(--success); margin-bottom:24px; animation:pmPop .4s cubic-bezier(.34,1.56,.64,1) both; }
         @keyframes pmPop { from{ transform:scale(.5); opacity:0;} to{ transform:scale(1); opacity:1;} }
-        .pm-success-title { font-family:'Fraunces',serif; font-size:24px; font-weight:700; color:var(--navy); margin-bottom:8px; }
+        .pm-success-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:24px; font-weight:700; color:var(--navy); margin-bottom:8px; }
         .pm-success-sub { font-size:13.5px; color:var(--muted); margin-bottom:28px; max-width:280px; line-height:1.6; }
-        .pm-success-amount { font-family:'Fraunces',serif; font-size:32px; font-weight:700; color:var(--success); margin-bottom:6px; letter-spacing:-1px; }
+        .pm-success-amount { font-family:'FrauncesAmp','Fraunces',serif; font-size:32px; font-weight:700; color:var(--success); margin-bottom:6px; letter-spacing:-1px; }
         .pm-success-ref { font-family:'DM Mono',monospace; font-size:11.5px; color:var(--muted); background:#F9F8F6; padding:6px 14px; border-radius:7px; border:1px solid var(--border); margin-bottom:24px; }
         .pm-success-redirect { font-size:11.5px; color:var(--muted); display:flex; align-items:center; gap:8px; }
         .pm-success-bar { width:140px; height:3px; background:var(--border); border-radius:100px; overflow:hidden; }

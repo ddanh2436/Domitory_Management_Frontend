@@ -227,7 +227,7 @@ export default function AdminCheckoutsPage() {
         }
 
         .panel-title {
-          font-family: 'Fraunces', serif;
+          font-family: 'FrauncesAmp', 'Fraunces', serif;
           font-size: 24px;
           font-weight: 700;
           color: #0D1B2A;
@@ -261,7 +261,7 @@ export default function AdminCheckoutsPage() {
         .ck-overlay { position: fixed; inset: 0; background: rgba(13,27,42,.55); display: flex; align-items: center; justify-content: center; z-index: 60; padding: 20px; }
         .ck-modal { background: #fff; border-radius: 16px; width: 100%; max-width: 640px; max-height: 88vh; overflow-y: auto; }
         .ck-modal-head { padding: 20px 24px; border-bottom: 1px solid rgba(13,27,42,.09); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: #fff; z-index: 1; }
-        .ck-modal-title { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; color: #0D1B2A; }
+        .ck-modal-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 19px; font-weight: 700; color: #0D1B2A; }
         .ck-modal-sub { font-size: 12.5px; color: #8A9BAD; margin-top: 3px; }
         .ck-modal-close { border: none; background: transparent; cursor: pointer; color: #8A9BAD; font-size: 22px; line-height: 1; }
         .ck-modal-body { padding: 20px 24px 24px; }

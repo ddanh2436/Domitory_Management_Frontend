@@ -107,12 +107,12 @@ export default function AdminAutoAssignPage() {
 
         .adm-page { max-width: 1180px; margin: 0 auto; padding-top: 24px; padding-bottom: 48px; color: #0D1B2A; font-family: 'DM Sans', sans-serif; }
         .panel { background: #fff; border: 1px solid rgba(13,27,42,0.09); border-radius: 20px; padding: 28px 32px; box-shadow: 0 10px 24px rgba(13,27,42,0.04); overflow: hidden; margin-bottom: 24px; }
-        .panel-title { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; color: #0D1B2A; margin-bottom: 8px; letter-spacing: -0.5px; }
+        .panel-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 24px; font-weight: 700; color: #0D1B2A; margin-bottom: 8px; letter-spacing: -0.5px; }
         .panel-sub { font-size: 13.5px; color: #64748b; line-height: 1.6; max-width: 640px; }
 
         .aa-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin: 22px 0; }
         .aa-stat { background: #FAFAF9; border: 1px solid rgba(13,27,42,0.07); border-radius: 14px; padding: 18px 20px; }
-        .aa-stat-num { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 700; color: #0D1B2A; }
+        .aa-stat-num { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 28px; font-weight: 700; color: #0D1B2A; }
         .aa-stat-label { font-size: 12px; color: #8A9BAD; font-weight: 600; margin-top: 3px; }
 
         .aa-run-btn { display: inline-flex; align-items: center; gap: 9px; background: #0D1B2A; color: #fff; border: none; padding: 13px 26px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: all .18s; }
@@ -135,7 +135,7 @@ export default function AdminAutoAssignPage() {
         .badge--gender-f { background: rgba(236,72,153,0.1); color: #db2777; }
         .badge--gender-x { background: rgba(13,27,42,0.06); color: #64748b; }
 
-        .aa-section-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; color: #0D1B2A; margin-bottom: 16px; }
+        .aa-section-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 17px; font-weight: 700; color: #0D1B2A; margin-bottom: 16px; }
         .aa-empty { text-align: center; padding: 40px 20px; color: #8A9BAD; font-size: 13.5px; }
         .aa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
         @media (max-width: 900px) { .aa-grid { grid-template-columns: 1fr; } }

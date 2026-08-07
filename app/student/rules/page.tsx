@@ -112,7 +112,7 @@ export default function StudentRulesPage() {
           padding: 28px 30px; color: #fff; margin-bottom: 22px;
         }
         .rules-hero-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
-        .rules-hero-title { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 8px; }
+        .rules-hero-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 28px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 8px; }
         .rules-hero-sub { font-size: 13.5px; color: rgba(255,255,255,0.6); line-height: 1.7; max-width: 560px; }
 
         .rules-score {
@@ -121,7 +121,7 @@ export default function StudentRulesPage() {
           background: rgba(255,255,255,0.06); border: 1px solid rgba(201,168,76,0.22);
         }
         .rules-score-left { font-size: 13px; color: rgba(255,255,255,0.7); }
-        .rules-score-val { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--gold); }
+        .rules-score-val { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--gold); }
         .rules-score-link { font-size: 12.5px; color: var(--gold); text-decoration: none; font-weight: 600; white-space: nowrap; }
         .rules-score-link:hover { text-decoration: underline; }
         .rules-score--low { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.12); }
@@ -136,7 +136,7 @@ export default function StudentRulesPage() {
           width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
           background: rgba(201,168,76,0.12); display: flex; align-items: center; justify-content: center; font-size: 20px;
         }
-        .rules-section-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--navy); }
+        .rules-section-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--navy); }
         .rules-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
         .rules-list li { position: relative; padding-left: 22px; font-size: 14px; color: #334155; line-height: 1.65; }
         .rules-list li::before {
@@ -145,7 +145,7 @@ export default function StudentRulesPage() {
         }
 
         .rules-score-box { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; margin-top: 8px; }
-        .rules-score-box-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+        .rules-score-box-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
         .rules-score-box-desc { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 16px; }
         .rules-table { width: 100%; border-collapse: collapse; }
         .rules-table th, .rules-table td { text-align: left; padding: 10px 12px; font-size: 13.5px; border-bottom: 1px solid var(--border); }

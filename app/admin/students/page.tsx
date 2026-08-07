@@ -311,7 +311,7 @@ export default function AdminStudentsPage() {
         :root { --navy: #0D1B2A; --gold: #C9A84C; --gold-dim: rgba(201,168,76,0.18); --gold-border: rgba(201,168,76,0.25); --white: #ffffff; --muted: #8A9BAD; --border: rgba(13,27,42,0.09); --row-hover: rgba(201,168,76,0.04); }
         .panel { background: var(--white); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 28px; }
         .panel__header { padding: 20px 24px 10px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-        .panel__title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--navy); letter-spacing: -0.2px; }
+        .panel__title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--navy); letter-spacing: -0.2px; }
         .panel__subtitle { font-size: 12.5px; color: var(--muted); }
         .panel__header-right { display: flex; align-items: center; gap: 10px; }
         .search-wrap { position: relative; display: flex; align-items: center; }
@@ -349,7 +349,7 @@ export default function AdminStudentsPage() {
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(13, 27, 42, 0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; }
         .modal-card { background: var(--white); border-radius: 16px; border: 1px solid var(--gold-border); width: 440px; max-width: 90%; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); display: flex; flex-direction: column; max-height: 90vh; }
         .modal-header { padding: 20px 24px; background: var(--navy); color: var(--white); display: flex; align-items: center; justify-content: space-between; }
-        .modal-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--gold); }
+        .modal-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 18px; font-weight: 600; color: var(--gold); }
         .modal-close { background: transparent; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 24px; line-height: 1; display: flex; align-items: center; transition: color 0.15s; }
         .modal-close:hover { color: var(--white); }
         
@@ -660,7 +660,7 @@ export default function AdminStudentsPage() {
                         {currentScore < 60 ? "Dưới ngưỡng cảnh báo (60)" : "Trong ngưỡng an toàn"}
                       </div>
                     </div>
-                    <div style={{ fontFamily: "'Fraunces', serif", fontSize: 34, fontWeight: 700, color: currentScore < 60 ? "#dc2626" : "var(--gold)", whiteSpace: "nowrap" }}>
+                    <div style={{ fontFamily: "'FrauncesAmp', 'Fraunces', serif", fontSize: 34, fontWeight: 700, color: currentScore < 60 ? "#dc2626" : "var(--gold)", whiteSpace: "nowrap" }}>
                       {currentScore}<span style={{ fontSize: 15, color: "var(--muted)", fontWeight: 400 }}>/100</span>
                     </div>
                   </div>
@@ -754,7 +754,7 @@ export default function AdminStudentsPage() {
                                 {v.markedBy?.fullName && ` · bởi ${v.markedBy.fullName}`}
                               </div>
                             </div>
-                            <div style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: "#dc2626", whiteSpace: "nowrap" }}>-{v.points}</div>
+                            <div style={{ fontFamily: "'FrauncesAmp', 'Fraunces', serif", fontSize: 18, fontWeight: 700, color: "#dc2626", whiteSpace: "nowrap" }}>-{v.points}</div>
                           </div>
                         ))}
                       </div>

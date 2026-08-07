@@ -124,11 +124,11 @@ export default function AdminFeedbackPage() {
     <div>
       <style>{`
         .fbadm-hero { background: linear-gradient(135deg,#0D1B2A 0%,#182b43 60%,#253d5d 100%); color:#fff; border-radius:16px; padding:24px 26px; border:1px solid rgba(201,168,76,0.25); margin-bottom:22px; }
-        .fbadm-hero-title { font-family:'Fraunces',serif; font-size:23px; font-weight:700; }
+        .fbadm-hero-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:23px; font-weight:700; }
         .fbadm-hero-sub { margin-top:5px; color:rgba(255,255,255,.65); font-size:13px; }
         .fbadm-stats { display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; }
         .fbadm-stat { background:rgba(255,255,255,0.06); border:1px solid rgba(201,168,76,0.2); border-radius:10px; padding:10px 16px; min-width:110px; }
-        .fbadm-stat-num { font-family:'Fraunces',serif; font-size:20px; font-weight:700; }
+        .fbadm-stat-num { font-family:'FrauncesAmp','Fraunces',serif; font-size:20px; font-weight:700; }
         .fbadm-stat-label { font-size:11px; color:rgba(255,255,255,0.6); margin-top:1px; }
 
         .fbadm-filters { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
@@ -141,7 +141,7 @@ export default function AdminFeedbackPage() {
         .fbadm-cards { display:flex; flex-direction:column; gap:12px; }
         .fbadm-card { background:#fff; border:1px solid rgba(13,27,42,0.09); border-radius:12px; padding:18px 20px; }
         .fbadm-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap: wrap; }
-        .fbadm-student { font-family:'Fraunces',serif; font-size:15.5px; font-weight:700; color:#0D1B2A; }
+        .fbadm-student { font-family:'FrauncesAmp','Fraunces',serif; font-size:15.5px; font-weight:700; color:#0D1B2A; }
         .fbadm-student-sub { font-size:12px; color:#8A9BAD; margin-left:8px; }
         .fbadm-tags { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
         .fbadm-tag { font-size:11px; font-weight:700; padding:3px 10px; border-radius:100px; background:rgba(13,27,42,.06); color:#37485c; }
@@ -162,7 +162,7 @@ export default function AdminFeedbackPage() {
         .fbadm-overlay { position:fixed; inset:0; z-index:200; background:rgba(13,27,42,.6); display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(3px); }
         .fbadm-modal { background:#fff; border-radius:14px; width:100%; max-width:480px; box-shadow:0 24px 56px rgba(13,27,42,.24); overflow:hidden; }
         .fbadm-modal-head { padding:18px 22px; border-bottom:1px solid rgba(13,27,42,.08); }
-        .fbadm-modal-title { font-family:'Fraunces',serif; font-size:17px; font-weight:700; color:#0D1B2A; }
+        .fbadm-modal-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:17px; font-weight:700; color:#0D1B2A; }
         .fbadm-modal-body { padding:18px 22px; display:flex; flex-direction:column; gap:14px; }
         .fbadm-modal-message { font-size:13px; color:#5c6f82; background:#FAFAF9; border-radius:8px; padding:10px 12px; line-height:1.6; white-space:pre-wrap; }
         .fbadm-textarea { width:100%; min-height:100px; padding:11px 13px; border:1px solid rgba(13,27,42,.15); border-radius:9px; font-family:'DM Sans',sans-serif; font-size:13.5px; color:#0D1B2A; outline:none; resize:vertical; }

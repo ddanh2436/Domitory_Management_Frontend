@@ -142,7 +142,7 @@ export default function AdminPermissionsPage() {
       <style>{`
         .panel { background: #fff; border: 1px solid rgba(13,27,42,0.09); border-radius: 12px; overflow: hidden; }
         .panel__header { padding: 20px 24px; border-bottom: 1px solid rgba(13,27,42,0.09); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-        .panel__title { font-family: 'Fraunces', Georgia, serif; font-size: 17px; font-weight: 600; color: #0d1b2a; }
+        .panel__title { font-family: 'FrauncesAmp', 'Fraunces', Georgia, serif; font-size: 17px; font-weight: 600; color: #0d1b2a; }
         .panel__subtitle { margin-top: 3px; color: #8a9bad; font-size: 12.5px; }
         .panel__body { padding: 24px; }
         .field-label { display: block; margin-bottom: 7px; font-size: 12px; font-weight: 700; color: #0d1b2a; }

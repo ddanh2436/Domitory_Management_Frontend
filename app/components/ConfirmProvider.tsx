@@ -89,7 +89,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
             .cfd-icon { width: 46px; height: 46px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
             .cfd-icon--primary { background: rgba(13,27,42,0.07); color: #0D1B2A; }
             .cfd-icon--danger  { background: rgba(239,68,68,0.1); color: #dc2626; }
-            .cfd-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; color: #0D1B2A; letter-spacing: -0.2px; }
+            .cfd-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 18px; font-weight: 700; color: #0D1B2A; letter-spacing: -0.2px; }
             .cfd-message { margin-top: 8px; font-size: 13.5px; color: #5c6f82; line-height: 1.65; white-space: pre-line; }
             .cfd-actions { display: flex; gap: 10px; margin-top: 22px; }
             .cfd-btn { flex: 1; height: 42px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all .15s; }

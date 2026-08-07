@@ -450,7 +450,7 @@ export default function AdminMaintenancePage() {
         .am-stat--accent { background:var(--navy); border-color:var(--gold-b); }
         .am-stat-label { font-size:10.5px; font-weight:500; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
         .am-stat--accent .am-stat-label { color:rgba(255,255,255,.38); }
-        .am-stat-value { font-family:'Fraunces',serif; font-size:28px; font-weight:700; color:var(--navy); letter-spacing:-.8px; line-height:1; }
+        .am-stat-value { font-family:'FrauncesAmp','Fraunces',serif; font-size:28px; font-weight:700; color:var(--navy); letter-spacing:-.8px; line-height:1; }
         .am-stat--accent .am-stat-value { color:var(--gold); }
 
         /* ── TOOLBAR ── */
@@ -482,7 +482,7 @@ export default function AdminMaintenancePage() {
         .am-card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:10px; flex-wrap:wrap; }
         .am-card-head-left { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
         .am-card-room { display:flex; align-items:center; gap:8px; }
-        .am-room-name { font-family:'Fraunces',serif; font-size:17px; font-weight:600; color:var(--gold); }
+        .am-room-name { font-family:'FrauncesAmp','Fraunces',serif; font-size:17px; font-weight:600; color:var(--gold); }
         .am-room-building { display:flex; align-items:center; gap:4px; font-size:12px; color:var(--muted); }
         .am-room-building svg { width:11px; height:11px; stroke:currentColor; }
         .am-urgent-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:100px; font-size:10.5px; font-weight:700; letter-spacing:.06em; background:rgba(220,38,38,.1); color:#dc2626; border:1px solid rgba(220,38,38,.25); }
@@ -498,7 +498,7 @@ export default function AdminMaintenancePage() {
         .am-sender-item { display:flex; align-items:center; gap:5px; font-size:12.5px; color:#4A6580; }
         .am-sender-item svg { width:11px; height:11px; stroke:currentColor; }
         .am-sender-mssv { font-size:11.5px; font-weight:500; color:var(--gold); background:var(--gold-dim); border:1px solid var(--gold-b); border-radius:4px; padding:1px 7px; font-variant-numeric:tabular-nums; }
-        .am-card-title { font-family:'Fraunces',serif; font-size:16px; font-weight:600; color:var(--navy); margin-bottom:8px; line-height:1.3; }
+        .am-card-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:16px; font-weight:600; color:var(--navy); margin-bottom:8px; line-height:1.3; }
         .am-card-desc { font-size:13px; color:#4A6580; line-height:1.7; padding:11px 14px; background:#F9F8F6; border-radius:8px; border:1px solid rgba(13,27,42,.05); margin-bottom:16px; }
         .am-card-image-link { display:flex; align-items:center; gap:12px; margin-bottom:16px; padding:10px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--navy); text-decoration:none; font-size:12.5px; font-weight:500; }
         .am-card-image-link:hover { border-color:var(--gold-b); color:#9a7b2c; }
@@ -525,7 +525,7 @@ export default function AdminMaintenancePage() {
         /* ── EMPTY ── */
         .am-empty { background:var(--white); border:1px solid var(--border); border-radius:14px; padding:60px 24px; text-align:center; }
         .am-empty-icon { width:48px; height:48px; border-radius:12px; background:#F5F3EF; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:var(--muted); }
-        .am-empty-title { font-family:'Fraunces',serif; font-size:18px; font-weight:600; color:var(--navy); margin-bottom:7px; }
+        .am-empty-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:18px; font-weight:600; color:var(--navy); margin-bottom:7px; }
         .am-empty-sub { font-size:13.5px; color:var(--muted); line-height:1.65; }
 
         /* ── SKELETON ── */
@@ -540,7 +540,7 @@ export default function AdminMaintenancePage() {
         .am-modal-icon-wrap { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; margin-bottom:18px; }
         .am-modal-icon-wrap--red  { background:rgba(239,68,68,.1); color:#ef4444; }
         .am-modal-icon-wrap--blue { background:rgba(2,132,199,.1); color:#0284c7; }
-        .am-modal-title { font-family:'Fraunces',serif; font-size:19px; font-weight:700; color:var(--navy); margin-bottom:10px; }
+        .am-modal-title { font-family:'FrauncesAmp','Fraunces',serif; font-size:19px; font-weight:700; color:var(--navy); margin-bottom:10px; }
         .am-modal-desc { font-size:13.5px; color:#4A6580; line-height:1.65; margin-bottom:24px; }
         .am-modal-reason-label { display:block; font-size:12px; font-weight:600; color:var(--navy); margin-bottom:6px; }
         .am-modal-reason { width:100%; min-height:82px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--navy); background:#F9F8F6; outline:none; resize:vertical; line-height:1.6; }

@@ -105,7 +105,7 @@ export default function StudentRoomsPage() {
         .room-hero::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at top right, rgba(201,168,76,0.18), transparent 32%), radial-gradient(circle at bottom left, rgba(255,255,255,0.08), transparent 26%); pointer-events: none; }
         .room-hero__grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px); background-size: 48px 48px; opacity: 0.2; pointer-events: none; }
         .room-hero__inner { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: flex-start; }
-        .room-title { font-family: 'Fraunces', serif; font-size: 34px; line-height: 1.05; margin: 8px 0 10px; letter-spacing: -0.6px; }
+        .room-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 34px; line-height: 1.05; margin: 8px 0 10px; letter-spacing: -0.6px; }
         .room-subtitle { max-width: 700px; color: rgba(255,255,255,0.72); font-size: 14px; line-height: 1.6; }
         .room-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); font-size: 12px; font-weight: 700; letter-spacing: 0.02em; }
         
@@ -113,7 +113,7 @@ export default function StudentRoomsPage() {
         .room-layout { display: block; }
         
         .panel { background: #fff; border: 1px solid rgba(13,27,42,0.09); border-radius: 20px; padding: 24px; box-shadow: 0 10px 24px rgba(13,27,42,0.04); }
-        .panel-title { font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 18px; color: #0D1B2A; }
+        .panel-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 20px; margin-bottom: 18px; color: #0D1B2A; }
         
         /* Cấu hình lại các stat-grid và room-meta chia 4 cột giãn đều full bề ngang */
         .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin-bottom: 20px; }
@@ -132,7 +132,7 @@ export default function StudentRoomsPage() {
         /* Chia lại danh sách người ở thành 2 cột cho đẹp do đã có không gian rộng */
         .occupant-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
         .occupant { border: 1px solid rgba(13,27,42,0.08); border-radius: 18px; padding: 16px; display: grid; grid-template-columns: auto 1fr; gap: 14px; background: linear-gradient(180deg, #fff, #fcfcfb); }
-        .avatar { width: 58px; height: 58px; border-radius: 18px; overflow: hidden; background: linear-gradient(135deg, #0D1B2A, #284766); color: #C9A84C; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; font-size: 22px; }
+        .avatar { width: 58px; height: 58px; border-radius: 18px; overflow: hidden; background: linear-gradient(135deg, #0D1B2A, #284766); color: #C9A84C; display: flex; align-items: center; justify-content: center; font-family: 'FrauncesAmp', 'Fraunces', serif; font-weight: 700; font-size: 22px; }
         .occupant-name { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
         .occupant-id { color: #64748b; font-size: 13px; margin-bottom: 10px; }
         .occupant-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; font-size: 13px; color: #334155; }

@@ -122,7 +122,110 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 8l9 6 9-6M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" />
     </svg>
   ),
+  chevron: (
+    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 5l7 7-7 7" />
+    </svg>
+  ),
 };
+
+interface NavLink {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  badgeKey?: "notifications";
+}
+
+interface NavSection {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  items: NavLink[];
+}
+
+/** Nhóm tính năng của sinh viên — mỗi nhóm có thể thu gọn / mở rộng riêng */
+const NAV_SECTIONS: NavSection[] = [
+  {
+    id: "luu-tru",
+    label: "Chỗ ở & Lưu trú",
+    icon: Icons.home,
+    items: [
+      { href: "/student/rooms", label: "Tìm & Đặt phòng", icon: Icons.search },
+      { href: "/student/transfers", label: "Đổi phòng", icon: Icons.transfer },
+      { href: "/student/checkout", label: "Trả phòng", icon: Icons.logout },
+      { href: "/student/absences", label: "Tạm trú / Tạm vắng", icon: Icons.moon },
+    ],
+  },
+  {
+    id: "tai-chinh",
+    label: "Hợp đồng & Tài chính",
+    icon: Icons.invoice,
+    items: [
+      { href: "/student/contracts", label: "Hợp đồng điện tử", icon: Icons.doc },
+      { href: "/student/invoices", label: "Hóa đơn", icon: Icons.invoice },
+    ],
+  },
+  {
+    id: "ho-tro",
+    label: "Hỗ trợ & Phản ánh",
+    icon: Icons.wrench,
+    items: [
+      { href: "/student/maintenance", label: "Yêu cầu sửa chữa", icon: Icons.wrench },
+      { href: "/student/feedback", label: "Góp ý & Khiếu nại", icon: Icons.mailbox },
+      { href: "/student/rules", label: "Nội quy KTX", icon: Icons.shield },
+    ],
+  },
+  {
+    id: "ca-nhan",
+    label: "Cá nhân",
+    icon: Icons.user,
+    items: [
+      { href: "/student/profile", label: "Hồ sơ cá nhân", icon: Icons.user },
+      { href: "/student/notifications", label: "Thông báo", icon: Icons.bell, badgeKey: "notifications" },
+    ],
+  },
+];
+
+const NAV_STORAGE_KEY = "dormify.student.navGroups";
+
+/** Đọc các nhóm đang thu gọn từ lần truy cập trước (nhóm vắng mặt = đang mở) */
+function readCollapsedGroups(): Record<string, boolean> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(NAV_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as Record<string, boolean>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function NavGroup({
+  section,
+  open,
+  hasActive,
+  badge,
+  onToggle,
+  children,
+}: {
+  section: NavSection;
+  open: boolean;
+  hasActive: boolean;
+  badge: number;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={`st-nav-group ${open ? "st-nav-group--open" : ""} ${hasActive ? "st-nav-group--active" : ""}`}>
+      <button type="button" className="st-nav-group__head" onClick={onToggle} aria-expanded={open}>
+        <span className="st-nav-icon">{section.icon}</span>
+        <span className="st-nav-group__label">{section.label}</span>
+        {!open && badge > 0 && <span className="st-nav-badge">{badge}</span>}
+        <span className="st-nav-chevron">{Icons.chevron}</span>
+      </button>
+      {open && <div className="st-nav-group__items">{children}</div>}
+    </div>
+  );
+}
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -130,6 +233,34 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const [loading, setLoading] = useState(true);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const socketRef = useRef<Socket | null>(null);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(readCollapsedGroups);
+  const [lastPath, setLastPath] = useState<string | null>(null);
+
+  const isLinkActive = (href: string) => (href === "/student" ? pathname === "/student" : pathname.startsWith(href));
+  const badgeOf = (item: NavLink) => (item.badgeKey === "notifications" ? unreadNotifications : 0);
+  const activeSection = NAV_SECTIONS.find((section) => section.items.some((item) => isLinkActive(item.href)));
+  const allExpanded = NAV_SECTIONS.every((section) => !collapsedGroups[section.id]);
+
+  // Mở sẵn nhóm chứa trang đang xem mỗi khi điều hướng (kể cả khi vào thẳng bằng link)
+  if (lastPath !== pathname) {
+    setLastPath(pathname);
+    if (activeSection && collapsedGroups[activeSection.id]) {
+      setCollapsedGroups({ ...collapsedGroups, [activeSection.id]: false });
+    }
+  }
+
+  const applyGroups = (next: Record<string, boolean>) => {
+    setCollapsedGroups(next);
+    try {
+      localStorage.setItem(NAV_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      /* bỏ qua khi không ghi được storage */
+    }
+  };
+
+  const toggleGroup = (id: string) => applyGroups({ ...collapsedGroups, [id]: !collapsedGroups[id] });
+  const toggleAllGroups = () =>
+    applyGroups(Object.fromEntries(NAV_SECTIONS.map((section) => [section.id, allExpanded])));
 
   useEffect(() => {
     const loadStudentData = async () => {
@@ -212,18 +343,37 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         }
         .st-shell { display: flex; min-height: 100vh; background: var(--bg); font-family: 'DM Sans', sans-serif; }
         .st-sidebar { width: var(--sidebar-w); flex-shrink: 0; background: var(--navy); min-height: 100vh; position: fixed; top: 0; left: 0; bottom: 0; border-right: 1px solid var(--gold-b); display: flex; flex-direction: column; z-index: 50; }
-        .st-brand { padding: 22px 18px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); text-decoration: none; transition: opacity 0.2s; }
+        .st-brand { flex-shrink: 0; padding: 22px 18px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); text-decoration: none; transition: opacity 0.2s; }
         .st-brand:hover { opacity: 0.8; }
         .logo-align-up { transform: translateY(-2px); }
         .text-align-down { transform: translateY(1px); display: inline-block; }
-        .st-wordmark { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+        .st-wordmark { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
         .st-wordmark span { color: var(--gold); }
-        .st-sb-profile { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 12px; }
-        .st-avatar { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--gold) 0%, #E2B96A) 100%; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; color: var(--navy); flex-shrink: 0; letter-spacing: -0.5px; }
+        .st-sb-profile { flex-shrink: 0; padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 12px; }
+        .st-avatar { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--gold) 0%, #E2B96A) 100%; display: flex; align-items: center; justify-content: center; font-family: 'FrauncesAmp', 'Fraunces', serif; font-weight: 700; color: var(--navy); flex-shrink: 0; letter-spacing: -0.5px; }
         .st-sb-profile-name { font-size: 13px; font-weight: 500; color: #fff; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .st-sb-profile-role { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 2px; }
         .st-sb-section-label { padding: 14px 18px 4px; font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+        .st-nav-head { flex-shrink: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding-right: 14px; }
+        .st-nav-head .st-sb-section-label { padding-right: 0; }
+        .st-nav-toggle-all { background: transparent; border: none; padding: 2px 4px; font-family: inherit; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.28); cursor: pointer; transition: color 0.15s; }
+        .st-nav-toggle-all:hover { color: var(--gold); }
+        .st-nav-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+        .st-nav-scroll::-webkit-scrollbar { width: 5px; }
+        .st-nav-scroll::-webkit-scrollbar-track { background: transparent; }
+        .st-nav-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 100px; }
+        .st-nav-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
         .st-nav { padding: 4px 10px 10px; display: flex; flex-direction: column; gap: 2px; }
+        .st-nav-group { display: flex; flex-direction: column; gap: 2px; }
+        .st-nav-group + .st-nav-group, .st-nav-item + .st-nav-group { margin-top: 6px; }
+        .st-nav-group__head { display: flex; align-items: center; gap: 11px; width: 100%; padding: 9px 11px; border: none; border-radius: 8px; background: transparent; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+        .st-nav-group__head:hover { background: rgba(255,255,255,0.05); }
+        .st-nav-group__label { flex: 1; text-align: left; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.38); }
+        .st-nav-group--active .st-nav-group__label { color: rgba(201,168,76,0.85); }
+        .st-nav-group--active .st-nav-group__head .st-nav-icon { color: rgba(201,168,76,0.75); }
+        .st-nav-chevron { display: flex; flex-shrink: 0; color: rgba(255,255,255,0.28); transition: transform 0.2s ease; }
+        .st-nav-group--open .st-nav-chevron { transform: rotate(90deg); }
+        .st-nav-group__items { display: flex; flex-direction: column; gap: 2px; margin: 2px 0 2px 20px; padding-left: 6px; border-left: 1px solid rgba(255,255,255,0.08); }
         .st-nav-item { display: flex; align-items: center; gap: 11px; padding: 9px 11px; border-radius: 8px; text-decoration: none; transition: background 0.15s; cursor: pointer; }
         .st-nav-item:hover { background: rgba(255,255,255,0.05); }
         .st-nav-icon { color: var(--muted); flex-shrink: 0; display: flex; }
@@ -232,7 +382,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         .st-nav-item--active { background: var(--gold-dim) !important; }
         .st-nav-item--active .st-nav-label { color: var(--gold) !important; font-weight: 500; }
         .st-nav-item--active .st-nav-icon  { color: var(--gold) !important; }
-        .st-sb-footer { padding: 14px 10px; border-top: 1px solid rgba(255,255,255,0.06); margin-top: auto; display: flex; flex-direction: column; gap: 4px; }
+        .st-sb-footer { flex-shrink: 0; padding: 14px 10px; border-top: 1px solid rgba(255,255,255,0.06); margin-top: auto; display: flex; flex-direction: column; gap: 4px; background: var(--navy); }
         .st-btn-action { display: flex; align-items: center; gap: 11px; padding: 9px 11px; border-radius: 8px; border: none; background: transparent; cursor: pointer; width: 100%; transition: background 0.15s; text-decoration: none; }
         .st-btn-action--home:hover { background: rgba(255,255,255,0.05); }
         .st-btn-action--home .st-nav-icon { color: rgba(255,255,255,0.5); }
@@ -274,21 +424,40 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             </div>
           </div>
 
-          <div className="st-sb-section-label">Dịch vụ</div>
-          <nav className="st-nav">
-            <NavItem icon={Icons.home} label="Tổng quan" href="/student" active={pathname === "/student"} />
-            <NavItem icon={Icons.search} label="Tìm & Đặt phòng" href="/student/rooms" active={pathname.startsWith("/student/rooms")} />
-            <NavItem icon={Icons.transfer} label="Đổi phòng" href="/student/transfers" active={pathname.startsWith("/student/transfers")} />
-            <NavItem icon={Icons.logout} label="Trả phòng" href="/student/checkout" active={pathname.startsWith("/student/checkout")} />
-            <NavItem icon={Icons.moon} label="Tạm trú / Tạm vắng" href="/student/absences" active={pathname.startsWith("/student/absences")} />
-            <NavItem icon={Icons.doc} label="Hợp đồng điện tử" href="/student/contracts" active={pathname.startsWith("/student/contracts")} />
-            <NavItem icon={Icons.invoice} label="Hóa đơn" href="/student/invoices" active={pathname.startsWith("/student/invoices")} />
-            <NavItem icon={Icons.user} label="Hồ sơ cá nhân" href="/student/profile" active={pathname.startsWith("/student/profile")} />
-            <NavItem icon={Icons.bell} label="Thông báo" href="/student/notifications" active={pathname.startsWith("/student/notifications")} badge={unreadNotifications} />
-            <NavItem icon={Icons.wrench} label="Yêu cầu sửa chữa" href="/student/maintenance" active={pathname.startsWith("/student/maintenance")} />
-            <NavItem icon={Icons.mailbox} label="Góp ý & Khiếu nại" href="/student/feedback" active={pathname.startsWith("/student/feedback")} />
-            <NavItem icon={Icons.shield} label="Nội quy KTX" href="/student/rules" active={pathname.startsWith("/student/rules")} />
-          </nav>
+          <div className="st-nav-head">
+            <div className="st-sb-section-label">Dịch vụ</div>
+            <button type="button" className="st-nav-toggle-all" onClick={toggleAllGroups}>
+              {allExpanded ? "Thu gọn" : "Mở rộng"}
+            </button>
+          </div>
+
+          <div className="st-nav-scroll">
+            <nav className="st-nav">
+              <NavItem icon={Icons.home} label="Tổng quan" href="/student" active={pathname === "/student"} />
+
+              {NAV_SECTIONS.map((section) => (
+                <NavGroup
+                  key={section.id}
+                  section={section}
+                  open={!collapsedGroups[section.id]}
+                  hasActive={section.items.some((item) => isLinkActive(item.href))}
+                  badge={section.items.reduce((sum, item) => sum + badgeOf(item), 0)}
+                  onToggle={() => toggleGroup(section.id)}
+                >
+                  {section.items.map((item) => (
+                    <NavItem
+                      key={item.href}
+                      icon={item.icon}
+                      label={item.label}
+                      href={item.href}
+                      active={isLinkActive(item.href)}
+                      badge={badgeOf(item)}
+                    />
+                  ))}
+                </NavGroup>
+              ))}
+            </nav>
+          </div>
 
           <div className="st-sb-footer">
             <Link href="/" className="st-btn-action st-btn-action--home">
