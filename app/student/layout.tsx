@@ -117,6 +117,11 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9.5 12l1.8 1.8L15 10" />
     </svg>
   ),
+  mailbox: (
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 8l9 6 9-6M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" />
+    </svg>
+  ),
 };
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
@@ -281,6 +286,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             <NavItem icon={Icons.user} label="Hồ sơ cá nhân" href="/student/profile" active={pathname.startsWith("/student/profile")} />
             <NavItem icon={Icons.bell} label="Thông báo" href="/student/notifications" active={pathname.startsWith("/student/notifications")} badge={unreadNotifications} />
             <NavItem icon={Icons.wrench} label="Yêu cầu sửa chữa" href="/student/maintenance" active={pathname.startsWith("/student/maintenance")} />
+            <NavItem icon={Icons.mailbox} label="Góp ý & Khiếu nại" href="/student/feedback" active={pathname.startsWith("/student/feedback")} />
             <NavItem icon={Icons.shield} label="Nội quy KTX" href="/student/rules" active={pathname.startsWith("/student/rules")} />
           </nav>
 
