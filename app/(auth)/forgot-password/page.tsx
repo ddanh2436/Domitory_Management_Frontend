@@ -36,8 +36,14 @@ export default function ForgotPasswordPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=DM+Sans:wght@400;500;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .fp-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0D1B2A 0%, #182b43 60%, #253d5d 100%); padding: 20px; font-family: 'DM Sans', sans-serif; }
-        .fp-card { width: 100%; max-width: 420px; background: #fff; border-radius: 12px; box-shadow: 0 24px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        
+        /* Đã cập nhật background giống trang Login */
+        .fp-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; font-family: 'DM Sans', sans-serif; position: relative; overflow: hidden; }
+        .fp-shell::before { content: ''; position: absolute; inset: 0; z-index: 0; background-image: url('/auth_bg.jpg'); background-size: cover; background-position: center; filter: blur(8px) brightness(0.55); transform: scale(1.06); }
+        
+        /* Thêm position và z-index để form nổi lên trên background */
+        .fp-card { position: relative; z-index: 1; width: 100%; max-width: 420px; background: #fff; border-radius: 12px; box-shadow: 0 24px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        
         .fp-head { padding: 26px 30px 0; }
         .fp-brand { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 20px; font-weight: 700; color: #0D1B2A; }
         .fp-brand span { color: #C9A84C; }

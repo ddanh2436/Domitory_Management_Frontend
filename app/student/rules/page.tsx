@@ -146,13 +146,13 @@ export default function StudentRulesPage() {
 
         .rules-score-box { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; margin-top: 8px; }
         .rules-score-box-title { font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
-        .rules-score-box-desc { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 16px; }
+        .rules-score-box-desc { font-size: 13px; color: #334155; line-height: 1.65; margin-bottom: 16px; }
         .rules-table { width: 100%; border-collapse: collapse; }
-        .rules-table th, .rules-table td { text-align: left; padding: 10px 12px; font-size: 13.5px; border-bottom: 1px solid var(--border); }
+        .rules-table th, .rules-table td { text-align: left; padding: 10px 12px; font-size: 13.5px; border-bottom: 1px solid var(--border); color: #334155; font-weight: 500; }
         .rules-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
         .rules-table td:last-child, .rules-table th:last-child { text-align: right; }
         .rules-table td:last-child { color: #dc2626; font-weight: 700; white-space: nowrap; }
-        .rules-note { margin-top: 14px; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+        .rules-note { margin-top: 14px; font-size: 12.5px; color: #334155; line-height: 1.6; }
         .rules-note strong { color: #b45309; }
       `}</style>
 

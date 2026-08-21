@@ -223,9 +223,9 @@ export default function AdminContractsPage() {
                               terms: c.terms,
                             })
                           }
-                          className="px-3 py-2 bg-white text-slate-600 hover:text-[#0D1B2A] hover:border-[#C9A84C] border border-slate-200 rounded font-bold transition-colors text-[12.5px]"
+                          className="h-12 w-[120px] flex items-center justify-center gap-2 bg-white text-slate-600 hover:text-[#0D1B2A] hover:border-[#C9A84C] border border-slate-200 rounded-xl font-bold transition-colors text-[14px] shadow-sm whitespace-nowrap"
                         >
-                          📄 PDF
+                          <span className="text-[17px]">📄</span> PDF
                         </button>
                       </td>
                     </tr>
