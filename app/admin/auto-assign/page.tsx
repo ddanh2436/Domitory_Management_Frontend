@@ -128,7 +128,7 @@ export default function AdminAutoAssignPage() {
         .adm-table tr:last-child td { border-bottom: none; }
         .adm-table tr:hover td { background: #fcfcfb; }
 
-        .badge { display: inline-flex; align-items: center; padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+        .badge { display: inline-flex; align-items: center; padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
         .badge--assigned { background: rgba(34,197,94,0.12); color: #16a34a; }
         .badge--skipped { background: rgba(245,158,11,0.12); color: #d97706; }
         .badge--gender-m { background: rgba(59,130,246,0.1); color: #2563eb; }

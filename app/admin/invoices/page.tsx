@@ -415,23 +415,25 @@ export default function AdminInvoicesPage() {
            <h2 className="panel-title shrink-0">Quản lý Hệ thống Hóa đơn</h2>
 
            <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-            <RoomFilterBar rooms={invoices.map((inv) => inv.room)} value={roomFilter} onChange={setRoomFilter} />
-            
+            <div className="mr-auto">
+              <RoomFilterBar rooms={invoices.map((inv) => inv.room)} value={roomFilter} onChange={setRoomFilter} />
+            </div>
+
             <button 
               onClick={handleTriggerOverdue}
-              className="shrink-0 flex items-center justify-center gap-2 h-9 px-4 text-[12.5px] font-semibold bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors whitespace-nowrap"
+              className="shrink-0 flex items-center justify-center gap-2 h-9 w-[136px] text-[13px] font-bold bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors whitespace-nowrap"
             >
               ↻ Quét Quá Hạn
             </button>
             <button
               onClick={() => setShowBulkModal(true)}
-              className="shrink-0 flex items-center justify-center gap-2 h-9 px-4 text-[12.5px] font-semibold bg-[#C9A84C] text-[#0D1B2A] rounded-lg hover:bg-[#D9B85C] shadow-sm transition-colors whitespace-nowrap"
+              className="shrink-0 flex items-center justify-center gap-2 h-9 w-[144px] text-[13px] font-bold bg-[#C9A84C] text-[#0D1B2A] rounded-lg hover:bg-[#D9B85C] shadow-sm transition-colors whitespace-nowrap"
             >
               ⚡ Sinh hàng loạt
             </button>
             <button
               onClick={() => setShowModal(true)}
-              className="shrink-0 flex items-center justify-center gap-2 h-9 px-4 text-[12.5px] font-semibold bg-[#0D1B2A] text-white rounded-lg hover:bg-[#1A2E42] shadow-sm transition-colors whitespace-nowrap"
+              className="shrink-0 flex items-center justify-center gap-2 h-9 w-[156px] text-[13px] font-bold bg-[#0D1B2A] text-white rounded-lg hover:bg-[#1A2E42] shadow-sm transition-colors whitespace-nowrap"
             >
               + Tạo hóa đơn mới
             </button>
@@ -489,7 +491,7 @@ export default function AdminInvoicesPage() {
                         {inv.status !== 'PAID' ? (
                           <button
                             onClick={() => handleMarkAsPaid(inv._id)}
-                            className="px-4 py-2 bg-[#f0fdf4] text-[#16a34a] hover:bg-[#dcfce7] border border-[#bbf7d0] rounded font-bold transition-colors text-[13px] whitespace-nowrap"
+                            className="h-9 w-[132px] flex items-center justify-center bg-[#f0fdf4] text-[#16a34a] hover:bg-[#dcfce7] border border-[#bbf7d0] rounded-lg font-bold transition-colors text-[13px] whitespace-nowrap"
                           >
                             Xác nhận Thu
                           </button>
@@ -514,7 +516,7 @@ export default function AdminInvoicesPage() {
                             })
                           }
                           title="Xuất hóa đơn PDF"
-                          className="px-3 py-2 bg-white text-slate-600 hover:text-[#0D1B2A] hover:border-[#C9A84C] border border-slate-200 rounded font-bold transition-colors text-[13px] whitespace-nowrap"
+                          className="h-9 w-[100px] flex items-center justify-center bg-white text-slate-600 hover:text-[#0D1B2A] hover:border-[#C9A84C] border border-slate-200 rounded-lg font-bold transition-colors text-[13px] whitespace-nowrap"
                         >
                           📄 PDF
                         </button>

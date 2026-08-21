@@ -133,10 +133,10 @@ export default function AdminFeedbackPage() {
 
         .fbadm-filters { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
         .fbadm-tabs { display:flex; gap:6px; flex-wrap:wrap; }
-        .fbadm-tab { padding:8px 15px; border-radius:100px; border:1px solid rgba(13,27,42,0.13); background:#fff; color:#5c6f82; font-family:'DM Sans',sans-serif; font-size:12.5px; font-weight:600; cursor:pointer; transition:all .15s; }
+        .fbadm-tab { min-width:96px; padding:8px 14px; border-radius:10px; border:1px solid rgba(13,27,42,0.13); background:#fff; color:#5c6f82; font-family:'DM Sans',sans-serif; font-size:12.5px; font-weight:600; cursor:pointer; transition:all .15s; text-align:center; white-space:nowrap; }
         .fbadm-tab:hover { border-color:#C9A84C; color:#0D1B2A; }
         .fbadm-tab--active { background:#0D1B2A; border-color:#0D1B2A; color:#fff; }
-        .fbadm-type-select { height:36px; padding:0 12px; border-radius:100px; border:1px solid rgba(13,27,42,0.13); background:#fff; color:#0D1B2A; font-family:'DM Sans',sans-serif; font-size:12.5px; font-weight:600; }
+        .fbadm-type-select { width:130px; height:36px; padding:0 12px; border-radius:10px; border:1px solid rgba(13,27,42,0.13); background:#fff; color:#0D1B2A; font-family:'DM Sans',sans-serif; font-size:12.5px; font-weight:600; }
 
         .fbadm-cards { display:flex; flex-direction:column; gap:12px; }
         .fbadm-card { background:#fff; border:1px solid rgba(13,27,42,0.09); border-radius:12px; padding:18px 20px; }

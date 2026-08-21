@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import RoleGuard from "../components/RoleGuard";
 import NotificationBell from "../components/NotificationBell";
@@ -228,6 +228,7 @@ function NavGroup({
 }
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const pathname = usePathname();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -235,11 +236,27 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const socketRef = useRef<Socket | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(readCollapsedGroups);
   const [lastPath, setLastPath] = useState<string | null>(null);
+  
+  // State và ref cho Menu Avatar
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const avatarMenuRef = useRef<HTMLDivElement | null>(null);
 
   const isLinkActive = (href: string) => (href === "/student" ? pathname === "/student" : pathname.startsWith(href));
   const badgeOf = (item: NavLink) => (item.badgeKey === "notifications" ? unreadNotifications : 0);
   const activeSection = NAV_SECTIONS.find((section) => section.items.some((item) => isLinkActive(item.href)));
   const allExpanded = NAV_SECTIONS.every((section) => !collapsedGroups[section.id]);
+
+  // Đóng menu avatar khi bấm ra ngoài
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+    const onClickOutside = (e: MouseEvent) => {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target as Node)) {
+        setAvatarMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [avatarMenuOpen]);
 
   // Mở sẵn nhóm chứa trang đang xem mỗi khi điều hướng (kể cả khi vào thẳng bằng link)
   if (lastPath !== pathname) {
@@ -333,7 +350,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           --navy-lt:  #243B55;
           --gold:     #C9A84C;
           --gold-dim: rgba(201,168,76,0.15);
-          --gold-b:   rgba(201,168,76,0.25);
+          --gold-border: rgba(201,168,76,0.25);
           --cream:    #FAF7F0;
           --white:    #ffffff;
           --muted:    #8A9BAD;
@@ -342,7 +359,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           --sidebar-w: 240px;
         }
         .st-shell { display: flex; min-height: 100vh; background: var(--bg); font-family: 'DM Sans', sans-serif; }
-        .st-sidebar { width: var(--sidebar-w); flex-shrink: 0; background: var(--navy); min-height: 100vh; position: fixed; top: 0; left: 0; bottom: 0; border-right: 1px solid var(--gold-b); display: flex; flex-direction: column; z-index: 50; }
+        .st-sidebar { width: var(--sidebar-w); flex-shrink: 0; background: var(--navy); min-height: 100vh; position: fixed; top: 0; left: 0; bottom: 0; border-right: 1px solid var(--gold-border); display: flex; flex-direction: column; z-index: 50; }
         .st-brand { flex-shrink: 0; padding: 22px 18px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); text-decoration: none; transition: opacity 0.2s; }
         .st-brand:hover { opacity: 0.8; }
         .logo-align-up { transform: translateY(-2px); }
@@ -395,6 +412,19 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         .st-body { padding: 0 28px 52px; }
         .st-sk { background: linear-gradient(90deg, #EDE9E3 25%, #E4E0D8 50%, #EDE9E3 75%); background-size: 400% 100%; animation: stShimmer 1.4s ease infinite; }
         @keyframes stShimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+        /* CSS đồng bộ Avatar Menu từ Admin */
+        .avatar-menu-wrap { position: relative; }
+        .topbar__avatar { width: 36px; height: 36px; border-radius: 9px; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 14px; font-weight: 600; color: var(--gold); cursor: pointer; border: 1.5px solid var(--gold-border); transition: transform 0.1s; overflow: hidden; }
+        .topbar__avatar:hover { transform: scale(1.05); border-color: var(--gold); }
+        .avatar-menu { position: absolute; top: calc(100% + 8px); right: 0; min-width: 200px; background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 32px rgba(13,27,42,0.12); padding: 6px; z-index: 50; }
+        .avatar-menu__item { width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; border: none; background: transparent; cursor: pointer; text-align: left; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--navy); text-decoration: none; transition: background 0.15s; }
+        .avatar-menu__item:hover { background: rgba(13,27,42,0.05); }
+        .avatar-menu__item svg { flex-shrink: 0; color: var(--muted); }
+        .avatar-menu__item--logout { color: #dc2626; }
+        .avatar-menu__item--logout svg { color: #dc2626; }
+        .avatar-menu__item--logout:hover { background: rgba(220,38,38,0.07); }
+        .avatar-menu__divider { height: 1px; background: var(--border); margin: 5px 6px; }
       `}</style>
 
       <div className="st-shell">
@@ -472,9 +502,42 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         </aside>
 
         <div className="st-main">
-          {/* HEADER CHỨA CHUÔNG THÔNG BÁO (Kính mờ) */}
+          {/* HEADER CHỨA CHUÔNG THÔNG BÁO VÀ AVATAR DROPDOWN */}
           <header className="sticky top-0 z-40 h-20 pl-8 pr-16 flex items-center justify-end bg-[#F2EFE9]/80 backdrop-blur-md">
-            <NotificationBell />
+            <div className="flex items-center gap-4">
+              <NotificationBell />
+
+              {/* Avatar Dropdown chuẩn Admin */}
+              <div className="avatar-menu-wrap" ref={avatarMenuRef}>
+                <div className="topbar__avatar" title="Tài khoản" onClick={() => setAvatarMenuOpen((v) => !v)}>
+                  {loading ? (
+                    <span className="st-sk" style={{ width: "100%", height: "100%" }} />
+                  ) : profile?.avatar ? (
+                    <img src={profile.avatar} alt="Student Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    profile?.fullName ? profile.fullName.charAt(0).toUpperCase() : "S"
+                  )}
+                </div>
+                
+                {avatarMenuOpen && (
+                  <div className="avatar-menu">
+                    <button
+                      type="button"
+                      className="avatar-menu__item"
+                      onClick={() => { setAvatarMenuOpen(false); router.push("/student/profile"); }}
+                    >
+                      {Icons.user}
+                      Hồ sơ cá nhân
+                    </button>
+                    <div className="avatar-menu__divider" />
+                    <button type="button" className="avatar-menu__item avatar-menu__item--logout" onClick={handleLogout}>
+                      {Icons.logout}
+                      Đăng xuất
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </header>
 
           <main className="st-body">

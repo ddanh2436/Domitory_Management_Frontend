@@ -377,7 +377,7 @@ export default function AdminCheckoutsPage() {
                       ) : c.status === "COMPLETED" ? (
                         <button
                           onClick={() => setDetail(c)}
-                          className="px-4 py-2 bg-white text-[#0D1B2A] rounded-lg hover:bg-[#F5F3EF] font-semibold text-[13px] border border-[rgba(13,27,42,0.15)] transition-all"
+                          className="inline-flex items-center justify-center w-[120px] h-[38px] bg-[#0D1B2A] text-white rounded-lg hover:bg-[#1A2E42] font-bold text-[13.5px] transition-all shadow-sm hover:shadow-md whitespace-nowrap"
                         >
                           Chi tiết
                         </button>
