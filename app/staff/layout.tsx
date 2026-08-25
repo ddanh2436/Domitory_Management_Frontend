@@ -1,16 +1,47 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import RoleGuard from "../components/RoleGuard";
 import NotificationBell from "../components/NotificationBell";
 import { ToastProvider } from "../components/ToastProvider";
 import { ConfirmProvider } from "../components/ConfirmProvider";
+import { apiClient } from "../utils/apiClient";
 import { clearToken } from "../utils/auth";
+
+interface StaffProfile {
+  fullName: string;
+  avatar?: string;
+}
 
 // Khu vực làm việc của NHÂN VIÊN BẢO TRÌ — layout tối giản: topbar + nội dung
 export default function StaffLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const pathname = usePathname();
+  const [profile, setProfile] = useState<StaffProfile | null>(null);
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const avatarMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    apiClient.get("/users/profile").then(async (res) => {
+      if (res.ok) setProfile(await res.json());
+    }).catch(() => {});
+  }, []);
+
+  // Đóng menu avatar khi bấm ra ngoài
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+    const onClickOutside = (e: MouseEvent) => {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target as Node)) {
+        setAvatarMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [avatarMenuOpen]);
 
   const handleLogout = () => {
     clearToken();
@@ -35,9 +66,20 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
         .sf-nav-item { display: inline-flex; align-items: center; gap: 7px; padding: 9px 15px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.6); text-decoration: none; transition: all .15s; border: 1px solid transparent; }
         .sf-nav-item:hover { color: #fff; background: rgba(255,255,255,0.06); }
         .sf-nav-item--active { color: #C9A84C; background: rgba(201,168,76,0.12); border-color: rgba(201,168,76,0.3); }
-        .sf-logout { display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: transparent; color: rgba(255,255,255,0.75); font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all .15s; }
-        .sf-logout:hover { border-color: rgba(239,68,68,0.5); color: #f87171; }
         .sf-main { max-width: 1020px; margin: 0 auto; padding: 28px 24px 56px; }
+
+        /* Avatar + menu thả xuống (Hồ sơ / Đổi mật khẩu / Đăng xuất) — đồng bộ với Admin/Student */
+        .avatar-menu-wrap { position: relative; }
+        .sf-avatar { width: 36px; height: 36px; border-radius: 9px; background: #0D1B2A; display: flex; align-items: center; justify-content: center; font-family: 'FrauncesAmp', 'Fraunces', serif; font-size: 14px; font-weight: 600; color: #C9A84C; cursor: pointer; border: 1.5px solid rgba(201,168,76,0.35); transition: transform 0.1s; overflow: hidden; }
+        .sf-avatar:hover { transform: scale(1.05); border-color: #C9A84C; }
+        .avatar-menu { position: absolute; top: calc(100% + 8px); right: 0; min-width: 200px; background: #fff; border: 1px solid rgba(13,27,42,0.09); border-radius: 12px; box-shadow: 0 12px 32px rgba(13,27,42,0.12); padding: 6px; z-index: 50; }
+        .avatar-menu__item { width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; border: none; background: transparent; cursor: pointer; text-align: left; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: #0D1B2A; text-decoration: none; transition: background 0.15s; }
+        .avatar-menu__item:hover { background: rgba(13,27,42,0.05); }
+        .avatar-menu__item svg { flex-shrink: 0; color: #8A9BAD; }
+        .avatar-menu__item--logout { color: #dc2626; }
+        .avatar-menu__item--logout svg { color: #dc2626; }
+        .avatar-menu__item--logout:hover { background: rgba(220,38,38,0.07); }
+        .avatar-menu__divider { height: 1px; background: rgba(13,27,42,0.09); margin: 5px 6px; }
       `}</style>
 
       <div className="sf-shell">
@@ -70,12 +112,47 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
           </nav>
           <div className="sf-topbar-right">
             <NotificationBell />
-            <button type="button" className="sf-logout" onClick={handleLogout}>
-              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Đăng xuất
-            </button>
+            <div className="avatar-menu-wrap" ref={avatarMenuRef}>
+              <div className="sf-avatar" title="Tài khoản" onClick={() => setAvatarMenuOpen((v) => !v)}>
+                {profile?.avatar ? (
+                  <img src={profile.avatar} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  profile?.fullName ? profile.fullName.charAt(0).toUpperCase() : "N"
+                )}
+              </div>
+              {avatarMenuOpen && (
+                <div className="avatar-menu">
+                  <button
+                    type="button"
+                    className="avatar-menu__item"
+                    onClick={() => { setAvatarMenuOpen(false); router.push("/staff/profile"); }}
+                  >
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Hồ sơ cá nhân
+                  </button>
+                  <button
+                    type="button"
+                    className="avatar-menu__item"
+                    onClick={() => { setAvatarMenuOpen(false); router.push("/staff/profile/change-password"); }}
+                  >
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9.5 12l1.8 1.8L15 10" />
+                    </svg>
+                    Đổi mật khẩu
+                  </button>
+                  <div className="avatar-menu__divider" />
+                  <button type="button" className="avatar-menu__item avatar-menu__item--logout" onClick={handleLogout}>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Đăng xuất
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
         <main className="sf-main">{children}</main>
