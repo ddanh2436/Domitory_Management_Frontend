@@ -529,6 +529,14 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                       {Icons.user}
                       Hồ sơ cá nhân
                     </button>
+                    <button
+                      type="button"
+                      className="avatar-menu__item"
+                      onClick={() => { setAvatarMenuOpen(false); router.push("/student/profile/change-password"); }}
+                    >
+                      {Icons.shield}
+                      Đổi mật khẩu
+                    </button>
                     <div className="avatar-menu__divider" />
                     <button type="button" className="avatar-menu__item avatar-menu__item--logout" onClick={handleLogout}>
                       {Icons.logout}
