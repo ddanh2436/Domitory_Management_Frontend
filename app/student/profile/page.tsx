@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useToast } from "../../components/ToastProvider";
 import { apiClient } from "../../utils/apiClient";
 
@@ -297,7 +298,15 @@ export default function StudentProfilePage() {
               </div>
             </div>
 
-            <button type="submit" className="btn-save">Cập nhật thay đổi</button>
+            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <button type="submit" className="btn-save" style={{ flex: 1 }}>Cập nhật thay đổi</button>
+              <Link
+                href="/student/profile/change-password"
+                style={{ flex: 1, textAlign: "center", padding: "12px 24px", border: "1px solid var(--border)", borderRadius: 8, fontSize: 14, fontWeight: 600, color: "var(--navy)", textDecoration: "none" }}
+              >
+                Đổi mật khẩu
+              </Link>
+            </div>
           </form>
         </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useToast } from "../../components/ToastProvider";
 import { apiClient } from "../../utils/apiClient";
 
@@ -250,7 +251,13 @@ export default function AdminProfilePage() {
               </div>
             </div>
 
-            <div className="pf-form-foot">
+            <div className="pf-form-foot" style={{ gap: 12 }}>
+              <Link
+                href="/admin/profile/change-password"
+                style={{ padding: "11px 22px", border: "1px solid rgba(13,27,42,0.15)", borderRadius: 8, fontSize: "13.5px", fontWeight: 600, color: "#0D1B2A", textDecoration: "none" }}
+              >
+                Đổi mật khẩu
+              </Link>
               <button type="submit" className="btn-save">Cập nhật thay đổi</button>
             </div>
           </div>

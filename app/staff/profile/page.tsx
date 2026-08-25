@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useToast } from "../../components/ToastProvider";
 import { apiClient } from "../../utils/apiClient";
 
@@ -198,7 +199,13 @@ export default function StaffProfilePage() {
                 />
               </div>
             </div>
-            <div className="sp-foot">
+            <div className="sp-foot" style={{ gap: 12 }}>
+              <Link
+                href="/staff/profile/change-password"
+                style={{ padding: "11px 22px", border: "1px solid rgba(13,27,42,0.15)", borderRadius: 8, fontSize: "13.5px", fontWeight: 600, color: "#0D1B2A", textDecoration: "none" }}
+              >
+                Đổi mật khẩu
+              </Link>
               <button type="submit" className="sp-save" disabled={saving}>
                 {saving ? "Đang lưu..." : "Cập nhật thay đổi"}
               </button>
